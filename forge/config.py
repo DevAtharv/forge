@@ -107,30 +107,30 @@ class Settings:
             cors_allowed_origins=_env_list("FORGE_CORS_ALLOWED_ORIGINS"),
             orchestrator_routes=parse_model_routes(
                 _env("FORGE_ORCHESTRATOR_MODELS", "") or "",
-                "groq/llama-3.3-70b-versatile,openrouter/mistralai/mistral-7b-instruct:free",
+                "groq/llama-3.3-70b-versatile,openrouter/openrouter/auto",
             ),
             planner_routes=parse_model_routes(
                 _env("FORGE_PLANNER_MODELS", "") or "",
-                "groq/llama-3.3-70b-versatile,openrouter/mistralai/mistral-7b-instruct:free",
+                "groq/llama-3.3-70b-versatile,openrouter/openrouter/auto",
             ),
             code_routes=parse_model_routes(
                 _env("FORGE_CODE_MODELS", "") or "",
-                "nvidia/meta/llama-3.1-70b-instruct,openrouter/mistralai/mistral-7b-instruct:free",
+                "nvidia/meta/llama-3.1-70b-instruct,openrouter/openrouter/auto",
             ),
             debug_routes=parse_model_routes(
                 _env("FORGE_DEBUG_MODELS", "") or "",
-                "groq/llama-3.2-11b-vision-preview,openrouter/mistralai/mistral-7b-instruct:free",
+                "groq/llama-3.2-11b-vision-preview,openrouter/openrouter/auto",
             ),
             reviewer_routes=parse_model_routes(
                 _env("FORGE_REVIEWER_MODELS", "") or "",
-                "openrouter/mistralai/mistral-7b-instruct:free,groq/llama-3.3-70b-versatile",
+                "openrouter/openrouter/auto,groq/llama-3.3-70b-versatile",
             ),
             research_routes=parse_model_routes(
                 _env("FORGE_RESEARCH_MODELS", "") or "",
-                "openrouter/mistralai/mistral-7b-instruct:free,groq/llama-3.3-70b-versatile",
+                "openrouter/openrouter/auto,groq/llama-3.3-70b-versatile",
             ),
             summary_routes=parse_model_routes(
                 _env("FORGE_SUMMARY_MODELS", "") or "",
-                "groq/llama-3.3-70b-versatile,openrouter/mistralai/mistral-7b-instruct:free",
+                "groq/llama-3.3-70b-versatile,openrouter/openrouter/auto",
             ),
         )
