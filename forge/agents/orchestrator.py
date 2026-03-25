@@ -45,6 +45,7 @@ class OrchestratorAgent:
             )
             data = extract_json_object(raw)
             plan = OrchestrationPlan.model_validate(data)
+            plan = self._normalize_plan(plan, message=message, has_image=has_image)
             self._validate_plan(plan)
             return plan
         except Exception:
@@ -64,6 +65,48 @@ class OrchestratorAgent:
                     seen_reviewer_after_code = True
         if seen_code and not seen_reviewer_after_code:
             raise ValueError("Reviewer must run after code.")
+
+    def _normalize_plan(self, plan: OrchestrationPlan, *, message: str, has_image: bool) -> OrchestrationPlan:
+        lower = message.lower().strip()
+        wants_explanation = any(
+            lower.startswith(prefix)
+            for prefix in ("what is", "explain", "compare", "should i use", "why ")
+        )
+        code_signals = any(
+            token in lower
+            for token in ("build", "create", "implement", "write", "generate", "add ", "make ")
+        )
+        debug_signals = has_image or any(
+            token in lower
+            for token in ("error", "exception", "traceback", "crash", "500", "404", "bug", "failing")
+        )
+
+        # Keep pure explanation prompts on the lightweight research path even if the LLM planner
+        # tries to opportunistically add code or review stages.
+        if plan.response_format == "explanation" and wants_explanation and not code_signals and not debug_signals:
+            research_stages = [stage for stage in plan.stages if "research" in stage.agents]
+            if research_stages:
+                return OrchestrationPlan(
+                    intent=plan.intent,
+                    response_format="explanation",
+                    context_policy=plan.context_policy,
+                    stages=[
+                        StagePlan(
+                            name=stage.name,
+                            agents=["research"],
+                            tasks={"research": stage.tasks.get("research", message)},
+                        )
+                        for stage in research_stages
+                    ],
+                )
+            return OrchestrationPlan(
+                intent=plan.intent,
+                response_format="explanation",
+                context_policy=plan.context_policy,
+                stages=[StagePlan(name="research", agents=["research"], tasks={"research": message})],
+            )
+
+        return plan
 
     def _heuristic_plan(self, message: str, *, has_image: bool) -> OrchestrationPlan:
         lower = message.lower().strip()
