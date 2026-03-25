@@ -52,6 +52,11 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
+Python version:
+
+- The repo pins Python `3.11.11` via [.python-version](C:/Users/athar/Desktop/Forge/.python-version).
+- Render should also be set to `PYTHON_VERSION=3.11.11` to avoid `pydantic-core` source builds on newer runtimes.
+
 ## Telegram flow
 
 1. Telegram sends an update to `/webhook`.
