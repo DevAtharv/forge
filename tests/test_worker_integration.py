@@ -1,0 +1,225 @@
+import asyncio
+import json
+
+import pytest
+
+from forge.agents.aggregator import PipelineAggregator
+from forge.agents.orchestrator import OrchestratorAgent
+from forge.agents.task_agents import CodeAgent, DebugAgent, PlannerAgent, ProfileSummaryAgent, ResearchAgent, ReviewerAgent
+from forge.providers.base import Fetcher, FetchedDocument, SearchHit, SearchProvider
+from forge.providers.registry import ProviderRegistry
+from forge.schemas import MessageJob
+from forge.workers.processor import JobProcessor, PipelineExecutor
+from tests.support import FakeTransport
+
+
+class SequencedProvider:
+    def __init__(self, outputs):
+        self.outputs = list(outputs)
+
+    async def generate(self, **kwargs):
+        if not self.outputs:
+            raise RuntimeError("No more fake outputs configured.")
+        return self.outputs.pop(0)
+
+    async def close(self):
+        return None
+
+
+class StaticSearch(SearchProvider):
+    async def search(self, query: str, *, max_results: int):
+        return [SearchHit(title="Example", url="https://example.com", snippet="A source")]
+
+
+class StaticFetch(Fetcher):
+    async def fetch(self, url: str) -> FetchedDocument | None:
+        return FetchedDocument(url=url, title="Example", content="Example content from docs.")
+
+    async def close(self) -> None:
+        return None
+
+
+@pytest.mark.asyncio
+async def test_worker_processes_code_pipeline_and_updates_memory(settings, store) -> None:
+    provider = SequencedProvider(
+        [
+            "{not-json",
+            json.dumps(
+                {
+                    "summary": "Plan ready",
+                    "user_visible_text": "1. Create the route.\n2. Add auth.",
+                    "artifacts": [],
+                    "handoff": {"plan": "Create route then auth"},
+                    "citations": [],
+                    "confidence": 0.8,
+                    "internal_notes": [],
+                }
+            ),
+            json.dumps(
+                {
+                    "summary": "Code ready",
+                    "user_visible_text": "Implemented the Flask auth route.",
+                    "artifacts": [
+                        {
+                            "name": "app.py",
+                            "content": "from flask import Flask\napp = Flask(__name__)\n",
+                            "mime_type": "text/plain",
+                            "language": "python",
+                        }
+                    ],
+                    "handoff": {"implementation_summary": "Added Flask app"},
+                    "citations": [],
+                    "confidence": 0.8,
+                    "internal_notes": [],
+                }
+            ),
+            json.dumps(
+                {
+                    "summary": "Review complete",
+                    "user_visible_text": "Looks good. Add rate limiting later.",
+                    "artifacts": [],
+                    "handoff": {"verdict": "good"},
+                    "citations": [],
+                    "confidence": 0.7,
+                    "internal_notes": [],
+                }
+            ),
+            json.dumps(
+                {
+                    "summary": "Profile updated",
+                    "stack": ["Python", "Flask"],
+                    "skill_level": "intermediate",
+                    "current_projects": ["Telegram dev assistant"],
+                    "preferences": {"style": "minimal"},
+                    "active_context": {"current_goal": "flask auth"},
+                }
+            ),
+        ]
+    )
+    providers = ProviderRegistry(
+        llm_providers={"fallback": provider},
+        search_provider=StaticSearch(),
+        fetcher=StaticFetch(),
+    )
+    transport = FakeTransport()
+    orchestrator = OrchestratorAgent(settings=settings, providers=providers)
+    executor = PipelineExecutor(
+        planner=PlannerAgent(settings=settings, providers=providers),
+        code=CodeAgent(settings=settings, providers=providers),
+        debug=DebugAgent(settings=settings, providers=providers),
+        research=ResearchAgent(settings=settings, providers=providers),
+        reviewer=ReviewerAgent(settings=settings, providers=providers),
+        aggregator=PipelineAggregator(),
+    )
+    processor = JobProcessor(
+        settings=settings,
+        store=store,
+        transport=transport,
+        orchestrator=orchestrator,
+        executor=executor,
+        profile_summary_agent=ProfileSummaryAgent(settings=settings, providers=providers),
+    )
+
+    job = await store.enqueue_message_job(
+        MessageJob(
+            telegram_update_id=1,
+            user_id=42,
+            chat_id=42,
+            raw_update={
+                "update_id": 1,
+                "message": {
+                    "message_id": 1,
+                    "from": {"id": 42, "username": "alice"},
+                    "chat": {"id": 42, "type": "private"},
+                    "text": "build me a full flask auth endpoint",
+                },
+            },
+        )
+    )
+
+    await processor.process(job)
+    await asyncio.sleep(0.05)
+
+    profile = await store.get_user_profile(42)
+    assert transport.status_messages
+    assert transport.deliveries
+    assert profile.stack == ["Python", "Flask"]
+    assert len(store._conversations) == 2
+
+
+@pytest.mark.asyncio
+async def test_worker_processes_image_debug_request(settings, store) -> None:
+    provider = SequencedProvider(
+        [
+            "{not-json",
+            json.dumps(
+                {
+                    "summary": "Debugged",
+                    "user_visible_text": "Most likely cause: missing env var. Fix: set DATABASE_URL before startup.",
+                    "artifacts": [],
+                    "handoff": {"root_cause": "missing env var"},
+                    "citations": [],
+                    "confidence": 0.9,
+                    "internal_notes": [],
+                }
+            ),
+            json.dumps(
+                {
+                    "summary": "Profile updated",
+                    "stack": [],
+                    "skill_level": "intermediate",
+                    "current_projects": ["Debugging a service issue"],
+                    "preferences": {},
+                    "active_context": {"current_goal": "fix startup error"},
+                }
+            ),
+        ]
+    )
+    providers = ProviderRegistry(
+        llm_providers={"fallback": provider},
+        search_provider=StaticSearch(),
+        fetcher=StaticFetch(),
+    )
+    transport = FakeTransport()
+    transport.photo_bytes = b"fake-image"
+    orchestrator = OrchestratorAgent(settings=settings, providers=providers)
+    executor = PipelineExecutor(
+        planner=PlannerAgent(settings=settings, providers=providers),
+        code=CodeAgent(settings=settings, providers=providers),
+        debug=DebugAgent(settings=settings, providers=providers),
+        research=ResearchAgent(settings=settings, providers=providers),
+        reviewer=ReviewerAgent(settings=settings, providers=providers),
+        aggregator=PipelineAggregator(),
+    )
+    processor = JobProcessor(
+        settings=settings,
+        store=store,
+        transport=transport,
+        orchestrator=orchestrator,
+        executor=executor,
+        profile_summary_agent=ProfileSummaryAgent(settings=settings, providers=providers),
+    )
+
+    job = await store.enqueue_message_job(
+        MessageJob(
+            telegram_update_id=2,
+            user_id=88,
+            chat_id=88,
+            raw_update={
+                "update_id": 2,
+                "message": {
+                    "message_id": 2,
+                    "from": {"id": 88, "username": "bob"},
+                    "chat": {"id": 88, "type": "private"},
+                    "photo": [{"file_id": "abc", "file_size": 10}],
+                },
+            },
+        )
+    )
+
+    await processor.process(job)
+    await asyncio.sleep(0.05)
+
+    assert transport.deliveries
+    delivered_text = transport.deliveries[0][1].text
+    assert "missing env var" in delivered_text.lower()

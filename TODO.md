@@ -1,0 +1,24 @@
+- Forge MVP Progress
+- Status: core production-biased MVP scaffold is implemented in `forge/`.
+- Completed:
+  - FastAPI entrypoint wired through `main.py` and `forge/bootstrap.py`.
+  - Webhook ingestion implemented with secret verification and deduplicated job enqueueing.
+  - Background worker loop implemented with claim, retry, dead-letter handling, and staged execution.
+  - Structured agents implemented for orchestration, planning, code, debug, research, review, and profile refresh.
+  - Provider registry implemented with env-driven model aliases and fallback chains.
+  - Hybrid memory/context formatting implemented with Supabase and in-memory backends.
+  - Telegram delivery implemented with progress updates, chunking, and document attachment for large outputs.
+  - SQL schema added for `conversations`, `user_profiles`, `message_jobs`, and queue RPC helpers.
+  - Test suite added for orchestration fallback, queueing, context, webhook dedupe, provider fallback, and worker integration.
+- Canonical implementation:
+  - Use the `forge/` package as the active runtime.
+  - Treat the older top-level `api/`, `providers/`, `memory/`, and `workers/` stubs as legacy scaffolding unless we explicitly migrate or delete them later.
+- Remaining progress items:
+  - Apply `sql/schema.sql` to the target Supabase project.
+  - Populate `.env` from `.env.example` with real provider and Telegram credentials.
+  - Register the Telegram webhook against the deployed app URL.
+  - Run an end-to-end smoke test with real providers and a real Telegram message.
+- Acceptance criteria:
+  - Webhook returns quickly and enqueues exactly one durable job per Telegram update.
+  - Worker executes staged pipelines and replies through Telegram transport safely.
+  - Tests cover the local execution path and continue passing after setup changes.

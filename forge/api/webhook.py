@@ -1,0 +1,296 @@
+from __future__ import annotations
+
+import hashlib
+from pathlib import Path
+
+from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi.responses import FileResponse, HTMLResponse
+from pydantic import BaseModel, Field
+
+from forge.config import Settings
+from forge.memory import MemoryStore
+from forge.memory.context import build_user_context
+from forge.schemas import ConversationRecord
+from forge.schemas import MessageJob
+from forge.schemas import UserProfile
+from forge.supabase_auth import SupabaseAuthError
+
+
+UI_HTML_PATH = Path(__file__).resolve().parent.parent / "ui" / "index.html"
+UI_DIR = Path(__file__).resolve().parent.parent / "ui"
+
+
+class DemoPlanRequest(BaseModel):
+    prompt: str
+
+
+class EmailPasswordRequest(BaseModel):
+    email: str
+    password: str = Field(min_length=8)
+
+
+class AppPlanRequest(BaseModel):
+    prompt: str
+
+
+class AppRunRequest(BaseModel):
+    prompt: str = Field(min_length=1, max_length=8000)
+
+
+def _extract_message(raw_update: dict) -> dict | None:
+    for key in ("message", "edited_message", "channel_post", "edited_channel_post"):
+        if raw_update.get(key):
+            return raw_update[key]
+    return None
+
+
+def _derive_workspace_user_id(user: dict[str, object]) -> int:
+    raw = str(user.get("id") or user.get("email") or user.get("phone") or "forge-web-user")
+    digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()
+    return -(int(digest[:15], 16) or 1)
+
+
+def _serialize_delivery(payload) -> dict[str, object]:
+    document_text = payload.document_bytes.decode("utf-8") if payload.document_bytes else None
+    return {
+        "text": payload.text,
+        "document_name": payload.document_name,
+        "document_text": document_text,
+    }
+
+
+def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
+    router = APIRouter()
+
+    def bearer_token_from_request(request: Request) -> str:
+        header = request.headers.get("Authorization", "")
+        if not header.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Missing bearer token.")
+        return header.removeprefix("Bearer ").strip()
+
+    async def authenticate_workspace_request(request: Request) -> tuple[dict[str, object], int, str, UserProfile]:
+        auth_client = request.app.state.auth_client
+        token = bearer_token_from_request(request)
+        try:
+            user = await auth_client.get_user(access_token=token)
+        except SupabaseAuthError as exc:
+            raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+
+        workspace_user_id = _derive_workspace_user_id(user)
+        username = str(user.get("email") or user.get("id") or "forge-user")
+        await request.app.state.store.ensure_user_profile(workspace_user_id, username)
+        profile = await request.app.state.store.get_user_profile(workspace_user_id)
+        return user, workspace_user_id, username, profile
+
+    @router.get("/", response_class=HTMLResponse)
+    async def index() -> HTMLResponse:
+        return HTMLResponse(UI_HTML_PATH.read_text(encoding="utf-8"))
+
+    @router.get("/ui/{asset_name}")
+    async def ui_asset(asset_name: str) -> FileResponse:
+        asset_path = (UI_DIR / asset_name).resolve()
+        if asset_path.parent != UI_DIR.resolve() or not asset_path.exists() or not asset_path.is_file():
+            raise HTTPException(status_code=404, detail="Asset not found.")
+        return FileResponse(asset_path)
+
+    @router.get("/health")
+    async def health() -> dict[str, str]:
+        return {"status": "ok"}
+
+    @router.get("/api/client-config")
+    async def client_config(request: Request) -> dict[str, object]:
+        auth_client = request.app.state.auth_client
+        return {
+            "auth_enabled": auth_client.is_configured,
+            "auth_provider": "supabase",
+            "app_name": "Forge",
+        }
+
+    @router.post("/api/auth/signup")
+    async def sign_up(payload: EmailPasswordRequest, request: Request) -> dict[str, object]:
+        auth_client = request.app.state.auth_client
+        try:
+            result = await auth_client.sign_up(email=payload.email, password=payload.password)
+        except SupabaseAuthError as exc:
+            raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+
+        return {
+            "user": result.get("user"),
+            "session": result.get("session"),
+            "message": (
+                "Account created. Check your inbox if email confirmation is enabled."
+                if result.get("session") is None
+                else "Account created and signed in."
+            ),
+        }
+
+    @router.post("/api/auth/signin")
+    async def sign_in(payload: EmailPasswordRequest, request: Request) -> dict[str, object]:
+        auth_client = request.app.state.auth_client
+        try:
+            result = await auth_client.sign_in(email=payload.email, password=payload.password)
+        except SupabaseAuthError as exc:
+            raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+
+        return {
+            "user": result.get("user"),
+            "session": {
+                "access_token": result.get("access_token"),
+                "refresh_token": result.get("refresh_token"),
+                "expires_in": result.get("expires_in"),
+                "token_type": result.get("token_type"),
+            },
+            "message": "Signed in successfully.",
+        }
+
+    @router.get("/api/auth/session")
+    async def session(request: Request) -> dict[str, object]:
+        auth_client = request.app.state.auth_client
+        token = bearer_token_from_request(request)
+        try:
+            user = await auth_client.get_user(access_token=token)
+        except SupabaseAuthError as exc:
+            raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+        return {"user": user}
+
+    @router.post("/api/auth/signout")
+    async def sign_out(request: Request) -> dict[str, bool]:
+        auth_client = request.app.state.auth_client
+        token = bearer_token_from_request(request)
+        try:
+            await auth_client.sign_out(access_token=token)
+        except SupabaseAuthError as exc:
+            raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+        return {"ok": True}
+
+    @router.post("/demo/plan")
+    async def demo_plan(payload: DemoPlanRequest, request: Request) -> dict:
+        plan = await request.app.state.orchestrator.plan(
+            payload.prompt,
+            history=[],
+            profile=UserProfile(user_id=0, username="demo"),
+            has_image=False,
+        )
+        return {"plan": plan.model_dump(mode="json")}
+
+    @router.post("/api/app/plan")
+    async def app_plan(payload: AppPlanRequest, request: Request) -> dict[str, object]:
+        user, workspace_user_id, username, profile = await authenticate_workspace_request(request)
+
+        plan = await request.app.state.orchestrator.plan(
+            payload.prompt,
+            history=[],
+            profile=UserProfile(
+                user_id=workspace_user_id,
+                username=username,
+                summary=profile.summary,
+                stack=profile.stack,
+                skill_level=profile.skill_level,
+                current_projects=profile.current_projects,
+                preferences=profile.preferences,
+                active_context=profile.active_context,
+            ),
+            has_image=False,
+        )
+        return {"user": user, "plan": plan.model_dump(mode="json")}
+
+    @router.get("/api/app/dashboard")
+    async def app_dashboard(request: Request) -> dict[str, object]:
+        user, workspace_user_id, _username, profile = await authenticate_workspace_request(request)
+        history = await request.app.state.store.get_recent_conversations(workspace_user_id, limit=12)
+        return {
+            "user": user,
+            "profile": profile.model_dump(mode="json"),
+            "history": [item.model_dump(mode="json") for item in history],
+        }
+
+    @router.post("/api/app/run")
+    async def app_run(payload: AppRunRequest, request: Request) -> dict[str, object]:
+        user, workspace_user_id, username, profile = await authenticate_workspace_request(request)
+        executor = request.app.state.executor
+        if executor is None:
+            raise HTTPException(status_code=503, detail="Forge app execution is not available in this environment.")
+
+        history = await request.app.state.store.get_recent_conversations(
+            workspace_user_id,
+            limit=request.app.state.settings.history_window,
+        )
+        await request.app.state.store.append_conversation(
+            ConversationRecord(user_id=workspace_user_id, role="user", content=payload.prompt)
+        )
+
+        plan = await request.app.state.orchestrator.plan(
+            payload.prompt,
+            history=history,
+            profile=profile,
+            has_image=False,
+        )
+        user_context = build_user_context(profile, history, plan.context_policy)
+        delivery, stage_executions = await executor.execute(
+            plan=plan,
+            original_task=payload.prompt,
+            history=history,
+            user_context=user_context,
+            profile=profile,
+            image_bytes=None,
+        )
+
+        await request.app.state.store.append_conversation(
+            ConversationRecord(
+                user_id=workspace_user_id,
+                role="assistant",
+                content=delivery.text,
+                agents_used=[name for stage in plan.stages for name in stage.agents],
+            )
+        )
+        refreshed_profile = await request.app.state.store.get_user_profile(workspace_user_id)
+        refreshed_history = await request.app.state.store.get_recent_conversations(workspace_user_id, limit=12)
+
+        profile_refresher = request.app.state.profile_refresher
+        if profile_refresher is not None:
+            # Keep the interactive workspace responsive and let durable profile synthesis happen in the background.
+            import asyncio
+
+            asyncio.create_task(profile_refresher(workspace_user_id, username))
+
+        return {
+            "user": user,
+            "profile": refreshed_profile.model_dump(mode="json"),
+            "history": [item.model_dump(mode="json") for item in refreshed_history],
+            "plan": plan.model_dump(mode="json"),
+            "delivery": _serialize_delivery(delivery),
+            "stages": [stage.model_dump(mode="json") for stage in stage_executions],
+        }
+
+    @router.post("/webhook")
+    async def webhook(
+        request: Request,
+        x_telegram_bot_api_secret_token: str | None = Header(default=None),
+    ) -> dict[str, bool]:
+        if settings.webhook_secret and x_telegram_bot_api_secret_token != settings.webhook_secret:
+            raise HTTPException(status_code=403, detail="Invalid secret.")
+
+        payload = await request.json()
+        message = _extract_message(payload)
+        if not message:
+            return {"ok": True}
+
+        chat = message.get("chat") or {}
+        user = message.get("from") or {}
+        user_id = user.get("id") or chat.get("id")
+        chat_id = chat.get("id") or user_id
+        update_id = payload.get("update_id")
+        if update_id is None or user_id is None or chat_id is None:
+            return {"ok": True}
+
+        await store.enqueue_message_job(
+            MessageJob(
+                telegram_update_id=int(update_id),
+                user_id=int(user_id),
+                chat_id=int(chat_id),
+                raw_update=payload,
+            )
+        )
+        return {"ok": True}
+
+    return router

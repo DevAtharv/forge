@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forge | AI Agent Orchestration</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,500,0,0"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #131313;
+        --bg-elevated: #1c1b1b;
+        --bg-panel: #201f1f;
+        --bg-panel-strong: #2a2a2a;
+        --bg-panel-top: #353534;
+        --text: #e5e2e1;
+        --text-muted: #bac9cc;
+        --text-dim: #849396;
+        --line: rgba(132, 147, 150, 0.16);
+        --primary: #00e5ff;
+        --primary-soft: rgba(0, 229, 255, 0.12);
+        --secondary: #00ffab;
+        --secondary-soft: rgba(0, 255, 171, 0.12);
+        --tertiary: #f0c0ff;
+        --tertiary-soft: rgba(240, 192, 255, 0.12);
+        --error: #ffb4ab;
+        --error-soft: rgba(255, 180, 171, 0.12);
+        --shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background:
+          radial-gradient(circle at top right, rgba(0, 229, 255, 0.08), transparent 28%),
+          radial-gradient(circle at bottom left, rgba(240, 192, 255, 0.06), transparent 24%),
+          var(--bg);
+        color: var(--text);
+        font-family: "Inter", sans-serif;
+      }
+
+      body {
+        selection-color: var(--bg);
+      }
+
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 24;
+        vertical-align: middle;
+      }
+
+      .app-shell {
+        min-height: 100vh;
+      }
+
+      .topbar {
+        position: fixed;
+        inset: 0 0 auto 0;
+        height: 4rem;
+        z-index: 40;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0 1.5rem;
+        background: rgba(19, 19, 19, 0.92);
+        backdrop-filter: blur(18px);
+        border-bottom: 1px solid var(--line);
+        box-shadow: 0 0 24px rgba(0, 229, 255, 0.04);
+      }
+
+      .brand-wrap,
+      .topbar-actions,
+      .topbar-nav,
+      .status-pills,
+      .split,
+      .split-line,
+      .title-row,
+      .actions-row,
+      .panel-head,
+      .user-row,
+      .badge-row,
+      .mini-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .brand {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        color: #c3f5ff;
+      }
+
+      .topbar-nav a,
+      .sidenav a {
+        color: rgba(229, 226, 225, 0.6);
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-size: 0.72rem;
+        font-family: "Space Grotesk", sans-serif;
+      }
+
+      .topbar-nav a.active,
+      .topbar-nav a:hover {
+        color: var(--primary);
+      }
+
+      .status-pill,
+      .chip,
+      .tiny-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        border-radius: 999px;
+      }
+
+      .status-pill {
+        padding: 0.45rem 0.8rem;
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        font-family: "Space Grotesk", sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .status-dot {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 999px;
+        background: var(--primary);
+        box-shadow: 0 0 10px rgba(0, 229, 255, 0.45);
+      }
+
+      .action-btn,
+      .ghost-btn,
+      .icon-btn {
+        border: 0;
+        cursor: pointer;
+        transition: 180ms ease;
+        font: inherit;
+      }
+
+      .action-btn {
+        padding: 0.8rem 1rem;
+        border-radius: 0.6rem;
+        background: var(--primary);
+        color: #00363d;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        box-shadow: 0 0 18px rgba(0, 229, 255, 0.22);
+      }
+
+      .action-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0 24px rgba(0, 229, 255, 0.32);
+      }
+
+      .ghost-btn {
+        padding: 0.8rem 1rem;
+        border-radius: 0.6rem;
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--line);
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 0.74rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
+      .ghost-btn.active,
+      .ghost-btn:hover {
+        border-color: rgba(0, 229, 255, 0.4);
+        color: var(--primary);
+        background: rgba(0, 229, 255, 0.06);
+      }
+
+      .icon-btn {
+        width: 2.25rem;
+        height: 2.25rem;
+        display: grid;
+        place-items: center;
+        background: transparent;
+        color: rgba(229, 226, 225, 0.7);
+        border-radius: 0.5rem;
+      }
+
+      .icon-btn:hover {
+        color: var(--primary);
+        background: rgba(42, 42, 42, 0.88);
+      }
+
+      .avatar {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(0, 229, 255, 0.2), rgba(240, 192, 255, 0.2));
+        border: 1px solid rgba(0, 229, 255, 0.2);
+      }
+
+      .sidenav {
+        position: fixed;
+        top: 4rem;
+        left: 0;
+        bottom: 0;
+        width: 16rem;
+        padding: 1.2rem 1rem;
+        background: #0e0e0e;
+        border-right: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .side-head {
+        padding: 0.25rem 0.5rem 1rem;
+      }
+
+      .side-head strong,
+      .side-head span {
+        display: block;
+      }
+
+      .side-head strong {
+        color: var(--primary);
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+      }
+
+      .side-head span {
+        margin-top: 0.35rem;
+        color: rgba(229, 226, 225, 0.42);
+        font-size: 0.67rem;
+        font-family: "Space Grotesk", sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+      }
+
+      .side-nav {
+        display: grid;
+        gap: 0.25rem;
+      }
+
+      .side-nav a {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.9rem 1rem;
+        border-radius: 0.7rem;
+      }
+
+      .side-nav a.active {
+        background: var(--bg-panel);
+        color: var(--primary);
+        border-left: 3px solid var(--primary);
+      }
+
+      .side-actions {
+        margin-top: auto;
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .side-link {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        padding: 0.5rem 0.6rem;
+        color: rgba(229, 226, 225, 0.45);
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.68rem;
+        font-family: "Space Grotesk", sans-serif;
+      }
+
+      .main {
+        margin-left: 16rem;
+        padding: 5.4rem 1.5rem 2rem;
+      }
+
+      .container {
+        max-width: 1380px;
+        margin: 0 auto;
+        display: grid;
+        gap: 1rem;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 1rem;
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 1rem;
+      }
+
+      .stack-grid {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .card {
+        position: relative;
+        background: var(--bg-panel);
+        border: 1px solid var(--line);
+        border-radius: 1rem;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 2px;
+        background: linear-gradient(180deg, rgba(0, 229, 255, 0.8), transparent 80%);
+        opacity: 0.9;
+      }
+
+      .card-body {
+        padding: 1.35rem;
+      }
+
+      .hero-card {
+        min-height: 17rem;
+        background:
+          radial-gradient(circle at 90% 20%, rgba(0, 229, 255, 0.1), transparent 22%),
+          radial-gradient(circle at 20% 90%, rgba(240, 192, 255, 0.08), transparent 24%),
+          var(--bg-panel);
+      }
+
+      .eyebrow,
+      .panel-kicker {
+        font-family: "Space Grotesk", sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        font-size: 0.66rem;
+      }
+
+      .eyebrow {
+        color: var(--primary);
+      }
+
+      .hero-title,
+      .panel-title {
+        font-family: "Space Grotesk", sans-serif;
+        letter-spacing: -0.05em;
+        margin: 0;
+      }
+
+      .hero-title {
+        margin-top: 0.8rem;
+        font-size: clamp(2.2rem, 5vw, 4rem);
+        max-width: 10ch;
+        line-height: 0.95;
+      }
+
+      .hero-copy,
+      .panel-copy,
+      .muted,
+      .timeline-text,
+      .response-text {
+        color: var(--text-muted);
+        line-height: 1.65;
+      }
+
+      .hero-copy {
+        max-width: 42rem;
+        margin-top: 1rem;
+      }
+
+      .stats-row,
+      .agent-cards,
+      .profile-blocks,
+      .artifact-list,
+      .timeline-list,
+      .stage-list {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .stats-row {
+        margin-top: 1.2rem;
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .stat-box,
+      .mini-box,
+      .agent-mini-card,
+      .stage,
+      .stage-item,
+      .timeline-item,
+      .artifact,
+      .artifact-item,
+      .memory-box {
+        background: var(--bg-elevated);
+        border: 1px solid var(--line);
+        border-radius: 0.85rem;
+      }
+
+      .stat-box,
+      .mini-box,
+      .agent-mini-card,
+      .stage,
+      .stage-item,
+      .timeline-item,
+      .artifact,
+      .artifact-item,
+      .memory-box,
+      .auth-zone,
+      .response-box {
+        padding: 1rem;
+      }
+
+      .stat-box strong,
+      .memory-box strong,
+      .panel-title,
+      .agent-mini-card strong {
+        display: block;
+      }
+
+      .stat-box strong {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.4rem;
+      }
+
+      .stat-box span,
+      .memory-box p,
+      .agent-mini-card p {
+        font-size: 0.92rem;
+        color: var(--text-muted);
+        line-height: 1.55;
+      }
+
+      .auth-zone,
+      .response-box {
+        background: var(--bg-elevated);
+        border: 1px solid var(--line);
+        border-radius: 0.85rem;
+      }
+
+      .form-grid,
+      .mission-form {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      label {
+        display: grid;
+        gap: 0.35rem;
+        color: var(--text-dim);
+        font-size: 0.76rem;
+        font-family: "Space Grotesk", sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        background: #0f0f0f;
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 0.7rem;
+        padding: 0.9rem 0.95rem;
+        font: inherit;
+      }
+
+      textarea {
+        min-height: 9rem;
+        resize: vertical;
+        line-height: 1.65;
+      }
+
+      .panel-title {
+        font-size: 1.1rem;
+        text-transform: uppercase;
+      }
+
+      .panel-copy {
+        font-size: 0.92rem;
+        margin-top: 0.35rem;
+      }
+
+      .chip {
+        padding: 0.35rem 0.6rem;
+        font-size: 0.67rem;
+        font-family: "Space Grotesk", sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        border: 1px solid transparent;
+      }
+
+      .chip.primary {
+        background: var(--primary-soft);
+        color: var(--primary);
+        border-color: rgba(0, 229, 255, 0.18);
+      }
+
+      .chip.secondary {
+        background: var(--secondary-soft);
+        color: var(--secondary);
+        border-color: rgba(0, 255, 171, 0.18);
+      }
+
+      .chip.tertiary {
+        background: var(--tertiary-soft);
+        color: var(--tertiary);
+        border-color: rgba(240, 192, 255, 0.18);
+      }
+
+      .chip.error {
+        background: var(--error-soft);
+        color: var(--error);
+        border-color: rgba(255, 180, 171, 0.18);
+      }
+
+      .chip.neutral,
+      .tiny-chip {
+        background: rgba(53, 53, 52, 0.65);
+        color: var(--text-dim);
+        border: 1px solid rgba(132, 147, 150, 0.18);
+      }
+
+      .tiny-chip {
+        padding: 0.3rem 0.55rem;
+        font-size: 0.64rem;
+        font-family: "Space Grotesk", sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+
+      .response-text,
+      .timeline-text,
+      .artifact-code {
+        white-space: pre-wrap;
+        word-break: break-word;
+        margin: 0;
+      }
+
+      .artifact-code {
+        margin-top: 0.75rem;
+        background: #0a0a0a;
+        border: 1px solid rgba(132, 147, 150, 0.12);
+        border-radius: 0.75rem;
+        padding: 0.9rem;
+        color: #dffcff;
+        font-family: Consolas, "Courier New", monospace;
+        max-height: 18rem;
+        overflow: auto;
+      }
+
+      .empty-state {
+        padding: 1rem;
+        border: 1px dashed rgba(132, 147, 150, 0.22);
+        border-radius: 0.85rem;
+        color: var(--text-dim);
+        background: rgba(28, 27, 27, 0.55);
+      }
+
+      .badge-row {
+        flex-wrap: wrap;
+        margin-top: 0.8rem;
+      }
+
+      .timeline-item,
+      .stage,
+      .stage-item,
+      .artifact,
+      .artifact-item {
+        position: relative;
+      }
+
+      .timeline-role {
+        font-family: "Space Grotesk", sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-size: 0.67rem;
+        color: var(--primary);
+      }
+
+      .timeline-role.user {
+        color: var(--secondary);
+      }
+
+      .meta {
+        color: var(--text-dim);
+        font-size: 0.72rem;
+        font-family: "Space Grotesk", sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
+      .agent-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .agent-mini-card.full {
+        grid-column: 1 / -1;
+      }
+
+      .footer-nav {
+        display: none;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (max-width: 1100px) {
+        .hero-grid,
+        .content-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 900px) {
+        .sidenav {
+          display: none;
+        }
+
+        .main {
+          margin-left: 0;
+        }
+
+        .topbar-nav,
+        .status-pills {
+          display: none;
+        }
+
+        .footer-nav {
+          position: fixed;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+          padding: 0.6rem 1rem 1rem;
+          background: rgba(19, 19, 19, 0.94);
+          backdrop-filter: blur(18px);
+          border-top: 1px solid var(--line);
+          z-index: 50;
+        }
+
+        .footer-nav a {
+          display: grid;
+          place-items: center;
+          gap: 0.2rem;
+          color: rgba(229, 226, 225, 0.4);
+          text-decoration: none;
+          font-size: 0.62rem;
+          font-family: "Space Grotesk", sans-serif;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+        }
+
+        .footer-nav a.active {
+          color: var(--primary);
+        }
+      }
+
+      @media (max-width: 720px) {
+        .topbar {
+          padding: 0 1rem;
+        }
+
+        .main {
+          padding: 5rem 1rem 6rem;
+        }
+
+        .stats-row,
+        .agent-cards {
+          grid-template-columns: 1fr;
+        }
+
+        .topbar-actions {
+          gap: 0.35rem;
+        }
+
+        .title-row,
+        .panel-head,
+        .user-row,
+        .actions-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .action-btn,
+        .ghost-btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-wrap">
+          <div class="brand">Forge</div>
+          <nav class="topbar-nav">
+            <a class="active" href="#">Dashboard</a>
+            <a href="#">Agents</a>
+            <a href="#">Memory</a>
+            <a href="#">Docs</a>
+          </nav>
+        </div>
+        <div class="topbar-actions">
+          <div class="status-pills">
+            <div class="status-pill">
+              <span class="status-dot" id="health-dot"></span>
+              <span id="health-text">Checking backend</span>
+            </div>
+            <div class="status-pill">
+              <span class="status-dot" id="auth-dot"></span>
+              <span id="auth-text">Checking auth</span>
+            </div>
+          </div>
+          <button class="icon-btn" type="button"><span class="material-symbols-outlined">notifications</span></button>
+          <button class="icon-btn" type="button"><span class="material-symbols-outlined">settings</span></button>
+          <button class="action-btn" type="button">New Project</button>
+          <div class="avatar"></div>
+        </div>
+      </header>
+
+      <aside class="sidenav">
+        <div class="side-head">
+          <strong>Agent Squad</strong>
+          <span>Active Session: Forge Workspace</span>
+        </div>
+        <nav class="side-nav">
+          <a class="active" href="#"><span class="material-symbols-outlined">hub</span><span>Orchestrator</span></a>
+          <a href="#"><span class="material-symbols-outlined">terminal</span><span>Code Agent</span></a>
+          <a href="#"><span class="material-symbols-outlined">bug_report</span><span>Debug Agent</span></a>
+          <a href="#"><span class="material-symbols-outlined">travel_explore</span><span>Research Agent</span></a>
+          <a href="#"><span class="material-symbols-outlined">architecture</span><span>Planner</span></a>
+          <a href="#"><span class="material-symbols-outlined">fact_check</span><span>Reviewer</span></a>
+        </nav>
+        <div class="side-actions">
+          <button class="action-btn" type="button">Deploy Pipeline</button>
+          <a class="side-link" href="#"><span class="material-symbols-outlined">receipt_long</span><span>System Logs</span></a>
+          <a class="side-link" href="#"><span class="material-symbols-outlined">memory</span><span>Memory</span></a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="container">
+          <section class="hero-grid">
+            <article class="card hero-card">
+              <div class="card-body">
+                <div class="eyebrow">System Architecture</div>
+                <h1 class="hero-title">Agentic Core Protocol</h1>
+                <p class="hero-copy">
+                  Forge is Your AI dev team on Telegram, now presented as a full orchestration console. You can sign in,
+                  preview the agent pipeline, run protected missions, inspect memory, and review artifacts
+                  in one dark control surface.
+                </p>
+                <div class="stats-row">
+                  <div class="stat-box">
+                    <strong>99.98%</strong>
+                    <span>Cluster health across the active workspace.</span>
+                  </div>
+                  <div class="stat-box">
+                    <strong>128k</strong>
+                    <span>Context window available for orchestration.</span>
+                  </div>
+                  <div class="stat-box">
+                    <strong id="mission-status-chip">Public preview mode</strong>
+                    <span>Switches to protected mode after Supabase sign-in.</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <section class="card">
+              <div class="card-body">
+                <div class="panel-kicker">Access Forge</div>
+                <h2 class="panel-title">Workspace Auth</h2>
+                <p class="panel-copy">Supabase-backed auth activates the protected mission console and memory APIs.</p>
+
+                <div class="actions-row" style="margin-top: 1rem;">
+                  <button class="ghost-btn active" id="mode-signin" type="button">Sign In</button>
+                  <button class="ghost-btn" id="mode-signup" type="button">Create Account</button>
+                </div>
+
+                <form class="form-grid" id="auth-form" style="margin-top: 1rem;">
+                  <label>
+                    Email
+                    <input id="auth-email" type="email" placeholder="founder@forge.dev" required />
+                  </label>
+                  <label>
+                    Password
+                    <input id="auth-password" type="password" minlength="8" placeholder="At least 8 characters" required />
+                  </label>
+                  <div class="actions-row">
+                    <button class="action-btn" id="auth-submit" type="submit">Sign In</button>
+                    <span class="meta" id="auth-feedback">Waiting for Supabase auth configuration.</span>
+                  </div>
+                </form>
+
+                <div class="empty-state" id="auth-warning" style="margin-top: 1rem; display: none;"></div>
+
+                <div class="auth-zone" style="margin-top: 1rem;">
+                  <div class="user-row">
+                    <div>
+                      <strong id="workspace-user" style="font-family: 'Space Grotesk', sans-serif;">Not signed in</strong>
+                      <p class="muted" id="workspace-user-meta" style="margin: 0.35rem 0 0;">Sign in to open the protected mission console.</p>
+                    </div>
+                    <button class="ghost-btn" id="signout-button" type="button">Sign Out</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </section>
+
+          <section class="content-grid">
+            <div class="stack-grid">
+              <section class="card">
+                <div class="card-body">
+                  <div class="panel-head">
+                    <div>
+                      <div class="panel-kicker">Mission Console</div>
+                      <h2 class="panel-title">Run Forge</h2>
+                    </div>
+                    <div class="tiny-chip" id="result-meta">No request yet</div>
+                  </div>
+
+                  <form class="mission-form" onsubmit="return false;" style="margin-top: 1rem;">
+                    <label>
+                      Forge Mission
+                      <textarea id="workspace-input">Build me a production-ready FastAPI auth service with protected routes, login flow, and a reviewer pass.</textarea>
+                    </label>
+                    <div class="actions-row">
+                      <button class="action-btn" id="workspace-run" type="button">Run Mission</button>
+                      <button class="ghost-btn" id="workspace-fill" type="button">Load Research Prompt</button>
+                      <button class="ghost-btn" id="preview-run" type="button">Preview Pipeline</button>
+                    </div>
+                    <div class="meta" id="workspace-feedback">Authenticated missions will appear here.</div>
+                  </form>
+
+                  <div class="response-box" style="margin-top: 1rem;">
+                    <div class="panel-head">
+                      <strong style="font-family: 'Space Grotesk', sans-serif; text-transform: uppercase;">Latest Response</strong>
+                      <div class="tiny-chip neutral">Aggregated Output</div>
+                    </div>
+                    <p class="response-text" id="result-response" style="margin-top: 0.8rem;">Sign in and run a mission to see the aggregated Forge answer here.</p>
+                    <details class="empty-state" id="document-wrap" style="margin-top: 0.9rem; display: none;">
+                      <summary>Attached long-form document</summary>
+                      <pre class="artifact-code" id="document-output"></pre>
+                    </details>
+                  </div>
+                </div>
+              </section>
+
+              <section class="card">
+                <div class="card-body">
+                  <div class="panel-head">
+                    <div>
+                      <div class="panel-kicker">Recent Activity</div>
+                      <h2 class="panel-title">Conversation Memory</h2>
+                    </div>
+                    <div class="tiny-chip" id="timeline-meta">No stored conversation yet</div>
+                  </div>
+                  <div class="timeline-list" id="timeline-list" style="margin-top: 1rem;">
+                    <div class="empty-state">Conversation history will appear here after your first mission.</div>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div class="stack-grid">
+              <section class="card">
+                <div class="card-body">
+                  <div class="panel-head">
+                    <div>
+                      <div class="panel-kicker">Pipeline Execution</div>
+                      <h2 class="panel-title" id="result-intent">Waiting for a request</h2>
+                    </div>
+                    <div class="chip neutral" id="result-context">No plan yet</div>
+                  </div>
+                  <div class="stage-list" id="result-stages" style="margin-top: 1rem;">
+                    <div class="empty-state">Stage-level routing will render here.</div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="card">
+                <div class="card-body">
+                  <div class="panel-head">
+                    <div>
+                      <div class="panel-kicker">Workspace Memory</div>
+                      <h2 class="panel-title">Profile Snapshot</h2>
+                    </div>
+                  </div>
+                  <div class="profile-blocks" style="margin-top: 1rem;">
+                    <div class="memory-box">
+                      <strong>Summary</strong>
+                      <p id="profile-summary">Sign in to load the workspace profile.</p>
+                    </div>
+                    <div class="memory-box">
+                      <strong>Stack</strong>
+                      <div class="badge-row" id="profile-stack-list">
+                        <span class="chip neutral">No stack captured yet</span>
+                      </div>
+                    </div>
+                    <div class="memory-box">
+                      <strong>Projects</strong>
+                      <div class="badge-row" id="profile-projects-list">
+                        <span class="chip neutral">No active projects captured yet</span>
+                      </div>
+                    </div>
+                    <div class="memory-box">
+                      <strong>Context</strong>
+                      <div class="badge-row" id="profile-context-list">
+                        <span class="chip neutral">No active context captured yet</span>
+                      </div>
+                      <p id="profile-skill" style="margin-top: 0.8rem;">Skill level: intermediate</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="card">
+                <div class="card-body">
+                  <div class="panel-head">
+                    <div>
+                      <div class="panel-kicker">Agent Squad</div>
+                      <h2 class="panel-title">Specialists</h2>
+                    </div>
+                  </div>
+                  <div class="agent-cards" style="margin-top: 1rem;">
+                    <div class="agent-mini-card">
+                      <strong>Planner</strong>
+                      <p>Breaks complex tasks into ordered execution stages.</p>
+                    </div>
+                    <div class="agent-mini-card">
+                      <strong>Code</strong>
+                      <p>Produces implementation output and code artifacts.</p>
+                    </div>
+                    <div class="agent-mini-card">
+                      <strong>Research</strong>
+                      <p>Fetches sources and synthesizes practical recommendations.</p>
+                    </div>
+                    <div class="agent-mini-card">
+                      <strong>Debug</strong>
+                      <p>Diagnoses runtime errors, screenshots, and failures.</p>
+                    </div>
+                    <div class="agent-mini-card full">
+                      <strong>Reviewer</strong>
+                      <p>Checks quality, security, and completeness before delivery.</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="card">
+                <div class="card-body">
+                  <div class="panel-head">
+                    <div>
+                      <div class="panel-kicker">Artifacts</div>
+                      <h2 class="panel-title">Mission Output</h2>
+                    </div>
+                    <div class="tiny-chip" id="artifact-meta">No artifacts yet</div>
+                  </div>
+                  <div class="artifact-list" id="artifact-list" style="margin-top: 1rem;">
+                    <div class="empty-state">Artifacts from planner, code, or reviewer outputs will appear here.</div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <nav class="footer-nav">
+        <a class="active" href="#"><span class="material-symbols-outlined">forum</span><span>Thread</span></a>
+        <a href="#"><span class="material-symbols-outlined">description</span><span>Files</span></a>
+        <a href="#"><span class="material-symbols-outlined">smart_toy</span><span>Agents</span></a>
+        <a href="#"><span class="material-symbols-outlined">database</span><span>Memory</span></a>
+      </nav>
+    </div>
+
+    <script src="./config.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
