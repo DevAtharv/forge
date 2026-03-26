@@ -203,45 +203,47 @@ export function Login(props: LoginProps) {
     </section>
   );
 }""",
-            "src/pages/Dashboard.tsx": f"""type DashboardProps = {{
+            "src/pages/Dashboard.tsx": """type DashboardProps = {
   email: string;
   onSignOut: () => Promise<void>;
-}};
+};
 
 const cards = [
-  {{ title: "Build Queue", value: "3", note: "active missions" }},
-  {{ title: "Deploy Readiness", value: "92%", note: "pre-flight score" }},
-  {{ title: "Git Sync", value: "clean", note: "latest revision pushed" }},
+  { title: "Build Queue", value: "3", note: "active missions" },
+  { title: "Deploy Readiness", value: "92%", note: "pre-flight score" },
+  { title: "Git Sync", value: "clean", note: "latest revision pushed" },
 ];
 
-export function Dashboard(props: DashboardProps) {{
+export function Dashboard(props: DashboardProps) {
   return (
     <section className="panel dashboard-panel">
       <div className="dashboard-topbar">
         <div>
           <p className="eyebrow">Authenticated Workspace</p>
-          <h2>{title}</h2>
-          <p className="muted">Signed in as {{props.email}}</p>
+          <h2>__TITLE__</h2>
+          <p className="muted">Signed in as {props.email}</p>
         </div>
-        <button className="secondary-button" onClick={() => void props.onSignOut()}>Sign out</button>
+        <button className="secondary-button" onClick={() => void props.onSignOut()}>
+          Sign out
+        </button>
       </div>
       <div className="metric-grid">
-        {{cards.map((card) => (
-          <article className="metric-card" key={{card.title}}>
-            <p>{{card.title}}</p>
-            <strong>{{card.value}}</strong>
-            <span>{{card.note}}</span>
+        {cards.map((card) => (
+          <article className="metric-card" key={card.title}>
+            <p>{card.title}</p>
+            <strong>{card.value}</strong>
+            <span>{card.note}</span>
           </article>
-        ))}}
+        ))}
       </div>
       <div className="mission-card">
         <p className="eyebrow">Current Prompt</p>
-        <h3>{blueprint.headline}</h3>
-        <p className="muted">{prompt}</p>
+        <h3>__HEADLINE__</h3>
+        <p className="muted">__PROMPT__</p>
       </div>
     </section>
   );
-}}""",
+}""".replace("__TITLE__", title).replace("__HEADLINE__", blueprint.headline).replace("__PROMPT__", prompt),
             "src/App.tsx": """import { useEffect, useState } from "react";
 import { supabase } from "./lib/supabase";
 import { Dashboard } from "./pages/Dashboard";
