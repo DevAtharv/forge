@@ -319,11 +319,14 @@ class ResilientMemoryStore(MemoryStore):
         )
 
     async def get_mission(self, mission_id: str) -> MissionRecord | None:
-        return await self._call_with_fallback(
+        mission = await self._call_with_fallback(
             "get_mission",
             lambda: self._primary.get_mission(mission_id),
             lambda: self._fallback.get_mission(mission_id),
         )
+        if mission is not None:
+            return mission
+        return await self._fallback.get_mission(mission_id)
 
     async def list_missions(self, workspace_user_id: int, *, limit: int) -> list[MissionRecord]:
         return await self._call_with_fallback(
