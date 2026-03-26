@@ -71,7 +71,12 @@ class SupabaseAuthClient:
         if self._client is None:
             raise SupabaseAuthError(503, "Supabase auth is not configured.")
 
-        response = await self._client.request(method, path, json=json, params=params, headers=headers)
+        try:
+            response = await self._client.request(method, path, json=json, params=params, headers=headers)
+        except httpx.TimeoutException as exc:
+            raise SupabaseAuthError(504, "Supabase auth request timed out. Please try again.") from exc
+        except httpx.RequestError as exc:
+            raise SupabaseAuthError(502, "Supabase auth service is temporarily unreachable.") from exc
         try:
             payload = response.json()
         except ValueError:

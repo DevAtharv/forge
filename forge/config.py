@@ -83,6 +83,7 @@ class Settings:
     history_window: int
     search_result_limit: int
     fetch_timeout_seconds: int
+    auth_timeout_seconds: int
     cors_allowed_origins: tuple[str, ...]
     orchestrator_routes: tuple[ModelRoute, ...]
     planner_routes: tuple[ModelRoute, ...]
@@ -115,6 +116,7 @@ class Settings:
             history_window=_env_int("FORGE_HISTORY_WINDOW", 8),
             search_result_limit=_env_int("FORGE_SEARCH_RESULT_LIMIT", 4),
             fetch_timeout_seconds=_env_int("FORGE_FETCH_TIMEOUT_SECONDS", 10),
+            auth_timeout_seconds=_env_int("FORGE_AUTH_TIMEOUT_SECONDS", 20),
             cors_allowed_origins=_env_list("FORGE_CORS_ALLOWED_ORIGINS"),
             orchestrator_routes=parse_model_routes(
                 _env("FORGE_ORCHESTRATOR_MODELS", "") or "",

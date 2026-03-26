@@ -103,7 +103,7 @@ def create_app(container: ForgeContainer | None = None) -> FastAPI:
     auth_client = SupabaseAuthClient(
         url=container.settings.supabase_url,
         api_key=container.settings.supabase_anon_key,
-        timeout_seconds=container.settings.fetch_timeout_seconds,
+        timeout_seconds=container.settings.auth_timeout_seconds,
     )
 
     @asynccontextmanager

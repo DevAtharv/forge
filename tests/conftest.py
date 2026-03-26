@@ -29,6 +29,7 @@ def settings() -> Settings:
         history_window=8,
         search_result_limit=3,
         fetch_timeout_seconds=5,
+        auth_timeout_seconds=10,
         cors_allowed_origins=(),
         orchestrator_routes=fallback,
         planner_routes=fallback,
