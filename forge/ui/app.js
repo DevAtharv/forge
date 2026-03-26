@@ -46,6 +46,8 @@ const els = {
   timelineMeta: document.getElementById("timeline-meta"),
   artifactList: document.getElementById("artifact-list"),
   artifactMeta: document.getElementById("artifact-meta"),
+  terminalMeta: document.getElementById("terminal-meta"),
+  terminalOutput: document.getElementById("terminal-output"),
   telegramLinkStatus: document.getElementById("telegram-link-status"),
   telegramLinkCode: document.getElementById("telegram-link-code"),
   telegramLinkExpiry: document.getElementById("telegram-link-expiry"),
@@ -386,6 +388,57 @@ function renderArtifacts(stages, delivery) {
   });
 }
 
+function extractTerminalCommands(stages, delivery) {
+  const commands = [];
+  const commandPattern =
+    /^(?:npm|pnpm|yarn|npx|pip|python|uvicorn|vercel|docker|git|cd|cp|mv|mkdir|touch)\b/i;
+  const pushLine = (line) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      return;
+    }
+    if (commandPattern.test(trimmed) && !commands.includes(trimmed)) {
+      commands.push(trimmed);
+    }
+  };
+
+  const allArtifacts = [];
+  (stages || []).forEach((stage) => {
+    Object.values(stage.outputs || {}).forEach((output) => {
+      (output.artifacts || []).forEach((artifact) => allArtifacts.push(artifact));
+    });
+  });
+
+  allArtifacts.forEach((artifact) => {
+    const fileName = (artifact.name || "").toLowerCase();
+    if (fileName.includes("terminal") || fileName.endsWith(".sh") || fileName.endsWith(".ps1")) {
+      String(artifact.content || "")
+        .split(/\r?\n/)
+        .forEach(pushLine);
+    }
+  });
+
+  const textBlob = `${delivery?.text || ""}\n${delivery?.document_text || ""}`;
+  const fenceRegex = /```(?:bash|sh|zsh|powershell|pwsh)?\n([\s\S]*?)```/gi;
+  let match;
+  while ((match = fenceRegex.exec(textBlob)) !== null) {
+    match[1].split(/\r?\n/).forEach(pushLine);
+  }
+
+  return commands;
+}
+
+function renderTerminal(stages, delivery) {
+  const commands = extractTerminalCommands(stages, delivery);
+  if (!commands.length) {
+    els.terminalMeta.textContent = "No commands yet";
+    els.terminalOutput.textContent = "Run a mission that asks Forge to build and deploy. Command steps will appear here.";
+    return;
+  }
+  els.terminalMeta.textContent = `${commands.length} command${commands.length === 1 ? "" : "s"}`;
+  els.terminalOutput.textContent = commands.join("\n");
+}
+
 async function checkHealth() {
   try {
     const payload = await fetchJson("/health");
@@ -549,6 +602,7 @@ async function runMission() {
     renderPlan(payload.plan, `Protected mission • ${payload.user.email || "authenticated user"}`);
     renderDelivery(payload.delivery);
     renderArtifacts(payload.stages, payload.delivery);
+    renderTerminal(payload.stages, payload.delivery);
     els.workspaceFeedback.textContent = `Mission complete: ${payload.plan.intent}`;
   } catch (error) {
     els.workspaceFeedback.textContent = error.message;
@@ -606,6 +660,7 @@ async function signOut() {
   renderHistory([]);
   renderDelivery(null);
   renderArtifacts([], null);
+  renderTerminal([], null);
   renderTelegramLink(null);
   els.workspaceFeedback.textContent = "Signed out.";
 }
@@ -626,6 +681,7 @@ els.signoutButton.addEventListener("click", signOut);
 setAuthMode("signin");
 renderAuthState();
 renderTelegramLink(null);
+renderTerminal([], null);
 checkHealth();
 checkConfig().then(restoreSession);
 runPreview();

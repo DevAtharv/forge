@@ -84,6 +84,10 @@ class OrchestratorAgent:
             token in lower
             for token in ("website", "web site", "landing page", "portfolio", "frontend", "sweet shop", "ecommerce")
         )
+        deploy_signals = any(
+            token in lower
+            for token in ("deploy", "deployment", "vercel", "ship it", "go live", "production url")
+        )
 
         if not debug_signals:
             normalized_stages: list[StagePlan] = []
@@ -132,7 +136,7 @@ class OrchestratorAgent:
                 stages=[StagePlan(name="research", agents=["research"], tasks={"research": message})],
             )
 
-        if code_signals and website_signals:
+        if code_signals and (website_signals or deploy_signals):
             has_planner = any("planner" in stage.agents for stage in plan.stages)
             has_code = any("code" in stage.agents for stage in plan.stages)
             has_reviewer = any("reviewer" in stage.agents for stage in plan.stages)
@@ -172,6 +176,10 @@ class OrchestratorAgent:
             token in lower
             for token in ("website", "web site", "landing page", "portfolio", "frontend", "sweet shop", "ecommerce")
         )
+        deploy_signals = any(
+            token in lower
+            for token in ("deploy", "deployment", "vercel", "ship it", "go live", "production url")
+        )
 
         if debug_signals and not code_signals and not wants_explanation:
             return OrchestrationPlan(
@@ -189,7 +197,7 @@ class OrchestratorAgent:
                 stages=[StagePlan(name="research", agents=["research"], tasks={"research": message})],
             )
 
-        if code_signals and (complex_signals or website_signals):
+        if code_signals and (complex_signals or website_signals or deploy_signals):
             return OrchestrationPlan(
                 intent="Plan, implement, and review the requested build",
                 response_format="code",

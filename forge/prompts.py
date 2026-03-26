@@ -93,6 +93,8 @@ Additional rules:
 - Do not return tutorial-only scaffolds, empty files, TODO comments, placeholder strings, or fake implementation notes.
 - If a frontend/website is requested, provide complete HTML/CSS/JS with responsive layout, meaningful content structure, and working interactions.
 - If the request implies deployment, include concrete deployable files (for example `vercel.json`, `requirements.txt`, `Dockerfile`) when relevant.
+- If deployment is requested, include a dedicated artifact named `terminal_commands.sh` with exact, ordered commands to build and deploy.
+- If authentication is requested, include complete auth flow implementation and required env vars in artifacts and user_visible_text.
 """.strip()
 
 
