@@ -19,6 +19,7 @@ def settings() -> Settings:
         supabase_url="https://example.supabase.co",
         supabase_key="supabase-key",
         supabase_anon_key="supabase-anon-key",
+        telegram_bot_username="ForggeBot",
         worker_id="test-worker",
         worker_poll_interval_seconds=0.01,
         worker_batch_size=1,

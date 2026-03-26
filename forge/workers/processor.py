@@ -29,6 +29,16 @@ def _extract_message(raw_update: dict[str, Any]) -> dict[str, Any] | None:
     return None
 
 
+def _extract_link_code(text: str) -> str | None:
+    stripped = text.strip()
+    if not stripped.lower().startswith("/link"):
+        return None
+    parts = stripped.split(maxsplit=1)
+    if len(parts) < 2:
+        return ""
+    return parts[1].strip().upper()
+
+
 class PipelineExecutor:
     def __init__(
         self,
@@ -130,14 +140,48 @@ class JobProcessor:
         elif not text:
             text = "Help me with this request."
 
+        link_code = _extract_link_code(text)
+        if link_code is not None:
+            if not link_code:
+                await self.transport.send_status_message(
+                    chat_id,
+                    "Send /link CODE from Telegram after generating a code in the Forge website.",
+                )
+                await self.store.complete_message_job(job.id or "", result_preview="Missing Telegram link code.")
+                return
+
+            link = await self.store.consume_link_token(
+                code=link_code,
+                telegram_user_id=user_id,
+                telegram_username=username,
+            )
+            if link is None:
+                await self.transport.send_status_message(
+                    chat_id,
+                    "That link code is invalid or expired. Generate a fresh code in the Forge website and try again.",
+                )
+                await self.store.complete_message_job(job.id or "", result_preview="Invalid Telegram link code.")
+                return
+
+            await self.store.ensure_user_profile(link.workspace_user_id, link.web_email or username)
+            await self.transport.send_status_message(
+                chat_id,
+                "Telegram is now connected to your Forge website workspace. Future bot messages will share that memory.",
+            )
+            await self.store.complete_message_job(job.id or "", result_preview="Telegram account linked.")
+            return
+
         status_message_id = await self.transport.send_status_message(chat_id, "Forge is assembling the right agents...")
         await self.store.attach_status_message(job.id or "", status_message_id)
 
-        await self.store.ensure_user_profile(user_id, username)
-        profile = await self.store.get_user_profile(user_id)
-        history = await self.store.get_recent_conversations(user_id, limit=self.settings.history_window)
+        link = await self.store.get_account_link_for_telegram(user_id)
+        workspace_user_id = link.workspace_user_id if link is not None else user_id
 
-        await self.store.append_conversation(ConversationRecord(user_id=user_id, role="user", content=text))
+        await self.store.ensure_user_profile(workspace_user_id, link.web_email if link else username)
+        profile = await self.store.get_user_profile(workspace_user_id)
+        history = await self.store.get_recent_conversations(workspace_user_id, limit=self.settings.history_window)
+
+        await self.store.append_conversation(ConversationRecord(user_id=workspace_user_id, role="user", content=text))
 
         image_bytes = await self.transport.download_photo(photo_sizes)
         plan = await self.orchestrator.plan(text, history=history, profile=profile, has_image=bool(image_bytes))
@@ -165,7 +209,7 @@ class JobProcessor:
         await self.transport.deliver(chat_id, delivery, status_message_id=status_message_id)
         await self.store.append_conversation(
             ConversationRecord(
-                user_id=user_id,
+                user_id=workspace_user_id,
                 role="assistant",
                 content=delivery.text,
                 agents_used=[name for stage in plan.stages for name in stage.agents],
@@ -173,7 +217,7 @@ class JobProcessor:
         )
         await self.store.complete_message_job(job.id or "", result_preview=delivery.text[:240])
 
-        asyncio.create_task(self.refresh_profile(user_id, username))
+        asyncio.create_task(self.refresh_profile(workspace_user_id, link.web_email if link else username))
 
     async def refresh_profile(self, user_id: int, username: str | None) -> None:
         profile = await self.store.get_user_profile(user_id)

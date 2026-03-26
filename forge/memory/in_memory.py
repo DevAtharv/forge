@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import asyncio
 from datetime import UTC, datetime, timedelta
+import secrets
 from typing import Any
 from uuid import uuid4
 
 from forge.memory.base import MemoryStore
-from forge.schemas import ConversationRecord, MessageJob, UserProfile
+from forge.schemas import AccountLink, ConversationRecord, LinkToken, MessageJob, UserProfile
 
 
 class InMemoryStore(MemoryStore):
@@ -15,6 +16,9 @@ class InMemoryStore(MemoryStore):
         self._conversations: list[ConversationRecord] = []
         self._jobs: dict[str, MessageJob] = {}
         self._job_ids_by_update: dict[int, str] = {}
+        self._account_links_by_web: dict[str, AccountLink] = {}
+        self._account_links_by_telegram: dict[int, AccountLink] = {}
+        self._link_tokens: dict[str, LinkToken] = {}
         self._lock = asyncio.Lock()
 
     async def ensure_user_profile(self, user_id: int, username: str | None = None) -> UserProfile:
@@ -136,3 +140,78 @@ class InMemoryStore(MemoryStore):
         updated.last_context_refresh = datetime.now(tz=UTC)
         self._profiles[user_id] = updated
         return updated.model_copy(deep=True)
+
+    async def get_account_link_for_web(self, web_user_id: str) -> AccountLink | None:
+        link = self._account_links_by_web.get(web_user_id)
+        return link.model_copy(deep=True) if link else None
+
+    async def get_account_link_for_telegram(self, telegram_user_id: int) -> AccountLink | None:
+        link = self._account_links_by_telegram.get(telegram_user_id)
+        return link.model_copy(deep=True) if link else None
+
+    async def create_link_token(
+        self,
+        *,
+        web_user_id: str,
+        workspace_user_id: int,
+        web_email: str | None,
+        expires_in_seconds: int,
+    ) -> LinkToken:
+        now = datetime.now(tz=UTC)
+        for code, token in list(self._link_tokens.items()):
+            if token.web_user_id == web_user_id and token.consumed_at is None and token.expires_at > now:
+                return token.model_copy(deep=True)
+
+        code = secrets.token_hex(3).upper()
+        token = LinkToken(
+            code=code,
+            web_user_id=web_user_id,
+            workspace_user_id=workspace_user_id,
+            web_email=web_email,
+            expires_at=now + timedelta(seconds=expires_in_seconds),
+            created_at=now,
+            updated_at=now,
+        )
+        self._link_tokens[code] = token
+        return token.model_copy(deep=True)
+
+    async def get_active_link_token(self, web_user_id: str) -> LinkToken | None:
+        now = datetime.now(tz=UTC)
+        for token in sorted(self._link_tokens.values(), key=lambda item: item.created_at or now, reverse=True):
+            if token.web_user_id == web_user_id and token.consumed_at is None and token.expires_at > now:
+                return token.model_copy(deep=True)
+        return None
+
+    async def consume_link_token(
+        self,
+        *,
+        code: str,
+        telegram_user_id: int,
+        telegram_username: str | None,
+    ) -> AccountLink | None:
+        now = datetime.now(tz=UTC)
+        token = self._link_tokens.get(code.strip().upper())
+        if token is None or token.consumed_at is not None or token.expires_at <= now:
+            return None
+
+        token.consumed_at = now
+        token.telegram_user_id = telegram_user_id
+        token.telegram_username = telegram_username
+        token.updated_at = now
+
+        existing = self._account_links_by_telegram.get(telegram_user_id)
+        if existing is not None and existing.web_user_id != token.web_user_id:
+            self._account_links_by_web.pop(existing.web_user_id, None)
+
+        link = AccountLink(
+            web_user_id=token.web_user_id,
+            workspace_user_id=token.workspace_user_id,
+            web_email=token.web_email,
+            telegram_user_id=telegram_user_id,
+            telegram_username=telegram_username,
+            created_at=now,
+            updated_at=now,
+        )
+        self._account_links_by_web[token.web_user_id] = link
+        self._account_links_by_telegram[telegram_user_id] = link
+        return link.model_copy(deep=True)

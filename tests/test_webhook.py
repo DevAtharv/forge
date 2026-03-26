@@ -210,3 +210,29 @@ def test_dashboard_and_run_endpoints_return_workspace_data(settings, store) -> N
     assert run.json()["plan"]["stages"][0]["name"] == "plan"
     assert "Built the FastAPI auth service" in run.json()["delivery"]["text"]
     assert len(run.json()["history"]) == 2
+
+
+def test_dashboard_exposes_telegram_link_status_and_link_code(settings, store) -> None:
+    providers = ProviderRegistry(llm_providers={}, search_provider=NoopSearch(), fetcher=NoopFetch())
+    container = ForgeContainer(
+        settings=settings,
+        store=store,
+        providers=providers,
+        transport=FakeTransport(),
+        worker=NoopWorker(),
+    )
+    app = create_app(container)
+    app.state.auth_client = FakeAuthClient()
+    client = TestClient(app)
+
+    link_response = client.post(
+        "/api/app/link/telegram",
+        json={"refresh": True},
+        headers={"Authorization": "Bearer token-1"},
+    )
+    dashboard = client.get("/api/app/dashboard", headers={"Authorization": "Bearer token-1"})
+
+    assert link_response.status_code == 200
+    assert len(link_response.json()["code"]) == 6
+    assert dashboard.status_code == 200
+    assert dashboard.json()["telegram_link"]["pending_code"] == link_response.json()["code"]

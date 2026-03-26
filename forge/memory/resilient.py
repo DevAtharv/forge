@@ -4,7 +4,7 @@ import logging
 from typing import Any, Awaitable, Callable, TypeVar
 
 from forge.memory.base import MemoryStore
-from forge.schemas import ConversationRecord, MessageJob, UserProfile
+from forge.schemas import AccountLink, ConversationRecord, LinkToken, MessageJob, UserProfile
 
 T = TypeVar("T")
 
@@ -128,6 +128,72 @@ class ResilientMemoryStore(MemoryStore):
             "update_user_profile",
             lambda: self._primary.update_user_profile(user_id, updates),
             lambda: self._fallback.update_user_profile(user_id, updates),
+        )
+
+    async def get_account_link_for_web(self, web_user_id: str) -> AccountLink | None:
+        return await self._call_with_fallback(
+            "get_account_link_for_web",
+            lambda: self._primary.get_account_link_for_web(web_user_id),
+            lambda: self._fallback.get_account_link_for_web(web_user_id),
+        )
+
+    async def get_account_link_for_telegram(self, telegram_user_id: int) -> AccountLink | None:
+        return await self._call_with_fallback(
+            "get_account_link_for_telegram",
+            lambda: self._primary.get_account_link_for_telegram(telegram_user_id),
+            lambda: self._fallback.get_account_link_for_telegram(telegram_user_id),
+        )
+
+    async def create_link_token(
+        self,
+        *,
+        web_user_id: str,
+        workspace_user_id: int,
+        web_email: str | None,
+        expires_in_seconds: int,
+    ) -> LinkToken:
+        return await self._call_with_fallback(
+            "create_link_token",
+            lambda: self._primary.create_link_token(
+                web_user_id=web_user_id,
+                workspace_user_id=workspace_user_id,
+                web_email=web_email,
+                expires_in_seconds=expires_in_seconds,
+            ),
+            lambda: self._fallback.create_link_token(
+                web_user_id=web_user_id,
+                workspace_user_id=workspace_user_id,
+                web_email=web_email,
+                expires_in_seconds=expires_in_seconds,
+            ),
+        )
+
+    async def get_active_link_token(self, web_user_id: str) -> LinkToken | None:
+        return await self._call_with_fallback(
+            "get_active_link_token",
+            lambda: self._primary.get_active_link_token(web_user_id),
+            lambda: self._fallback.get_active_link_token(web_user_id),
+        )
+
+    async def consume_link_token(
+        self,
+        *,
+        code: str,
+        telegram_user_id: int,
+        telegram_username: str | None,
+    ) -> AccountLink | None:
+        return await self._call_with_fallback(
+            "consume_link_token",
+            lambda: self._primary.consume_link_token(
+                code=code,
+                telegram_user_id=telegram_user_id,
+                telegram_username=telegram_username,
+            ),
+            lambda: self._fallback.consume_link_token(
+                code=code,
+                telegram_user_id=telegram_user_id,
+                telegram_username=telegram_username,
+            ),
         )
 
     async def close(self) -> None:

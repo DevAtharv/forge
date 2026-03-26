@@ -836,6 +836,25 @@
                     <button class="ghost-btn" id="signout-button" type="button">Sign Out</button>
                   </div>
                 </div>
+
+                <div class="auth-zone" style="margin-top: 1rem;">
+                  <div class="user-row">
+                    <div>
+                      <strong class="section-title">Connect Telegram</strong>
+                      <p class="muted" id="telegram-link-status" style="margin: 0.35rem 0 0;">Sign in to generate a Telegram link code.</p>
+                    </div>
+                    <div class="tiny-chip">Cross-channel</div>
+                  </div>
+                  <div class="memory-box full" style="margin-top: 1rem;">
+                    <strong>Link code</strong>
+                    <p id="telegram-link-code">No active code</p>
+                    <p class="meta" id="telegram-link-expiry">Generate a code, then send /link CODE to the Forge Telegram bot.</p>
+                  </div>
+                  <div class="actions-row" style="margin-top: 1rem;">
+                    <button class="action-btn" id="telegram-link-action" type="button">Generate Link Code</button>
+                    <span class="meta" id="telegram-link-help">Telegram messages will share this workspace after linking.</span>
+                  </div>
+                </div>
               </div>
             </section>
           </section>

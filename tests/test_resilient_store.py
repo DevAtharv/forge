@@ -42,6 +42,21 @@ class BrokenStore(MemoryStore):
     async def update_user_profile(self, user_id: int, updates: dict):
         raise RuntimeError("broken store")
 
+    async def get_account_link_for_web(self, web_user_id: str):
+        raise RuntimeError("broken store")
+
+    async def get_account_link_for_telegram(self, telegram_user_id: int):
+        raise RuntimeError("broken store")
+
+    async def create_link_token(self, *, web_user_id: str, workspace_user_id: int, web_email: str | None, expires_in_seconds: int):
+        raise RuntimeError("broken store")
+
+    async def get_active_link_token(self, web_user_id: str):
+        raise RuntimeError("broken store")
+
+    async def consume_link_token(self, *, code: str, telegram_user_id: int, telegram_username: str | None):
+        raise RuntimeError("broken store")
+
 
 @pytest.mark.asyncio
 async def test_resilient_store_falls_back_for_conversations_and_profiles() -> None:

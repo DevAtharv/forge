@@ -73,6 +73,7 @@ class Settings:
     supabase_url: str
     supabase_key: str
     supabase_anon_key: str
+    telegram_bot_username: str
     worker_id: str
     worker_poll_interval_seconds: float
     worker_batch_size: int
@@ -104,6 +105,7 @@ class Settings:
             supabase_url=_env("SUPABASE_URL", "") or "",
             supabase_key=_env("SUPABASE_KEY", "") or "",
             supabase_anon_key=_env("SUPABASE_ANON_KEY", _env("SUPABASE_KEY", "") or "") or "",
+            telegram_bot_username=_env("TELEGRAM_BOT_USERNAME", "ForggeBot") or "ForggeBot",
             worker_id=_env("FORGE_WORKER_ID", f"{hostname}-{os.getpid()}") or f"{hostname}-{os.getpid()}",
             worker_poll_interval_seconds=_env_float("FORGE_WORKER_POLL_INTERVAL_SECONDS", 2.0),
             worker_batch_size=_env_int("FORGE_WORKER_BATCH_SIZE", 1),

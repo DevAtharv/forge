@@ -305,3 +305,61 @@ async def test_research_agent_falls_back_when_search_is_unavailable(settings, st
     assert transport.deliveries
     delivered_text = transport.deliveries[0][1].text.lower()
     assert "redis" in delivered_text
+
+
+@pytest.mark.asyncio
+async def test_worker_consumes_telegram_link_code_before_pipeline(settings, store) -> None:
+    token = await store.create_link_token(
+        web_user_id="web-user-1",
+        workspace_user_id=-41,
+        web_email="demo@forge.dev",
+        expires_in_seconds=600,
+    )
+    providers = ProviderRegistry(
+        llm_providers={"fallback": SequencedProvider([])},
+        search_provider=StaticSearch(),
+        fetcher=StaticFetch(),
+    )
+    transport = FakeTransport()
+    orchestrator = OrchestratorAgent(settings=settings, providers=providers)
+    executor = PipelineExecutor(
+        planner=PlannerAgent(settings=settings, providers=providers),
+        code=CodeAgent(settings=settings, providers=providers),
+        debug=DebugAgent(settings=settings, providers=providers),
+        research=ResearchAgent(settings=settings, providers=providers),
+        reviewer=ReviewerAgent(settings=settings, providers=providers),
+        aggregator=PipelineAggregator(),
+    )
+    processor = JobProcessor(
+        settings=settings,
+        store=store,
+        transport=transport,
+        orchestrator=orchestrator,
+        executor=executor,
+        profile_summary_agent=ProfileSummaryAgent(settings=settings, providers=providers),
+    )
+
+    job = await store.enqueue_message_job(
+        MessageJob(
+            telegram_update_id=4,
+            user_id=501,
+            chat_id=501,
+            raw_update={
+                "update_id": 4,
+                "message": {
+                    "message_id": 4,
+                    "from": {"id": 501, "username": "tele-user"},
+                    "chat": {"id": 501, "type": "private"},
+                    "text": f"/link {token.code}",
+                },
+            },
+        )
+    )
+
+    await processor.process(job)
+
+    link = await store.get_account_link_for_telegram(501)
+    assert link is not None
+    assert link.workspace_user_id == -41
+    assert transport.status_messages
+    assert "connected" in transport.status_messages[0][1].lower()

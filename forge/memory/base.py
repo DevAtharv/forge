@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any
 
-from forge.schemas import ConversationRecord, MessageJob, UserProfile
+from forge.schemas import AccountLink, ConversationRecord, LinkToken, MessageJob, UserProfile
 
 
 class MemoryStore(ABC):
@@ -56,6 +56,39 @@ class MemoryStore(ABC):
 
     @abstractmethod
     async def update_user_profile(self, user_id: int, updates: dict[str, Any]) -> UserProfile:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_account_link_for_web(self, web_user_id: str) -> AccountLink | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_account_link_for_telegram(self, telegram_user_id: int) -> AccountLink | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def create_link_token(
+        self,
+        *,
+        web_user_id: str,
+        workspace_user_id: int,
+        web_email: str | None,
+        expires_in_seconds: int,
+    ) -> LinkToken:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_active_link_token(self, web_user_id: str) -> LinkToken | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def consume_link_token(
+        self,
+        *,
+        code: str,
+        telegram_user_id: int,
+        telegram_username: str | None,
+    ) -> AccountLink | None:
         raise NotImplementedError
 
     async def close(self) -> None:

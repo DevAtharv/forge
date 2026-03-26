@@ -105,3 +105,26 @@ class DeliveryPayload(BaseModel):
     text: str
     document_name: str | None = None
     document_bytes: bytes | None = None
+
+
+class AccountLink(BaseModel):
+    web_user_id: str
+    workspace_user_id: int
+    web_email: str | None = None
+    telegram_user_id: int
+    telegram_username: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class LinkToken(BaseModel):
+    code: str
+    web_user_id: str
+    workspace_user_id: int
+    web_email: str | None = None
+    expires_at: datetime
+    consumed_at: datetime | None = None
+    telegram_user_id: int | None = None
+    telegram_username: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None

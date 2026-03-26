@@ -1,9 +1,11 @@
 from forge.schemas.models import (
     AgentResult,
+    AccountLink,
     Artifact,
     Citation,
     ConversationRecord,
     DeliveryPayload,
+    LinkToken,
     MessageJob,
     OrchestrationPlan,
     StageExecution,
@@ -13,10 +15,12 @@ from forge.schemas.models import (
 
 __all__ = [
     "AgentResult",
+    "AccountLink",
     "Artifact",
     "Citation",
     "ConversationRecord",
     "DeliveryPayload",
+    "LinkToken",
     "MessageJob",
     "OrchestrationPlan",
     "StageExecution",

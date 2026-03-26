@@ -37,6 +37,10 @@ class AppRunRequest(BaseModel):
     prompt: str = Field(min_length=1, max_length=8000)
 
 
+class LinkTelegramRequest(BaseModel):
+    refresh: bool = False
+
+
 def _extract_message(raw_update: dict) -> dict | None:
     for key in ("message", "edited_message", "channel_post", "edited_channel_post"):
         if raw_update.get(key):
@@ -68,7 +72,9 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
             raise HTTPException(status_code=401, detail="Missing bearer token.")
         return header.removeprefix("Bearer ").strip()
 
-    async def authenticate_workspace_request(request: Request) -> tuple[dict[str, object], int, str, UserProfile]:
+    async def authenticate_workspace_request(
+        request: Request,
+    ) -> tuple[dict[str, object], str, int, str, UserProfile]:
         auth_client = request.app.state.auth_client
         token = bearer_token_from_request(request)
         try:
@@ -76,11 +82,15 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
         except SupabaseAuthError as exc:
             raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
 
+        web_user_id = str(user.get("id") or user.get("email") or user.get("phone") or "forge-web-user")
         workspace_user_id = _derive_workspace_user_id(user)
+        link = await request.app.state.store.get_account_link_for_web(web_user_id)
+        if link is not None:
+            workspace_user_id = link.workspace_user_id
         username = str(user.get("email") or user.get("id") or "forge-user")
         await request.app.state.store.ensure_user_profile(workspace_user_id, username)
         profile = await request.app.state.store.get_user_profile(workspace_user_id)
-        return user, workspace_user_id, username, profile
+        return user, web_user_id, workspace_user_id, username, profile
 
     @router.get("/", response_class=HTMLResponse)
     async def index() -> HTMLResponse:
@@ -104,6 +114,7 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
             "auth_enabled": auth_client.is_configured,
             "auth_provider": "supabase",
             "app_name": "Forge",
+            "telegram_bot_username": settings.telegram_bot_username,
         }
 
     @router.post("/api/auth/signup")
@@ -175,7 +186,7 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
 
     @router.post("/api/app/plan")
     async def app_plan(payload: AppPlanRequest, request: Request) -> dict[str, object]:
-        user, workspace_user_id, username, profile = await authenticate_workspace_request(request)
+        user, _web_user_id, workspace_user_id, username, profile = await authenticate_workspace_request(request)
 
         plan = await request.app.state.orchestrator.plan(
             payload.prompt,
@@ -196,17 +207,51 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
 
     @router.get("/api/app/dashboard")
     async def app_dashboard(request: Request) -> dict[str, object]:
-        user, workspace_user_id, _username, profile = await authenticate_workspace_request(request)
+        user, web_user_id, workspace_user_id, _username, profile = await authenticate_workspace_request(request)
         history = await request.app.state.store.get_recent_conversations(workspace_user_id, limit=12)
+        link = await request.app.state.store.get_account_link_for_web(web_user_id)
+        token = await request.app.state.store.get_active_link_token(web_user_id)
         return {
             "user": user,
             "profile": profile.model_dump(mode="json"),
             "history": [item.model_dump(mode="json") for item in history],
+            "telegram_link": {
+                "linked": link is not None,
+                "telegram_user_id": link.telegram_user_id if link else None,
+                "telegram_username": link.telegram_username if link else None,
+                "bot_username": settings.telegram_bot_username,
+                "pending_code": token.code if token else None,
+                "pending_expires_at": token.expires_at if token else None,
+            },
+        }
+
+    @router.post("/api/app/link/telegram")
+    async def app_link_telegram(payload: LinkTelegramRequest, request: Request) -> dict[str, object]:
+        user, web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
+        existing = await request.app.state.store.get_active_link_token(web_user_id)
+        if existing is not None and not payload.refresh:
+            token = existing
+        else:
+            token = await request.app.state.store.create_link_token(
+                web_user_id=web_user_id,
+                workspace_user_id=workspace_user_id,
+                web_email=str(user.get("email") or ""),
+                expires_in_seconds=600,
+            )
+        link = await request.app.state.store.get_account_link_for_web(web_user_id)
+        return {
+            "linked": link is not None,
+            "telegram_user_id": link.telegram_user_id if link else None,
+            "telegram_username": link.telegram_username if link else None,
+            "bot_username": settings.telegram_bot_username,
+            "code": token.code,
+            "expires_at": token.expires_at,
+            "message": "Send /link CODE to the Forge Telegram bot to connect this workspace.",
         }
 
     @router.post("/api/app/run")
     async def app_run(payload: AppRunRequest, request: Request) -> dict[str, object]:
-        user, workspace_user_id, username, profile = await authenticate_workspace_request(request)
+        user, _web_user_id, workspace_user_id, username, profile = await authenticate_workspace_request(request)
         executor = request.app.state.executor
         if executor is None:
             raise HTTPException(status_code=503, detail="Forge app execution is not available in this environment.")

@@ -46,6 +46,11 @@ const els = {
   timelineMeta: document.getElementById("timeline-meta"),
   artifactList: document.getElementById("artifact-list"),
   artifactMeta: document.getElementById("artifact-meta"),
+  telegramLinkStatus: document.getElementById("telegram-link-status"),
+  telegramLinkCode: document.getElementById("telegram-link-code"),
+  telegramLinkExpiry: document.getElementById("telegram-link-expiry"),
+  telegramLinkAction: document.getElementById("telegram-link-action"),
+  telegramLinkHelp: document.getElementById("telegram-link-help"),
 };
 
 function setDot(element, color) {
@@ -114,18 +119,59 @@ function renderAuthState() {
   els.missionStatusChip.textContent = active ? "Protected workspace active" : "Public preview mode";
   els.workspaceRun.disabled = !active;
   els.signoutButton.disabled = !active;
+  els.telegramLinkAction.disabled = !active;
 
   if (!active) {
     els.workspaceUser.textContent = "Not signed in";
     els.workspaceUserMeta.textContent = state.authEnabled
       ? "Sign in to open the protected mission console."
       : "Supabase auth is not configured yet.";
+    renderTelegramLink(null);
     return;
   }
 
   els.workspaceUser.textContent = state.user.email || "Authenticated Forge user";
   els.workspaceUserMeta.textContent =
     "Forge will fetch your profile and conversation memory through protected backend APIs.";
+}
+
+function renderTelegramLink(link) {
+  if (!link) {
+    els.telegramLinkStatus.textContent = "Sign in to generate a Telegram link code.";
+    els.telegramLinkCode.textContent = "No active code";
+    els.telegramLinkExpiry.textContent = "Generate a code, then send /link CODE to the Forge Telegram bot.";
+    els.telegramLinkHelp.textContent = "Telegram messages will share this workspace after linking.";
+    els.telegramLinkAction.textContent = "Generate Link Code";
+    return;
+  }
+
+  const botHandle = link.bot_username ? `@${link.bot_username}` : "the Forge Telegram bot";
+  if (link.linked) {
+    const username = link.telegram_username ? `@${link.telegram_username}` : `Telegram user ${link.telegram_user_id}`;
+    els.telegramLinkStatus.textContent = `Connected to ${username}. Telegram and website now share this Forge workspace.`;
+    els.telegramLinkCode.textContent = "Connected";
+    els.telegramLinkExpiry.textContent = `Future Telegram messages to ${botHandle} will use this website memory.`;
+    els.telegramLinkHelp.textContent = "Generate a fresh code only if you want to relink a different Telegram account.";
+    els.telegramLinkAction.textContent = "Refresh Link Code";
+    return;
+  }
+
+  if (link.pending_code) {
+    els.telegramLinkStatus.textContent = `Pending link. Send /link ${link.pending_code} to ${botHandle}.`;
+    els.telegramLinkCode.textContent = link.pending_code;
+    els.telegramLinkExpiry.textContent = link.pending_expires_at
+      ? `Expires ${formatDate(link.pending_expires_at)}`
+      : `Send /link ${link.pending_code} to ${botHandle}.`;
+    els.telegramLinkHelp.textContent = `Open Telegram and send /link ${link.pending_code} to ${botHandle}.`;
+    els.telegramLinkAction.textContent = "Refresh Link Code";
+    return;
+  }
+
+  els.telegramLinkStatus.textContent = `No Telegram account linked yet. Generate a code, then send /link CODE to ${botHandle}.`;
+  els.telegramLinkCode.textContent = "No active code";
+  els.telegramLinkExpiry.textContent = `After linking, Telegram messages to ${botHandle} will share this workspace.`;
+  els.telegramLinkHelp.textContent = "Telegram messages will share this workspace after linking.";
+  els.telegramLinkAction.textContent = "Generate Link Code";
 }
 
 function formatDate(value) {
@@ -383,6 +429,7 @@ async function loadDashboard() {
     renderAuthState();
     renderProfile(payload.profile);
     renderHistory(payload.history);
+    renderTelegramLink(payload.telegram_link);
   } catch (error) {
     els.workspaceFeedback.textContent = error.message;
   }
@@ -510,6 +557,37 @@ async function runMission() {
   }
 }
 
+async function linkTelegram() {
+  if (!(state.session && state.session.access_token)) {
+    els.telegramLinkHelp.textContent = "Sign in first to generate a Telegram link code.";
+    return;
+  }
+
+  els.telegramLinkAction.disabled = true;
+  els.telegramLinkHelp.textContent = "Generating your Telegram link code...";
+
+  try {
+    const payload = await fetchAuthedJson("/api/app/link/telegram", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh: true }),
+    });
+    renderTelegramLink({
+      linked: payload.linked,
+      telegram_user_id: payload.telegram_user_id,
+      telegram_username: payload.telegram_username,
+      bot_username: payload.bot_username,
+      pending_code: payload.code,
+      pending_expires_at: payload.expires_at,
+    });
+    els.telegramLinkHelp.textContent = payload.message;
+  } catch (error) {
+    els.telegramLinkHelp.textContent = error.message;
+  } finally {
+    els.telegramLinkAction.disabled = false;
+  }
+}
+
 async function signOut() {
   if (state.session && state.session.access_token) {
     try {
@@ -528,6 +606,7 @@ async function signOut() {
   renderHistory([]);
   renderDelivery(null);
   renderArtifacts([], null);
+  renderTelegramLink(null);
   els.workspaceFeedback.textContent = "Signed out.";
 }
 
@@ -536,6 +615,7 @@ els.modeSignup.addEventListener("click", () => setAuthMode("signup"));
 els.authForm.addEventListener("submit", handleAuthSubmit);
 els.previewRun.addEventListener("click", runPreview);
 els.workspaceRun.addEventListener("click", runMission);
+els.telegramLinkAction.addEventListener("click", linkTelegram);
 els.workspaceFill.addEventListener("click", () => {
   els.workspaceInput.value =
     "Should I use Redis or Supabase for storing sessions in a production FastAPI app, and why?";
@@ -545,6 +625,7 @@ els.signoutButton.addEventListener("click", signOut);
 
 setAuthMode("signin");
 renderAuthState();
+renderTelegramLink(null);
 checkHealth();
 checkConfig().then(restoreSession);
 runPreview();

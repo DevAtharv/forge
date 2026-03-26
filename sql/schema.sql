@@ -61,6 +61,32 @@ create table if not exists message_jobs (
 
 create index if not exists message_jobs_claim_idx on message_jobs(status, available_at, created_at);
 
+create table if not exists account_links (
+  web_user_id text primary key,
+  workspace_user_id bigint not null,
+  web_email text,
+  telegram_user_id bigint not null unique,
+  telegram_username text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists link_tokens (
+  code text primary key,
+  web_user_id text not null,
+  workspace_user_id bigint not null,
+  web_email text,
+  expires_at timestamptz not null,
+  consumed_at timestamptz,
+  telegram_user_id bigint,
+  telegram_username text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists link_tokens_web_user_idx on link_tokens(web_user_id, created_at desc);
+create index if not exists link_tokens_expires_idx on link_tokens(expires_at);
+
 drop trigger if exists conversations_set_updated_at on conversations;
 create trigger conversations_set_updated_at
 before update on conversations
@@ -76,6 +102,18 @@ execute function set_updated_at();
 drop trigger if exists message_jobs_set_updated_at on message_jobs;
 create trigger message_jobs_set_updated_at
 before update on message_jobs
+for each row
+execute function set_updated_at();
+
+drop trigger if exists account_links_set_updated_at on account_links;
+create trigger account_links_set_updated_at
+before update on account_links
+for each row
+execute function set_updated_at();
+
+drop trigger if exists link_tokens_set_updated_at on link_tokens;
+create trigger link_tokens_set_updated_at
+before update on link_tokens
 for each row
 execute function set_updated_at();
 
@@ -210,5 +248,112 @@ begin
   returning * into job_row;
 
   return job_row;
+end;
+$$;
+
+create or replace function create_link_token(
+  p_web_user_id text,
+  p_workspace_user_id bigint,
+  p_web_email text,
+  p_expires_in_seconds integer default 600
+)
+returns link_tokens
+language plpgsql
+security definer
+as $$
+declare
+  token_row link_tokens;
+  generated_code text;
+begin
+  select *
+  into token_row
+  from link_tokens
+  where web_user_id = p_web_user_id
+    and consumed_at is null
+    and expires_at > now()
+  order by created_at desc
+  limit 1;
+
+  if found then
+    return token_row;
+  end if;
+
+  generated_code := upper(substr(encode(gen_random_bytes(6), 'hex'), 1, 6));
+
+  insert into link_tokens (
+    code,
+    web_user_id,
+    workspace_user_id,
+    web_email,
+    expires_at
+  )
+  values (
+    generated_code,
+    p_web_user_id,
+    p_workspace_user_id,
+    p_web_email,
+    now() + make_interval(secs => p_expires_in_seconds)
+  )
+  returning * into token_row;
+
+  return token_row;
+end;
+$$;
+
+create or replace function consume_link_token(
+  p_code text,
+  p_telegram_user_id bigint,
+  p_telegram_username text
+)
+returns account_links
+language plpgsql
+security definer
+as $$
+declare
+  token_row link_tokens;
+  link_row account_links;
+begin
+  select *
+  into token_row
+  from link_tokens
+  where code = upper(trim(p_code))
+    and consumed_at is null
+    and expires_at > now()
+  for update;
+
+  if not found then
+    return null;
+  end if;
+
+  update link_tokens
+  set consumed_at = now(),
+      telegram_user_id = p_telegram_user_id,
+      telegram_username = p_telegram_username
+  where code = token_row.code;
+
+  delete from account_links where telegram_user_id = p_telegram_user_id;
+
+  insert into account_links (
+    web_user_id,
+    workspace_user_id,
+    web_email,
+    telegram_user_id,
+    telegram_username
+  )
+  values (
+    token_row.web_user_id,
+    token_row.workspace_user_id,
+    token_row.web_email,
+    p_telegram_user_id,
+    p_telegram_username
+  )
+  on conflict (web_user_id) do update
+    set workspace_user_id = excluded.workspace_user_id,
+        web_email = excluded.web_email,
+        telegram_user_id = excluded.telegram_user_id,
+        telegram_username = excluded.telegram_username
+  returning * into link_row;
+
+  return link_row;
 end;
 $$;

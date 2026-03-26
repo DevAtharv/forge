@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
 
 from forge.memory.base import MemoryStore
-from forge.schemas import ConversationRecord, MessageJob, UserProfile
+from forge.schemas import AccountLink, ConversationRecord, LinkToken, MessageJob, UserProfile
 
 
 class SupabaseMemoryStore(MemoryStore):
@@ -151,6 +152,76 @@ class SupabaseMemoryStore(MemoryStore):
         )
         response.raise_for_status()
         return UserProfile.model_validate(response.json()[0])
+
+    async def get_account_link_for_web(self, web_user_id: str) -> AccountLink | None:
+        response = await self._client.get(
+            "/account_links",
+            params={"web_user_id": f"eq.{web_user_id}", "select": "*", "limit": 1},
+        )
+        response.raise_for_status()
+        records = response.json()
+        return AccountLink.model_validate(records[0]) if records else None
+
+    async def get_account_link_for_telegram(self, telegram_user_id: int) -> AccountLink | None:
+        response = await self._client.get(
+            "/account_links",
+            params={"telegram_user_id": f"eq.{telegram_user_id}", "select": "*", "limit": 1},
+        )
+        response.raise_for_status()
+        records = response.json()
+        return AccountLink.model_validate(records[0]) if records else None
+
+    async def create_link_token(
+        self,
+        *,
+        web_user_id: str,
+        workspace_user_id: int,
+        web_email: str | None,
+        expires_in_seconds: int,
+    ) -> LinkToken:
+        data = await self._rpc(
+            "create_link_token",
+            {
+                "p_web_user_id": web_user_id,
+                "p_workspace_user_id": workspace_user_id,
+                "p_web_email": web_email,
+                "p_expires_in_seconds": expires_in_seconds,
+            },
+        )
+        return LinkToken.model_validate(data)
+
+    async def get_active_link_token(self, web_user_id: str) -> LinkToken | None:
+        response = await self._client.get(
+            "/link_tokens",
+            params={
+                "web_user_id": f"eq.{web_user_id}",
+                "consumed_at": "is.null",
+                "expires_at": f"gt.{datetime.now(tz=UTC).isoformat()}",
+                "order": "created_at.desc",
+                "limit": 1,
+                "select": "*",
+            },
+        )
+        response.raise_for_status()
+        records = response.json()
+        return LinkToken.model_validate(records[0]) if records else None
+
+    async def consume_link_token(
+        self,
+        *,
+        code: str,
+        telegram_user_id: int,
+        telegram_username: str | None,
+    ) -> AccountLink | None:
+        data = await self._rpc(
+            "consume_link_token",
+            {
+                "p_code": code.strip().upper(),
+                "p_telegram_user_id": telegram_user_id,
+                "p_telegram_username": telegram_username,
+            },
+        )
+        return AccountLink.model_validate(data) if data else None
 
     async def close(self) -> None:
         await self._client.aclose()
