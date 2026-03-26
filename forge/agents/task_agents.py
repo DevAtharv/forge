@@ -115,10 +115,15 @@ class ResearchAgent:
         self.providers = providers
 
     async def run(self, invocation: AgentInvocation) -> AgentResult:
-        hits = await self.providers.search_provider.search(
-            invocation.task,
-            max_results=self.settings.search_result_limit,
-        )
+        retrieval_note: str | None = None
+        try:
+            hits = await self.providers.search_provider.search(
+                invocation.task,
+                max_results=self.settings.search_result_limit,
+            )
+        except Exception as exc:
+            hits = []
+            retrieval_note = f"search_unavailable:{exc}"
         documents = []
         for hit in hits:
             try:
@@ -174,6 +179,8 @@ class ResearchAgent:
             json_mode=True,
         )
         result = coerce_agent_result("research", raw)
+        if retrieval_note:
+            result.internal_notes.append(retrieval_note)
         result.internal_notes.append("retrieval_mode:model_only_fallback")
         return result
 

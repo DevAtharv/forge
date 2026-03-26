@@ -31,6 +31,11 @@ class StaticSearch(SearchProvider):
         return [SearchHit(title="Example", url="https://example.com", snippet="A source")]
 
 
+class FailingSearch(SearchProvider):
+    async def search(self, query: str, *, max_results: int):
+        raise RuntimeError("rate limited")
+
+
 class StaticFetch(Fetcher):
     async def fetch(self, url: str) -> FetchedDocument | None:
         return FetchedDocument(url=url, title="Example", content="Example content from docs.")
@@ -223,3 +228,80 @@ async def test_worker_processes_image_debug_request(settings, store) -> None:
     assert transport.deliveries
     delivered_text = transport.deliveries[0][1].text
     assert "missing env var" in delivered_text.lower()
+
+
+@pytest.mark.asyncio
+async def test_research_agent_falls_back_when_search_is_unavailable(settings, store) -> None:
+    provider = SequencedProvider(
+        [
+            "{not-json",
+            json.dumps(
+                {
+                    "summary": "Model-only answer",
+                    "user_visible_text": "Redis is an in-memory data store used for caching, queues, and fast lookups.",
+                    "artifacts": [],
+                    "handoff": {"mode": "model-only"},
+                    "citations": [],
+                    "confidence": 0.62,
+                    "internal_notes": [],
+                }
+            ),
+            json.dumps(
+                {
+                    "summary": "Profile updated",
+                    "stack": [],
+                    "skill_level": "intermediate",
+                    "current_projects": [],
+                    "preferences": {},
+                    "active_context": {},
+                }
+            ),
+        ]
+    )
+    providers = ProviderRegistry(
+        llm_providers={"fallback": provider},
+        search_provider=FailingSearch(),
+        fetcher=StaticFetch(),
+    )
+    transport = FakeTransport()
+    orchestrator = OrchestratorAgent(settings=settings, providers=providers)
+    executor = PipelineExecutor(
+        planner=PlannerAgent(settings=settings, providers=providers),
+        code=CodeAgent(settings=settings, providers=providers),
+        debug=DebugAgent(settings=settings, providers=providers),
+        research=ResearchAgent(settings=settings, providers=providers),
+        reviewer=ReviewerAgent(settings=settings, providers=providers),
+        aggregator=PipelineAggregator(),
+    )
+    processor = JobProcessor(
+        settings=settings,
+        store=store,
+        transport=transport,
+        orchestrator=orchestrator,
+        executor=executor,
+        profile_summary_agent=ProfileSummaryAgent(settings=settings, providers=providers),
+    )
+
+    job = await store.enqueue_message_job(
+        MessageJob(
+            telegram_update_id=3,
+            user_id=77,
+            chat_id=77,
+            raw_update={
+                "update_id": 3,
+                "message": {
+                    "message_id": 3,
+                    "from": {"id": 77, "username": "carol"},
+                    "chat": {"id": 77, "type": "private"},
+                    "text": "what is redis and when should i use it",
+                },
+            },
+        )
+    )
+
+    await processor.process(job)
+    await asyncio.sleep(0.05)
+
+    assert transport.deliveries
+    delivered_text = transport.deliveries[0][1].text.lower()
+    assert "redis" in delivered_text
