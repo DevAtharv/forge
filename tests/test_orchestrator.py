@@ -120,6 +120,13 @@ def test_openrouter_free_routes_are_normalized() -> None:
     assert routes[0].model == "openrouter/auto"
 
 
+def test_nvidia_legacy_code_route_is_normalized() -> None:
+    routes = parse_model_routes("nvidia/meta/llama-3.1-70b-instruct", "")
+
+    assert routes[0].provider == "nvidia"
+    assert routes[0].model == "nemotron-3-super-120b-a12b"
+
+
 @pytest.mark.asyncio
 async def test_orchestrator_drops_debug_stage_when_no_debug_signal(settings) -> None:
     orchestrator = OrchestratorAgent(

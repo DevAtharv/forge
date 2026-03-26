@@ -12,6 +12,7 @@ from forge.prompts import (
     PROFILE_SUMMARY_SYSTEM,
     RESEARCH_SYSTEM,
     REVIEWER_SYSTEM,
+    WEBSITE_BUILD_QUALITY_BRIEF,
 )
 from forge.providers import ProviderRegistry
 from forge.schemas import AgentResult, Citation
@@ -21,12 +22,38 @@ def _history_messages(invocation: AgentInvocation) -> list[dict[str, str]]:
     return [{"role": item.role, "content": item.content} for item in invocation.history[-6:]]
 
 
+def _needs_website_quality_brief(invocation: AgentInvocation) -> bool:
+    text = f"{invocation.original_task}\n{invocation.task}".lower()
+    return any(
+        token in text
+        for token in (
+            "website",
+            "web site",
+            "landing page",
+            "portfolio",
+            "frontend",
+            "ui",
+            "auth",
+            "login",
+            "signup",
+            "deploy",
+            "vercel",
+            "production",
+            "sweet shop",
+            "ecommerce",
+        )
+    )
+
+
 class PlannerAgent:
     def __init__(self, *, settings: Settings, providers: ProviderRegistry) -> None:
         self.settings = settings
         self.providers = providers
 
     async def run(self, invocation: AgentInvocation) -> AgentResult:
+        system_prompt = PLANNER_SYSTEM
+        if _needs_website_quality_brief(invocation):
+            system_prompt = f"{PLANNER_SYSTEM}\n\n{WEBSITE_BUILD_QUALITY_BRIEF}"
         user_prompt = (
             f"Task:\n{invocation.task}\n\n"
             f"User context:\n{invocation.user_context or 'No durable context.'}\n\n"
@@ -35,7 +62,7 @@ class PlannerAgent:
         raw = await self.providers.generate(
             self.settings.planner_routes,
             messages=[
-                {"role": "system", "content": PLANNER_SYSTEM},
+                {"role": "system", "content": system_prompt},
                 *_history_messages(invocation),
                 {"role": "user", "content": user_prompt},
             ],
@@ -52,6 +79,9 @@ class CodeAgent:
         self.providers = providers
 
     async def run(self, invocation: AgentInvocation) -> AgentResult:
+        system_prompt = CODE_SYSTEM
+        if _needs_website_quality_brief(invocation):
+            system_prompt = f"{CODE_SYSTEM}\n\n{WEBSITE_BUILD_QUALITY_BRIEF}"
         user_prompt = (
             f"Original task:\n{invocation.original_task}\n\n"
             f"Specific coding task:\n{invocation.task}\n\n"
@@ -61,7 +91,7 @@ class CodeAgent:
         raw = await self.providers.generate(
             self.settings.code_routes,
             messages=[
-                {"role": "system", "content": CODE_SYSTEM},
+                {"role": "system", "content": system_prompt},
                 *_history_messages(invocation),
                 {"role": "user", "content": user_prompt},
             ],
@@ -191,6 +221,9 @@ class ReviewerAgent:
         self.providers = providers
 
     async def run(self, invocation: AgentInvocation) -> AgentResult:
+        system_prompt = REVIEWER_SYSTEM
+        if _needs_website_quality_brief(invocation):
+            system_prompt = f"{REVIEWER_SYSTEM}\n\n{WEBSITE_BUILD_QUALITY_BRIEF}"
         user_prompt = (
             f"Original task:\n{invocation.original_task}\n\n"
             f"Review focus:\n{invocation.task}\n\n"
@@ -199,7 +232,7 @@ class ReviewerAgent:
         raw = await self.providers.generate(
             self.settings.reviewer_routes,
             messages=[
-                {"role": "system", "content": REVIEWER_SYSTEM},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
             temperature=0.1,

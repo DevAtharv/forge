@@ -44,6 +44,8 @@ def normalize_model_route(provider: str, model: str) -> tuple[str, str]:
     normalized_model = model.strip()
     if normalized_provider == "openrouter" and normalized_model in {"openrouter/free", "openrouter/openrouter/free"}:
         return normalized_provider, "openrouter/auto"
+    if normalized_provider == "nvidia" and normalized_model in {"meta/llama-3.1-70b-instruct"}:
+        return normalized_provider, "nemotron-3-super-120b-a12b"
     return normalized_provider, normalized_model
 
 
@@ -128,7 +130,7 @@ class Settings:
             ),
             code_routes=parse_model_routes(
                 _env("FORGE_CODE_MODELS", "") or "",
-                "nvidia/meta/llama-3.1-70b-instruct,openrouter/openrouter/auto",
+                "nvidia/nemotron-3-super-120b-a12b,groq/llama-3.3-70b-versatile,openrouter/openrouter/auto",
             ),
             debug_routes=parse_model_routes(
                 _env("FORGE_DEBUG_MODELS", "") or "",

@@ -150,3 +150,15 @@ Return ONLY valid JSON:
   "active_context": {"current_goal": "..."}
 }
 """.strip()
+
+
+WEBSITE_BUILD_QUALITY_BRIEF = """
+Website Quality Protocol:
+- Build an actually usable, modern interface with strong visual hierarchy, spacing rhythm, and responsive behavior.
+- Avoid generic placeholder design and empty boilerplate.
+- Include complete real files for the stack you choose (no pseudo snippets).
+- If auth is requested, implement complete sign-up/sign-in/session/logout flow with route protection and validation.
+- If deploy is requested, include deploy-ready files and exact terminal commands in `terminal_commands.sh`.
+- Include `.env.example` with all required variables.
+- Ensure the project can run end-to-end after install without hidden steps.
+""".strip()
