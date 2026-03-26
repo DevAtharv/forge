@@ -39,6 +39,14 @@ class ModelRoute:
     model: str
 
 
+def normalize_model_route(provider: str, model: str) -> tuple[str, str]:
+    normalized_provider = provider.strip().lower()
+    normalized_model = model.strip()
+    if normalized_provider == "openrouter" and normalized_model in {"openrouter/free", "openrouter/openrouter/free"}:
+        return normalized_provider, "openrouter/auto"
+    return normalized_provider, normalized_model
+
+
 def parse_model_routes(value: str, fallback: str) -> tuple[ModelRoute, ...]:
     raw = value or fallback
     routes: list[ModelRoute] = []
@@ -49,7 +57,8 @@ def parse_model_routes(value: str, fallback: str) -> tuple[ModelRoute, ...]:
         if "/" not in token:
             raise ValueError(f"Invalid model route '{token}'. Expected provider/model.")
         provider, model = token.split("/", 1)
-        routes.append(ModelRoute(provider=provider.strip().lower(), model=model.strip()))
+        provider, model = normalize_model_route(provider, model)
+        routes.append(ModelRoute(provider=provider, model=model))
     return tuple(routes)
 
 

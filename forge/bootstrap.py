@@ -11,7 +11,7 @@ from forge.agents.orchestrator import OrchestratorAgent
 from forge.agents.task_agents import CodeAgent, DebugAgent, PlannerAgent, ProfileSummaryAgent, ResearchAgent, ReviewerAgent
 from forge.api import build_router
 from forge.config import Settings
-from forge.memory import InMemoryStore, SupabaseMemoryStore
+from forge.memory import InMemoryStore, ResilientMemoryStore, SupabaseMemoryStore
 from forge.providers import DuckDuckGoSearchProvider, GroqProvider, HttpPageFetcher, OpenAICompatibleProvider, ProviderRegistry
 from forge.supabase_auth import SupabaseAuthClient
 from forge.telegram import TelegramTransport
@@ -40,10 +40,13 @@ class ForgeContainer:
 def build_container(settings: Settings | None = None) -> ForgeContainer:
     settings = settings or Settings.from_env()
     if settings.supabase_url and settings.supabase_key:
-        store = SupabaseMemoryStore(
-            url=settings.supabase_url,
-            key=settings.supabase_key,
-            timeout_seconds=settings.fetch_timeout_seconds,
+        store = ResilientMemoryStore(
+            primary=SupabaseMemoryStore(
+                url=settings.supabase_url,
+                key=settings.supabase_key,
+                timeout_seconds=settings.fetch_timeout_seconds,
+            ),
+            fallback=InMemoryStore(),
         )
     else:
         store = InMemoryStore()

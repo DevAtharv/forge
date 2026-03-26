@@ -3,6 +3,7 @@ import json
 import pytest
 
 from forge.agents.orchestrator import OrchestratorAgent
+from forge.config import parse_model_routes
 from forge.schemas import UserProfile
 
 
@@ -74,3 +75,10 @@ async def test_orchestrator_normalizes_explanation_plans_to_research_only(settin
 
     assert len(plan.stages) == 1
     assert plan.stages[0].agents == ["research"]
+
+
+def test_openrouter_free_routes_are_normalized() -> None:
+    routes = parse_model_routes("openrouter/openrouter/free,groq/llama-3.3-70b-versatile", "")
+
+    assert routes[0].provider == "openrouter"
+    assert routes[0].model == "openrouter/auto"
