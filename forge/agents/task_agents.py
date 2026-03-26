@@ -484,6 +484,36 @@ vercel ls
     )
 
 
+def _website_recovery_instruction(invocation: AgentInvocation) -> str:
+    return (
+        "The previous output quality was too basic. Regenerate with a production build contract.\n\n"
+        "Required stack:\n"
+        "- Vite + React + TypeScript\n"
+        "- Tailwind CSS\n"
+        "- Supabase auth (email/password sign-in, sign-up, sign-out)\n"
+        "- Protected dashboard route\n\n"
+        "Required artifacts (all required):\n"
+        "- package.json\n"
+        "- index.html\n"
+        "- vite.config.ts\n"
+        "- tsconfig.json\n"
+        "- src/main.tsx\n"
+        "- src/App.tsx\n"
+        "- src/pages/Login.tsx\n"
+        "- src/pages/Dashboard.tsx\n"
+        "- src/lib/supabase.ts\n"
+        "- src/styles.css\n"
+        "- .env.example\n"
+        "- vercel.json\n"
+        "- terminal_commands.sh\n\n"
+        "Rules:\n"
+        "- No placeholders, TODOs, fake values, or tutorial prose.\n"
+        "- Include complete working code in every file artifact.\n"
+        "- Use clear modern UI design with responsive behavior.\n"
+        f"- User request: {invocation.original_task}"
+    )
+
+
 class PlannerAgent:
     def __init__(self, *, settings: Settings, providers: ProviderRegistry) -> None:
         self.settings = settings
@@ -540,7 +570,22 @@ class CodeAgent:
         )
         result = coerce_agent_result("code", raw)
         if _needs_website_quality_brief(invocation) and _is_low_quality_website_result(result):
-            return _website_upgrade_result(invocation, result)
+            recovery_raw = await self.providers.generate(
+                self.settings.code_routes,
+                messages=[
+                    {"role": "system", "content": f"{system_prompt}\n\n{_website_recovery_instruction(invocation)}"},
+                    *_history_messages(invocation),
+                    {"role": "user", "content": user_prompt},
+                ],
+                temperature=0.05,
+                max_tokens=3600,
+                json_mode=True,
+            )
+            recovered = coerce_agent_result("code", recovery_raw)
+            if not _is_low_quality_website_result(recovered):
+                recovered.internal_notes.append("website_quality_recovered:llm_second_pass")
+                return recovered
+            return _website_upgrade_result(invocation, recovered)
         return result
 
 
