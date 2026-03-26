@@ -4,15 +4,14 @@ import hashlib
 from pathlib import Path
 
 from fastapi import APIRouter, Header, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
 from forge.config import Settings
+from forge.integrations import OAuthError
 from forge.memory import MemoryStore
 from forge.memory.context import build_user_context
-from forge.schemas import ConversationRecord
-from forge.schemas import MessageJob
-from forge.schemas import UserProfile
+from forge.schemas import ConversationRecord, MessageJob, MissionRecord, UserProfile
 from forge.supabase_auth import SupabaseAuthError
 
 
@@ -39,6 +38,15 @@ class AppRunRequest(BaseModel):
 
 class LinkTelegramRequest(BaseModel):
     refresh: bool = False
+
+
+class MissionRequest(BaseModel):
+    prompt: str = Field(min_length=1, max_length=8000)
+    kind: str = Field(default="build")
+
+
+class DeployRequest(BaseModel):
+    project_id: str
 
 
 def _extract_message(raw_update: dict) -> dict | None:
@@ -115,6 +123,10 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
             "auth_provider": "supabase",
             "app_name": "Forge",
             "telegram_bot_username": settings.telegram_bot_username,
+            "integrations": {
+                "github": request.app.state.integrations.is_provider_configured("github"),
+                "vercel": request.app.state.integrations.is_provider_configured("vercel"),
+            },
         }
 
     @router.post("/api/auth/signup")
@@ -211,10 +223,16 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
         history = await request.app.state.store.get_recent_conversations(workspace_user_id, limit=12)
         link = await request.app.state.store.get_account_link_for_web(web_user_id)
         token = await request.app.state.store.get_active_link_token(web_user_id)
+        projects = await request.app.state.store.list_projects(workspace_user_id)
+        missions = await request.app.state.store.list_missions(workspace_user_id, limit=10)
+        integrations = await request.app.state.store.list_oauth_connections(workspace_user_id)
         return {
             "user": user,
             "profile": profile.model_dump(mode="json"),
             "history": [item.model_dump(mode="json") for item in history],
+            "projects": [item.model_dump(mode="json") for item in projects],
+            "missions": [item.model_dump(mode="json") for item in missions],
+            "integrations": [item.model_dump(mode="json", exclude={"access_token_encrypted", "refresh_token_encrypted"}) for item in integrations],
             "telegram_link": {
                 "linked": link is not None,
                 "telegram_user_id": link.telegram_user_id if link else None,
@@ -249,62 +267,104 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
             "message": "Send /link CODE to the Forge Telegram bot to connect this workspace.",
         }
 
+    @router.get("/api/integrations/{provider}/start")
+    async def integration_start(provider: str, request: Request) -> dict[str, object]:
+        _user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
+        if provider not in {"github", "vercel"}:
+            raise HTTPException(status_code=404, detail="Unknown provider.")
+        try:
+            authorize_url = request.app.state.integrations.build_authorize_url(provider, workspace_user_id=workspace_user_id)
+        except OAuthError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        return {"provider": provider, "authorize_url": authorize_url}
+
+    @router.get("/api/integrations/{provider}/callback")
+    async def integration_callback(provider: str, code: str, state: str, request: Request) -> RedirectResponse:
+        try:
+            connection = await request.app.state.integrations.complete_oauth(provider, code=code, state=state)
+        except OAuthError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        redirect_to = (
+            f"{settings.frontend_base_url.rstrip('/')}"
+            f"/?integration={provider}&status=connected&account={connection.account_name or connection.account_id}"
+        )
+        return RedirectResponse(url=redirect_to, status_code=302)
+
+    @router.get("/api/app/projects")
+    async def app_projects(request: Request) -> dict[str, object]:
+        user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
+        projects = await request.app.state.store.list_projects(workspace_user_id)
+        return {"user": user, "projects": [item.model_dump(mode="json") for item in projects]}
+
+    @router.get("/api/app/missions")
+    async def app_missions(request: Request) -> dict[str, object]:
+        user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
+        missions = await request.app.state.store.list_missions(workspace_user_id, limit=20)
+        return {"user": user, "missions": [item.model_dump(mode="json") for item in missions]}
+
+    @router.post("/api/app/missions")
+    async def app_create_mission(payload: MissionRequest, request: Request) -> dict[str, object]:
+        user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
+        mission = await request.app.state.mission_runner.enqueue_web_mission(
+            workspace_user_id=workspace_user_id,
+            prompt=payload.prompt,
+            kind=payload.kind,
+        )
+        import asyncio
+
+        asyncio.create_task(request.app.state.mission_runner.run_mission(mission.id or ""))
+        return {"user": user, "mission": mission.model_dump(mode="json")}
+
+    @router.get("/api/app/missions/{mission_id}")
+    async def app_get_mission(mission_id: str, request: Request) -> dict[str, object]:
+        user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
+        mission = await request.app.state.store.get_mission(mission_id)
+        if mission is None or mission.workspace_user_id != workspace_user_id:
+            raise HTTPException(status_code=404, detail="Mission not found.")
+        return {"user": user, "mission": mission.model_dump(mode="json")}
+
+    @router.post("/api/app/deploy")
+    async def app_deploy(payload: DeployRequest, request: Request) -> dict[str, object]:
+        user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
+        project = await request.app.state.store.get_project(payload.project_id)
+        if project is None or project.workspace_user_id != workspace_user_id:
+            raise HTTPException(status_code=404, detail="Project not found.")
+        mission = await request.app.state.store.create_mission(
+            MissionRecord(
+                workspace_user_id=workspace_user_id,
+                source="web",
+                kind="deploy",
+                prompt=f"Deploy {project.name}",
+                project_id=project.id,
+            )
+        )
+        import asyncio
+
+        asyncio.create_task(request.app.state.mission_runner.run_mission(mission.id or ""))
+        return {"user": user, "mission": mission.model_dump(mode="json")}
+
     @router.post("/api/app/run")
     async def app_run(payload: AppRunRequest, request: Request) -> dict[str, object]:
         user, _web_user_id, workspace_user_id, username, profile = await authenticate_workspace_request(request)
-        executor = request.app.state.executor
-        if executor is None:
-            raise HTTPException(status_code=503, detail="Forge app execution is not available in this environment.")
-
-        history = await request.app.state.store.get_recent_conversations(
-            workspace_user_id,
-            limit=request.app.state.settings.history_window,
-        )
         await request.app.state.store.append_conversation(
             ConversationRecord(user_id=workspace_user_id, role="user", content=payload.prompt)
         )
+        mission = await request.app.state.mission_runner.enqueue_web_mission(
+            workspace_user_id=workspace_user_id,
+            prompt=payload.prompt,
+            kind="build",
+        )
+        import asyncio
 
-        plan = await request.app.state.orchestrator.plan(
-            payload.prompt,
-            history=history,
-            profile=profile,
-            has_image=False,
-        )
-        user_context = build_user_context(profile, history, plan.context_policy)
-        delivery, stage_executions = await executor.execute(
-            plan=plan,
-            original_task=payload.prompt,
-            history=history,
-            user_context=user_context,
-            profile=profile,
-            image_bytes=None,
-        )
-
-        await request.app.state.store.append_conversation(
-            ConversationRecord(
-                user_id=workspace_user_id,
-                role="assistant",
-                content=delivery.text,
-                agents_used=[name for stage in plan.stages for name in stage.agents],
-            )
-        )
+        asyncio.create_task(request.app.state.mission_runner.run_mission(mission.id or ""))
         refreshed_profile = await request.app.state.store.get_user_profile(workspace_user_id)
         refreshed_history = await request.app.state.store.get_recent_conversations(workspace_user_id, limit=12)
-
-        profile_refresher = request.app.state.profile_refresher
-        if profile_refresher is not None:
-            # Keep the interactive workspace responsive and let durable profile synthesis happen in the background.
-            import asyncio
-
-            asyncio.create_task(profile_refresher(workspace_user_id, username))
-
         return {
             "user": user,
             "profile": refreshed_profile.model_dump(mode="json"),
             "history": [item.model_dump(mode="json") for item in refreshed_history],
-            "plan": plan.model_dump(mode="json"),
-            "delivery": _serialize_delivery(delivery),
-            "stages": [stage.model_dump(mode="json") for stage in stage_executions],
+            "mission": mission.model_dump(mode="json"),
+            "message": "Mission queued. Forge will keep running it in the background.",
         }
 
     @router.post("/webhook")

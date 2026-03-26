@@ -11,11 +11,18 @@ def settings() -> Settings:
     fallback = (ModelRoute("fallback", "model"),)
     return Settings(
         app_env="test",
+        public_base_url="https://forge.test",
+        frontend_base_url="https://forge-ui.test",
         telegram_token="token",
         webhook_secret="secret",
         groq_api_key="groq",
         nvidia_api_key="nvidia",
         openrouter_api_key="openrouter",
+        credential_secret="test-secret",
+        github_client_id="github-client",
+        github_client_secret="github-secret",
+        vercel_client_id="vercel-client",
+        vercel_client_secret="vercel-secret",
         supabase_url="https://example.supabase.co",
         supabase_key="supabase-key",
         supabase_anon_key="supabase-anon-key",

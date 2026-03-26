@@ -67,11 +67,18 @@ def parse_model_routes(value: str, fallback: str) -> tuple[ModelRoute, ...]:
 @dataclass(frozen=True)
 class Settings:
     app_env: str
+    public_base_url: str
+    frontend_base_url: str
     telegram_token: str
     webhook_secret: str
     groq_api_key: str
     nvidia_api_key: str
     openrouter_api_key: str
+    credential_secret: str
+    github_client_id: str
+    github_client_secret: str
+    vercel_client_id: str
+    vercel_client_secret: str
     supabase_url: str
     supabase_key: str
     supabase_anon_key: str
@@ -100,11 +107,18 @@ class Settings:
         hostname = socket.gethostname().lower().replace(" ", "-")
         return cls(
             app_env=_env("APP_ENV", "development") or "development",
+            public_base_url=_env("FORGE_PUBLIC_BASE_URL", "http://localhost:8000") or "http://localhost:8000",
+            frontend_base_url=_env("FORGE_FRONTEND_BASE_URL", "http://localhost:3000") or "http://localhost:3000",
             telegram_token=_env("TELEGRAM_TOKEN", "") or "",
             webhook_secret=_env("WEBHOOK_SECRET", "") or "",
             groq_api_key=_env("GROQ_API_KEY", "") or "",
             nvidia_api_key=_env("NVIDIA_API_KEY", "") or "",
             openrouter_api_key=_env("OPENROUTER_API_KEY", "") or "",
+            credential_secret=_env("FORGE_CREDENTIAL_SECRET", "forge-dev-secret") or "forge-dev-secret",
+            github_client_id=_env("GITHUB_CLIENT_ID", "") or "",
+            github_client_secret=_env("GITHUB_CLIENT_SECRET", "") or "",
+            vercel_client_id=_env("VERCEL_CLIENT_ID", "") or "",
+            vercel_client_secret=_env("VERCEL_CLIENT_SECRET", "") or "",
             supabase_url=_env("SUPABASE_URL", "") or "",
             supabase_key=_env("SUPABASE_KEY", "") or "",
             supabase_anon_key=_env("SUPABASE_ANON_KEY", _env("SUPABASE_KEY", "") or "") or "",

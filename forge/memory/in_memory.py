@@ -7,7 +7,18 @@ from typing import Any
 from uuid import uuid4
 
 from forge.memory.base import MemoryStore
-from forge.schemas import AccountLink, ConversationRecord, LinkToken, MessageJob, UserProfile
+from forge.schemas import (
+    AccountLink,
+    ConversationRecord,
+    DeploymentRecord,
+    LinkToken,
+    MessageJob,
+    MissionRecord,
+    OAuthConnection,
+    ProjectRecord,
+    ProjectRevision,
+    UserProfile,
+)
 
 
 class InMemoryStore(MemoryStore):
@@ -19,6 +30,11 @@ class InMemoryStore(MemoryStore):
         self._account_links_by_web: dict[str, AccountLink] = {}
         self._account_links_by_telegram: dict[int, AccountLink] = {}
         self._link_tokens: dict[str, LinkToken] = {}
+        self._oauth_connections: dict[tuple[int, str], OAuthConnection] = {}
+        self._projects: dict[str, ProjectRecord] = {}
+        self._project_revisions: dict[str, ProjectRevision] = {}
+        self._deployments: dict[str, DeploymentRecord] = {}
+        self._missions: dict[str, MissionRecord] = {}
         self._lock = asyncio.Lock()
 
     async def ensure_user_profile(self, user_id: int, username: str | None = None) -> UserProfile:
@@ -149,6 +165,12 @@ class InMemoryStore(MemoryStore):
         link = self._account_links_by_telegram.get(telegram_user_id)
         return link.model_copy(deep=True) if link else None
 
+    async def get_account_link_for_workspace(self, workspace_user_id: int) -> AccountLink | None:
+        for link in self._account_links_by_web.values():
+            if link.workspace_user_id == workspace_user_id:
+                return link.model_copy(deep=True)
+        return None
+
     async def create_link_token(
         self,
         *,
@@ -215,3 +237,159 @@ class InMemoryStore(MemoryStore):
         self._account_links_by_web[token.web_user_id] = link
         self._account_links_by_telegram[telegram_user_id] = link
         return link.model_copy(deep=True)
+
+    async def upsert_oauth_connection(self, connection: OAuthConnection) -> OAuthConnection:
+        async with self._lock:
+            stored = connection.model_copy(deep=True)
+            stored.id = stored.id or str(uuid4())
+            now = datetime.now(tz=UTC)
+            existing = self._oauth_connections.get((stored.workspace_user_id, stored.provider))
+            stored.created_at = existing.created_at if existing and existing.created_at else stored.created_at or now
+            stored.updated_at = now
+            self._oauth_connections[(stored.workspace_user_id, stored.provider)] = stored
+            return stored.model_copy(deep=True)
+
+    async def get_oauth_connection(self, workspace_user_id: int, provider: str) -> OAuthConnection | None:
+        item = self._oauth_connections.get((workspace_user_id, provider))
+        return item.model_copy(deep=True) if item else None
+
+    async def list_oauth_connections(self, workspace_user_id: int) -> list[OAuthConnection]:
+        items = [item for item in self._oauth_connections.values() if item.workspace_user_id == workspace_user_id]
+        return [item.model_copy(deep=True) for item in items]
+
+    async def create_project(self, project: ProjectRecord) -> ProjectRecord:
+        async with self._lock:
+            stored = project.model_copy(deep=True)
+            now = datetime.now(tz=UTC)
+            stored.id = stored.id or str(uuid4())
+            stored.created_at = stored.created_at or now
+            stored.updated_at = now
+            self._projects[stored.id] = stored
+            return stored.model_copy(deep=True)
+
+    async def update_project(self, project_id: str, updates: dict[str, Any]) -> ProjectRecord:
+        async with self._lock:
+            project = self._projects[project_id]
+            data = project.model_dump(mode="json")
+            for key, value in updates.items():
+                if value is not None:
+                    data[key] = value
+            updated = ProjectRecord.model_validate(data)
+            updated.id = project.id
+            updated.created_at = project.created_at
+            updated.updated_at = datetime.now(tz=UTC)
+            self._projects[project_id] = updated
+            return updated.model_copy(deep=True)
+
+    async def get_project(self, project_id: str) -> ProjectRecord | None:
+        project = self._projects.get(project_id)
+        return project.model_copy(deep=True) if project else None
+
+    async def get_project_by_name(self, workspace_user_id: int, name: str) -> ProjectRecord | None:
+        target = name.strip().lower()
+        for project in self._projects.values():
+            if project.workspace_user_id == workspace_user_id and (
+                project.name.lower() == target or project.slug.lower() == target
+            ):
+                return project.model_copy(deep=True)
+        return None
+
+    async def list_projects(self, workspace_user_id: int) -> list[ProjectRecord]:
+        items = [item for item in self._projects.values() if item.workspace_user_id == workspace_user_id]
+        items.sort(key=lambda item: item.updated_at or datetime.min.replace(tzinfo=UTC), reverse=True)
+        return [item.model_copy(deep=True) for item in items]
+
+    async def create_project_revision(self, revision: ProjectRevision) -> ProjectRevision:
+        async with self._lock:
+            stored = revision.model_copy(deep=True)
+            stored.id = stored.id or str(uuid4())
+            stored.created_at = stored.created_at or datetime.now(tz=UTC)
+            self._project_revisions[stored.id] = stored
+            return stored.model_copy(deep=True)
+
+    async def list_project_revisions(self, project_id: str) -> list[ProjectRevision]:
+        items = [item for item in self._project_revisions.values() if item.project_id == project_id]
+        items.sort(key=lambda item: item.created_at or datetime.min.replace(tzinfo=UTC), reverse=True)
+        return [item.model_copy(deep=True) for item in items]
+
+    async def create_deployment(self, deployment: DeploymentRecord) -> DeploymentRecord:
+        async with self._lock:
+            stored = deployment.model_copy(deep=True)
+            now = datetime.now(tz=UTC)
+            stored.id = stored.id or str(uuid4())
+            stored.created_at = stored.created_at or now
+            stored.updated_at = now
+            self._deployments[stored.id] = stored
+            return stored.model_copy(deep=True)
+
+    async def update_deployment(self, deployment_id: str, updates: dict[str, Any]) -> DeploymentRecord:
+        async with self._lock:
+            deployment = self._deployments[deployment_id]
+            data = deployment.model_dump(mode="json")
+            for key, value in updates.items():
+                if value is not None:
+                    data[key] = value
+            updated = DeploymentRecord.model_validate(data)
+            updated.id = deployment.id
+            updated.created_at = deployment.created_at
+            updated.updated_at = datetime.now(tz=UTC)
+            self._deployments[deployment_id] = updated
+            return updated.model_copy(deep=True)
+
+    async def list_deployments(self, project_id: str) -> list[DeploymentRecord]:
+        items = [item for item in self._deployments.values() if item.project_id == project_id]
+        items.sort(key=lambda item: item.created_at or datetime.min.replace(tzinfo=UTC), reverse=True)
+        return [item.model_copy(deep=True) for item in items]
+
+    async def create_mission(self, mission: MissionRecord) -> MissionRecord:
+        async with self._lock:
+            stored = mission.model_copy(deep=True)
+            now = datetime.now(tz=UTC)
+            stored.id = stored.id or str(uuid4())
+            stored.created_at = stored.created_at or now
+            stored.updated_at = now
+            self._missions[stored.id] = stored
+            return stored.model_copy(deep=True)
+
+    async def get_mission(self, mission_id: str) -> MissionRecord | None:
+        mission = self._missions.get(mission_id)
+        return mission.model_copy(deep=True) if mission else None
+
+    async def list_missions(self, workspace_user_id: int, *, limit: int) -> list[MissionRecord]:
+        items = [item for item in self._missions.values() if item.workspace_user_id == workspace_user_id]
+        items.sort(key=lambda item: item.created_at or datetime.min.replace(tzinfo=UTC), reverse=True)
+        return [item.model_copy(deep=True) for item in items[:limit]]
+
+    async def claim_missions(self, *, worker_id: str, limit: int, lock_timeout_seconds: int) -> list[MissionRecord]:
+        now = datetime.now(tz=UTC)
+        claimed: list[MissionRecord] = []
+        async with self._lock:
+            for mission in sorted(self._missions.values(), key=lambda item: item.created_at or now):
+                stale_lock = mission.status in {"planning", "building", "reviewing", "deploying"} and mission.updated_at and (
+                    mission.updated_at < now - timedelta(seconds=lock_timeout_seconds)
+                )
+                if mission.status != "queued" and not stale_lock:
+                    continue
+                mission.status = "planning"
+                mission.updated_at = now
+                mission.plan["claimed_by"] = worker_id
+                claimed.append(mission.model_copy(deep=True))
+                if len(claimed) >= limit:
+                    break
+        return claimed
+
+    async def update_mission(self, mission_id: str, updates: dict[str, Any]) -> MissionRecord:
+        async with self._lock:
+            mission = self._missions[mission_id]
+            data = mission.model_dump(mode="json")
+            for key, value in updates.items():
+                if value is not None:
+                    data[key] = value
+            updated = MissionRecord.model_validate(data)
+            updated.id = mission.id
+            updated.created_at = mission.created_at
+            updated.updated_at = datetime.now(tz=UTC)
+            if updated.status == "completed" and updated.completed_at is None:
+                updated.completed_at = updated.updated_at
+            self._missions[mission_id] = updated
+            return updated.model_copy(deep=True)

@@ -6,7 +6,18 @@ from typing import Any
 import httpx
 
 from forge.memory.base import MemoryStore
-from forge.schemas import AccountLink, ConversationRecord, LinkToken, MessageJob, UserProfile
+from forge.schemas import (
+    AccountLink,
+    ConversationRecord,
+    DeploymentRecord,
+    LinkToken,
+    MessageJob,
+    MissionRecord,
+    OAuthConnection,
+    ProjectRecord,
+    ProjectRevision,
+    UserProfile,
+)
 
 
 class SupabaseMemoryStore(MemoryStore):
@@ -171,6 +182,15 @@ class SupabaseMemoryStore(MemoryStore):
         records = response.json()
         return AccountLink.model_validate(records[0]) if records else None
 
+    async def get_account_link_for_workspace(self, workspace_user_id: int) -> AccountLink | None:
+        response = await self._client.get(
+            "/account_links",
+            params={"workspace_user_id": f"eq.{workspace_user_id}", "select": "*", "limit": 1},
+        )
+        response.raise_for_status()
+        records = response.json()
+        return AccountLink.model_validate(records[0]) if records else None
+
     async def create_link_token(
         self,
         *,
@@ -225,3 +245,159 @@ class SupabaseMemoryStore(MemoryStore):
 
     async def close(self) -> None:
         await self._client.aclose()
+
+    async def upsert_oauth_connection(self, connection: OAuthConnection) -> OAuthConnection:
+        response = await self._client.post(
+            "/oauth_connections",
+            headers=self._headers(prefer="resolution=merge-duplicates,return=representation"),
+            json=connection.model_dump(mode="json"),
+        )
+        response.raise_for_status()
+        return OAuthConnection.model_validate(response.json()[0])
+
+    async def get_oauth_connection(self, workspace_user_id: int, provider: str) -> OAuthConnection | None:
+        response = await self._client.get(
+            "/oauth_connections",
+            params={
+                "workspace_user_id": f"eq.{workspace_user_id}",
+                "provider": f"eq.{provider}",
+                "select": "*",
+                "limit": 1,
+            },
+        )
+        response.raise_for_status()
+        records = response.json()
+        return OAuthConnection.model_validate(records[0]) if records else None
+
+    async def list_oauth_connections(self, workspace_user_id: int) -> list[OAuthConnection]:
+        response = await self._client.get(
+            "/oauth_connections",
+            params={"workspace_user_id": f"eq.{workspace_user_id}", "select": "*"},
+        )
+        response.raise_for_status()
+        return [OAuthConnection.model_validate(item) for item in response.json()]
+
+    async def create_project(self, project: ProjectRecord) -> ProjectRecord:
+        response = await self._client.post("/projects", json=project.model_dump(mode="json"))
+        response.raise_for_status()
+        return ProjectRecord.model_validate(response.json()[0])
+
+    async def update_project(self, project_id: str, updates: dict[str, Any]) -> ProjectRecord:
+        response = await self._client.patch(
+            "/projects",
+            params={"id": f"eq.{project_id}", "select": "*"},
+            json=updates,
+        )
+        response.raise_for_status()
+        return ProjectRecord.model_validate(response.json()[0])
+
+    async def get_project(self, project_id: str) -> ProjectRecord | None:
+        response = await self._client.get(
+            "/projects",
+            params={"id": f"eq.{project_id}", "select": "*", "limit": 1},
+        )
+        response.raise_for_status()
+        records = response.json()
+        return ProjectRecord.model_validate(records[0]) if records else None
+
+    async def get_project_by_name(self, workspace_user_id: int, name: str) -> ProjectRecord | None:
+        projects = await self.list_projects(workspace_user_id)
+        target = name.strip().lower()
+        for project in projects:
+            if project.name.lower() == target or project.slug.lower() == target:
+                return project
+        return None
+
+    async def list_projects(self, workspace_user_id: int) -> list[ProjectRecord]:
+        response = await self._client.get(
+            "/projects",
+            params={
+                "workspace_user_id": f"eq.{workspace_user_id}",
+                "select": "*",
+                "order": "updated_at.desc",
+            },
+        )
+        response.raise_for_status()
+        return [ProjectRecord.model_validate(item) for item in response.json()]
+
+    async def create_project_revision(self, revision: ProjectRevision) -> ProjectRevision:
+        response = await self._client.post("/project_revisions", json=revision.model_dump(mode="json"))
+        response.raise_for_status()
+        return ProjectRevision.model_validate(response.json()[0])
+
+    async def list_project_revisions(self, project_id: str) -> list[ProjectRevision]:
+        response = await self._client.get(
+            "/project_revisions",
+            params={"project_id": f"eq.{project_id}", "select": "*", "order": "created_at.desc"},
+        )
+        response.raise_for_status()
+        return [ProjectRevision.model_validate(item) for item in response.json()]
+
+    async def create_deployment(self, deployment: DeploymentRecord) -> DeploymentRecord:
+        response = await self._client.post("/deployments", json=deployment.model_dump(mode="json"))
+        response.raise_for_status()
+        return DeploymentRecord.model_validate(response.json()[0])
+
+    async def update_deployment(self, deployment_id: str, updates: dict[str, Any]) -> DeploymentRecord:
+        response = await self._client.patch(
+            "/deployments",
+            params={"id": f"eq.{deployment_id}", "select": "*"},
+            json=updates,
+        )
+        response.raise_for_status()
+        return DeploymentRecord.model_validate(response.json()[0])
+
+    async def list_deployments(self, project_id: str) -> list[DeploymentRecord]:
+        response = await self._client.get(
+            "/deployments",
+            params={"project_id": f"eq.{project_id}", "select": "*", "order": "created_at.desc"},
+        )
+        response.raise_for_status()
+        return [DeploymentRecord.model_validate(item) for item in response.json()]
+
+    async def create_mission(self, mission: MissionRecord) -> MissionRecord:
+        response = await self._client.post("/missions", json=mission.model_dump(mode="json"))
+        response.raise_for_status()
+        return MissionRecord.model_validate(response.json()[0])
+
+    async def get_mission(self, mission_id: str) -> MissionRecord | None:
+        response = await self._client.get(
+            "/missions",
+            params={"id": f"eq.{mission_id}", "select": "*", "limit": 1},
+        )
+        response.raise_for_status()
+        records = response.json()
+        return MissionRecord.model_validate(records[0]) if records else None
+
+    async def list_missions(self, workspace_user_id: int, *, limit: int) -> list[MissionRecord]:
+        response = await self._client.get(
+            "/missions",
+            params={
+                "workspace_user_id": f"eq.{workspace_user_id}",
+                "select": "*",
+                "order": "created_at.desc",
+                "limit": str(limit),
+            },
+        )
+        response.raise_for_status()
+        return [MissionRecord.model_validate(item) for item in response.json()]
+
+    async def claim_missions(self, *, worker_id: str, limit: int, lock_timeout_seconds: int) -> list[MissionRecord]:
+        data = await self._rpc(
+            "claim_missions",
+            {
+                "p_worker_id": worker_id,
+                "p_limit": limit,
+                "p_lock_timeout_seconds": lock_timeout_seconds,
+            },
+        )
+        return [MissionRecord.model_validate(item) for item in data]
+
+    async def update_mission(self, mission_id: str, updates: dict[str, Any]) -> MissionRecord:
+        response = await self._client.patch(
+            "/missions",
+            params={"id": f"eq.{mission_id}", "select": "*"},
+            json=updates,
+        )
+        response.raise_for_status()
+        return MissionRecord.model_validate(response.json()[0])

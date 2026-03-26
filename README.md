@@ -8,6 +8,7 @@ Forge is a production-biased MVP for a Telegram-native AI dev team. The canonica
 - Durable job processing model with a background worker loop, retry handling, and dead-letter behavior.
 - Stage-based orchestration with structured outputs for `planner`, `research`, `code`, `debug`, and `reviewer`.
 - Provider abstraction layer for LLM, search, and fetch adapters with env-driven fallback chains.
+- Hybrid project builder with reusable app scaffolds, GitHub-backed project persistence, and per-user Vercel deploy flow.
 - Hybrid memory with recent history, durable profile context, and async profile refresh.
 - Telegram-safe delivery with progress updates, chunking, and document attachment for larger code outputs.
 
@@ -19,6 +20,9 @@ Forge is a production-biased MVP for a Telegram-native AI dev team. The canonica
 - `forge/workers/`: queue processing and staged pipeline execution.
 - `forge/agents/`: orchestrator, task agents, and final response aggregation.
 - `forge/providers/`: provider interfaces plus Groq, OpenAI-compatible, search, and fetch adapters.
+- `forge/integrations.py`: GitHub/Vercel OAuth and user-owned repo/deploy clients.
+- `forge/builder.py`: hybrid builder and archetype scaffolds for app generation.
+- `forge/missions.py`: background mission orchestration for build/deploy/status flows.
 - `forge/memory/`: Supabase-backed and in-memory storage implementations.
 - `forge/schemas/`: shared Pydantic models for jobs, plans, profiles, and agent outputs.
 - `frontend/`: Vercel-ready static frontend for split deployment.
@@ -40,6 +44,13 @@ pip install -r requirements.txt
 - `GROQ_API_KEY`
 - `NVIDIA_API_KEY`
 - `OPENROUTER_API_KEY`
+- `FORGE_PUBLIC_BASE_URL`
+- `FORGE_FRONTEND_BASE_URL`
+- `FORGE_CREDENTIAL_SECRET`
+- `GITHUB_CLIENT_ID`
+- `GITHUB_CLIENT_SECRET`
+- `VERCEL_CLIENT_ID`
+- `VERCEL_CLIENT_SECRET`
 - `SUPABASE_URL`
 - `SUPABASE_KEY`
 - `SUPABASE_ANON_KEY`
@@ -62,8 +73,9 @@ Python version:
 1. Telegram sends an update to `/webhook`.
 2. The webhook verifies the secret and enqueues a deduplicated `message_job`.
 3. The worker loop claims the job and builds an orchestration plan.
-4. Agents run stage by stage and return structured JSON payloads.
-5. The aggregator produces a Telegram-safe response and the transport sends it back.
+4. Telegram commands and natural-language build prompts can be promoted into durable missions.
+5. The worker claims both message jobs and missions, then runs builder/orchestrator flows in the background.
+6. The transport sends status updates and final replies back to Telegram.
 
 ## Web UI and auth
 
@@ -72,8 +84,10 @@ Python version:
 - `/api/client-config` tells the browser whether Supabase auth is configured.
 - `/api/auth/signup`, `/api/auth/signin`, `/api/auth/session`, and `/api/auth/signout` proxy Supabase auth flows through the backend.
 - `/api/app/dashboard` returns the authenticated workspace user, profile memory, and recent conversation.
+- `/api/integrations/github/start` and `/api/integrations/vercel/start` begin per-user OAuth flows.
+- `/api/app/projects`, `/api/app/missions`, and `/api/app/deploy` expose project/misson/deploy state for the authenticated workspace.
 - `/api/app/plan` previews a protected orchestration plan for the authenticated workspace.
-- `/api/app/run` executes a protected Forge mission in the web workspace and returns the delivery, stages, and updated memory snapshot.
+- `/api/app/run` enqueues a protected background mission and returns a mission id for polling.
 - `/demo/plan` remains a public preview route for unauthenticated visitors.
 
 ## Notes

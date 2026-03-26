@@ -4,7 +4,18 @@ import logging
 from typing import Any, Awaitable, Callable, TypeVar
 
 from forge.memory.base import MemoryStore
-from forge.schemas import AccountLink, ConversationRecord, LinkToken, MessageJob, UserProfile
+from forge.schemas import (
+    AccountLink,
+    ConversationRecord,
+    DeploymentRecord,
+    LinkToken,
+    MessageJob,
+    MissionRecord,
+    OAuthConnection,
+    ProjectRecord,
+    ProjectRevision,
+    UserProfile,
+)
 
 T = TypeVar("T")
 
@@ -144,6 +155,13 @@ class ResilientMemoryStore(MemoryStore):
             lambda: self._fallback.get_account_link_for_telegram(telegram_user_id),
         )
 
+    async def get_account_link_for_workspace(self, workspace_user_id: int) -> AccountLink | None:
+        return await self._call_with_fallback(
+            "get_account_link_for_workspace",
+            lambda: self._primary.get_account_link_for_workspace(workspace_user_id),
+            lambda: self._fallback.get_account_link_for_workspace(workspace_user_id),
+        )
+
     async def create_link_token(
         self,
         *,
@@ -201,3 +219,137 @@ class ResilientMemoryStore(MemoryStore):
             await self._primary.close()
         finally:
             await self._fallback.close()
+
+    async def upsert_oauth_connection(self, connection: OAuthConnection) -> OAuthConnection:
+        return await self._call_with_fallback(
+            "upsert_oauth_connection",
+            lambda: self._primary.upsert_oauth_connection(connection),
+            lambda: self._fallback.upsert_oauth_connection(connection),
+        )
+
+    async def get_oauth_connection(self, workspace_user_id: int, provider: str) -> OAuthConnection | None:
+        return await self._call_with_fallback(
+            "get_oauth_connection",
+            lambda: self._primary.get_oauth_connection(workspace_user_id, provider),
+            lambda: self._fallback.get_oauth_connection(workspace_user_id, provider),
+        )
+
+    async def list_oauth_connections(self, workspace_user_id: int) -> list[OAuthConnection]:
+        return await self._call_with_fallback(
+            "list_oauth_connections",
+            lambda: self._primary.list_oauth_connections(workspace_user_id),
+            lambda: self._fallback.list_oauth_connections(workspace_user_id),
+        )
+
+    async def create_project(self, project: ProjectRecord) -> ProjectRecord:
+        return await self._call_with_fallback(
+            "create_project",
+            lambda: self._primary.create_project(project),
+            lambda: self._fallback.create_project(project),
+        )
+
+    async def update_project(self, project_id: str, updates: dict[str, Any]) -> ProjectRecord:
+        return await self._call_with_fallback(
+            "update_project",
+            lambda: self._primary.update_project(project_id, updates),
+            lambda: self._fallback.update_project(project_id, updates),
+        )
+
+    async def get_project(self, project_id: str) -> ProjectRecord | None:
+        return await self._call_with_fallback(
+            "get_project",
+            lambda: self._primary.get_project(project_id),
+            lambda: self._fallback.get_project(project_id),
+        )
+
+    async def get_project_by_name(self, workspace_user_id: int, name: str) -> ProjectRecord | None:
+        return await self._call_with_fallback(
+            "get_project_by_name",
+            lambda: self._primary.get_project_by_name(workspace_user_id, name),
+            lambda: self._fallback.get_project_by_name(workspace_user_id, name),
+        )
+
+    async def list_projects(self, workspace_user_id: int) -> list[ProjectRecord]:
+        return await self._call_with_fallback(
+            "list_projects",
+            lambda: self._primary.list_projects(workspace_user_id),
+            lambda: self._fallback.list_projects(workspace_user_id),
+        )
+
+    async def create_project_revision(self, revision: ProjectRevision) -> ProjectRevision:
+        return await self._call_with_fallback(
+            "create_project_revision",
+            lambda: self._primary.create_project_revision(revision),
+            lambda: self._fallback.create_project_revision(revision),
+        )
+
+    async def list_project_revisions(self, project_id: str) -> list[ProjectRevision]:
+        return await self._call_with_fallback(
+            "list_project_revisions",
+            lambda: self._primary.list_project_revisions(project_id),
+            lambda: self._fallback.list_project_revisions(project_id),
+        )
+
+    async def create_deployment(self, deployment: DeploymentRecord) -> DeploymentRecord:
+        return await self._call_with_fallback(
+            "create_deployment",
+            lambda: self._primary.create_deployment(deployment),
+            lambda: self._fallback.create_deployment(deployment),
+        )
+
+    async def update_deployment(self, deployment_id: str, updates: dict[str, Any]) -> DeploymentRecord:
+        return await self._call_with_fallback(
+            "update_deployment",
+            lambda: self._primary.update_deployment(deployment_id, updates),
+            lambda: self._fallback.update_deployment(deployment_id, updates),
+        )
+
+    async def list_deployments(self, project_id: str) -> list[DeploymentRecord]:
+        return await self._call_with_fallback(
+            "list_deployments",
+            lambda: self._primary.list_deployments(project_id),
+            lambda: self._fallback.list_deployments(project_id),
+        )
+
+    async def create_mission(self, mission: MissionRecord) -> MissionRecord:
+        return await self._call_with_fallback(
+            "create_mission",
+            lambda: self._primary.create_mission(mission),
+            lambda: self._fallback.create_mission(mission),
+        )
+
+    async def get_mission(self, mission_id: str) -> MissionRecord | None:
+        return await self._call_with_fallback(
+            "get_mission",
+            lambda: self._primary.get_mission(mission_id),
+            lambda: self._fallback.get_mission(mission_id),
+        )
+
+    async def list_missions(self, workspace_user_id: int, *, limit: int) -> list[MissionRecord]:
+        return await self._call_with_fallback(
+            "list_missions",
+            lambda: self._primary.list_missions(workspace_user_id, limit=limit),
+            lambda: self._fallback.list_missions(workspace_user_id, limit=limit),
+        )
+
+    async def claim_missions(self, *, worker_id: str, limit: int, lock_timeout_seconds: int) -> list[MissionRecord]:
+        return await self._call_with_fallback(
+            "claim_missions",
+            lambda: self._primary.claim_missions(
+                worker_id=worker_id,
+                limit=limit,
+                lock_timeout_seconds=lock_timeout_seconds,
+            ),
+            lambda: self._fallback.claim_missions(
+                worker_id=worker_id,
+                limit=limit,
+                lock_timeout_seconds=lock_timeout_seconds,
+            ),
+        )
+
+    async def update_mission(self, mission_id: str, updates: dict[str, Any]) -> MissionRecord:
+        return await self._call_with_fallback(
+            "update_mission",
+            lambda: self._primary.update_mission(mission_id, updates),
+            lambda: self._fallback.update_mission(mission_id, updates),
+        )

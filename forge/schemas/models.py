@@ -128,3 +128,90 @@ class LinkToken(BaseModel):
     telegram_username: str | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
+
+
+class OAuthConnection(BaseModel):
+    id: str | None = None
+    workspace_user_id: int
+    provider: Literal["github", "vercel"]
+    account_id: str
+    account_name: str | None = None
+    access_token_encrypted: str
+    refresh_token_encrypted: str | None = None
+    expires_at: datetime | None = None
+    scopes: list[str] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class ProjectRecord(BaseModel):
+    id: str | None = None
+    workspace_user_id: int
+    name: str
+    slug: str
+    prompt: str
+    archetype: str
+    repo_owner: str | None = None
+    repo_name: str | None = None
+    repo_url: str | None = None
+    default_branch: str = "main"
+    latest_manifest: dict[str, Any] = Field(default_factory=dict)
+    deployment_metadata: dict[str, Any] = Field(default_factory=dict)
+    latest_preview: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class ProjectRevision(BaseModel):
+    id: str | None = None
+    project_id: str
+    workspace_user_id: int
+    mission_id: str | None = None
+    summary: str
+    file_manifest: dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime | None = None
+
+
+class DeploymentRecord(BaseModel):
+    id: str | None = None
+    project_id: str
+    workspace_user_id: int
+    provider: Literal["vercel"]
+    status: str
+    deployment_url: str | None = None
+    external_id: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class MissionRecord(BaseModel):
+    id: str | None = None
+    workspace_user_id: int
+    chat_id: int | None = None
+    source: Literal["telegram", "web"]
+    kind: Literal["build", "deploy", "edit", "status"]
+    status: Literal[
+        "queued",
+        "planning",
+        "building",
+        "reviewing",
+        "deploying",
+        "awaiting_approval",
+        "completed",
+        "failed",
+    ] = "queued"
+    prompt: str
+    project_id: str | None = None
+    plan: dict[str, Any] = Field(default_factory=dict)
+    result_summary: str | None = None
+    response_text: str | None = None
+    repo_url: str | None = None
+    deployment_url: str | None = None
+    changed_files: list[str] = Field(default_factory=list)
+    approval_request: dict[str, Any] | None = None
+    error: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    completed_at: datetime | None = None

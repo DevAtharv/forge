@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 
@@ -10,12 +11,17 @@ from forge.agents import PipelineAggregator
 from forge.agents.orchestrator import OrchestratorAgent
 from forge.agents.task_agents import CodeAgent, DebugAgent, PlannerAgent, ProfileSummaryAgent, ResearchAgent, ReviewerAgent
 from forge.api import build_router
+from forge.builder import HybridProjectBuilder
 from forge.config import Settings
+from forge.integrations import IntegrationService
 from forge.memory import InMemoryStore, ResilientMemoryStore, SupabaseMemoryStore
+from forge.missions import MissionRunner
 from forge.providers import DuckDuckGoSearchProvider, GroqProvider, HttpPageFetcher, OpenAICompatibleProvider, ProviderRegistry
 from forge.supabase_auth import SupabaseAuthClient
 from forge.telegram import TelegramTransport
 from forge.workers import JobProcessor, PipelineExecutor, WorkerService
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -23,18 +29,42 @@ class ForgeContainer:
     settings: Settings
     store: object
     providers: ProviderRegistry
+    integrations: IntegrationService
     transport: TelegramTransport
+    mission_runner: MissionRunner
     worker: WorkerService
 
     async def start(self) -> None:
-        await self.transport.start()
-        await self.worker.start()
+        try:
+            await self.transport.start()
+        except Exception:
+            logger.exception("Telegram transport failed to start; continuing without Telegram delivery.")
+        try:
+            await self.worker.start()
+        except Exception:
+            logger.exception("Forge worker failed to start; continuing with web APIs only.")
 
     async def stop(self) -> None:
-        await self.worker.stop()
-        await self.transport.close()
-        await self.providers.close()
-        await self.store.close()
+        try:
+            await self.worker.stop()
+        except Exception:
+            logger.exception("Forge worker failed to stop cleanly.")
+        try:
+            await self.transport.close()
+        except Exception:
+            logger.exception("Telegram transport failed to close cleanly.")
+        try:
+            await self.providers.close()
+        except Exception:
+            logger.exception("Providers failed to close cleanly.")
+        try:
+            await self.integrations.close()
+        except Exception:
+            logger.exception("Integrations failed to close cleanly.")
+        try:
+            await self.store.close()
+        except Exception:
+            logger.exception("Memory store failed to close cleanly.")
 
 
 def build_container(settings: Settings | None = None) -> ForgeContainer:
@@ -71,6 +101,14 @@ def build_container(settings: Settings | None = None) -> ForgeContainer:
     )
 
     transport = TelegramTransport(settings.telegram_token)
+    integrations = IntegrationService(settings=settings, store=store)
+    builder = HybridProjectBuilder()
+    mission_runner = MissionRunner(
+        store=store,
+        integrations=integrations,
+        transport=transport,
+        builder=builder,
+    )
     orchestrator = OrchestratorAgent(settings=settings, providers=providers)
     executor = PipelineExecutor(
         planner=PlannerAgent(settings=settings, providers=providers),
@@ -87,13 +125,16 @@ def build_container(settings: Settings | None = None) -> ForgeContainer:
         orchestrator=orchestrator,
         executor=executor,
         profile_summary_agent=ProfileSummaryAgent(settings=settings, providers=providers),
+        mission_runner=mission_runner,
     )
     worker = WorkerService(settings=settings, store=store, processor=processor)
     return ForgeContainer(
         settings=settings,
         store=store,
         providers=providers,
+        integrations=integrations,
         transport=transport,
+        mission_runner=mission_runner,
         worker=worker,
     )
 
@@ -126,6 +167,8 @@ def create_app(container: ForgeContainer | None = None) -> FastAPI:
     app.state.auth_client = auth_client
     app.state.settings = container.settings
     app.state.store = container.store
+    app.state.integrations = container.integrations
+    app.state.mission_runner = container.mission_runner
     app.state.orchestrator = (
         container.worker.processor.orchestrator
         if hasattr(container.worker, "processor")

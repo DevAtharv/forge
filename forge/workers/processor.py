@@ -15,8 +15,10 @@ from forge.agents import (
 )
 from forge.agents.orchestrator import OrchestratorAgent
 from forge.config import Settings
+from forge.integrations import OAuthError
 from forge.memory import MemoryStore, build_user_context
-from forge.schemas import ConversationRecord, DeliveryPayload, MessageJob, OrchestrationPlan, StageExecution, UserProfile
+from forge.missions import MissionRunner
+from forge.schemas import ConversationRecord, DeliveryPayload, MessageJob, MissionRecord, OrchestrationPlan, StageExecution, UserProfile
 from forge.telegram import TelegramTransport
 
 StageCallback = Callable[[str], Awaitable[None]]
@@ -37,6 +39,38 @@ def _extract_link_code(text: str) -> str | None:
     if len(parts) < 2:
         return ""
     return parts[1].strip().upper()
+
+
+def _parse_project_command(text: str) -> tuple[str, str] | None:
+    stripped = text.strip()
+    if not stripped.startswith("/"):
+        return None
+    parts = stripped.split(maxsplit=1)
+    command = parts[0].lower()
+    value = parts[1].strip() if len(parts) > 1 else ""
+    if command in {"/connect", "/deploy", "/projects", "/status", "/new", "/build", "/files"}:
+        return command, value
+    return None
+
+
+def _looks_like_build_request(text: str) -> bool:
+    lower = text.lower()
+    return any(
+        token in lower
+        for token in (
+            "build me",
+            "create a website",
+            "make a website",
+            "build a website",
+            "deploy it",
+            "landing page",
+            "portfolio",
+            "dashboard",
+            "sweet shop",
+            "ecommerce",
+            "build an app",
+        )
+    )
 
 
 class PipelineExecutor:
@@ -115,6 +149,7 @@ class JobProcessor:
         orchestrator: OrchestratorAgent,
         executor: PipelineExecutor,
         profile_summary_agent: ProfileSummaryAgent,
+        mission_runner: MissionRunner,
     ) -> None:
         self.settings = settings
         self.store = store
@@ -122,6 +157,7 @@ class JobProcessor:
         self.orchestrator = orchestrator
         self.executor = executor
         self.profile_summary_agent = profile_summary_agent
+        self.mission_runner = mission_runner
 
     async def process(self, job: MessageJob) -> None:
         message = _extract_message(job.raw_update)
@@ -171,6 +207,38 @@ class JobProcessor:
             await self.store.complete_message_job(job.id or "", result_preview="Telegram account linked.")
             return
 
+        parsed_command = _parse_project_command(text)
+        if parsed_command is not None:
+            result_preview = await self._handle_command(
+                chat_id=chat_id,
+                user_id=user_id,
+                username=username,
+                command=parsed_command[0],
+                value=parsed_command[1],
+            )
+            await self.store.complete_message_job(job.id or "", result_preview=result_preview)
+            return
+
+        if _looks_like_build_request(text) and not photo_sizes:
+            link = await self.store.get_account_link_for_telegram(user_id)
+            workspace_user_id = link.workspace_user_id if link is not None else user_id
+            await self.store.ensure_user_profile(workspace_user_id, link.web_email if link else username)
+            await self.store.append_conversation(ConversationRecord(user_id=workspace_user_id, role="user", content=text))
+            status_message_id = await self.transport.send_status_message(chat_id, "Forge queued your build mission...")
+            mission = await self.store.create_mission(
+                MissionRecord(
+                    workspace_user_id=workspace_user_id,
+                    chat_id=chat_id,
+                    source="telegram",
+                    kind="build",
+                    prompt=text,
+                )
+            )
+            mission = await self.mission_runner.run_mission(mission.id or "")
+            await self.transport.edit_status_message(chat_id, status_message_id, mission.response_text or "Build completed.")
+            await self.store.complete_message_job(job.id or "", result_preview=mission.result_summary or "Build completed.")
+            return
+
         status_message_id = await self.transport.send_status_message(chat_id, "Forge is assembling the right agents...")
         await self.store.attach_status_message(job.id or "", status_message_id)
 
@@ -218,6 +286,128 @@ class JobProcessor:
         await self.store.complete_message_job(job.id or "", result_preview=delivery.text[:240])
 
         asyncio.create_task(self.refresh_profile(workspace_user_id, link.web_email if link else username))
+
+    async def _handle_command(
+        self,
+        *,
+        chat_id: int,
+        user_id: int,
+        username: str | None,
+        command: str,
+        value: str,
+    ) -> str:
+        link = await self.store.get_account_link_for_telegram(user_id)
+        workspace_user_id = link.workspace_user_id if link is not None else user_id
+        await self.store.ensure_user_profile(workspace_user_id, link.web_email if link else username)
+
+        if command == "/status":
+            mission = await self.store.create_mission(
+                MissionRecord(
+                    workspace_user_id=workspace_user_id,
+                    chat_id=chat_id,
+                    source="telegram",
+                    kind="status",
+                    prompt="status",
+                )
+            )
+            mission = await self.mission_runner.run_mission(mission.id or "")
+            await self.transport.send_status_message(chat_id, mission.response_text or "Status ready.")
+            return mission.result_summary or "Status ready."
+
+        if command == "/projects":
+            projects = await self.store.list_projects(workspace_user_id)
+            if not projects:
+                text = "No projects yet. Use /new PROJECT_NAME or send a build request."
+            else:
+                text = "\n".join(f"- {item.slug}: {item.archetype}" for item in projects[:12])
+            await self.transport.send_status_message(chat_id, text)
+            return text[:240]
+
+        if command == "/connect":
+            provider = value.lower().strip()
+            if provider not in {"github", "vercel"}:
+                text = "Use /connect github or /connect vercel."
+                await self.transport.send_status_message(chat_id, text)
+                return text
+            try:
+                url = self.mission_runner.integrations.build_authorize_url(provider, workspace_user_id=workspace_user_id)
+            except OAuthError as exc:
+                await self.transport.send_status_message(chat_id, str(exc))
+                return str(exc)
+            text = f"Open this link to connect {provider.title()}:\n{url}"
+            await self.transport.send_status_message(chat_id, text)
+            return text[:240]
+
+        if command == "/new":
+            name = value or "Forge Project"
+            await self.store.append_conversation(
+                ConversationRecord(user_id=workspace_user_id, role="user", content=f"/new {name}")
+            )
+            mission = await self.store.create_mission(
+                MissionRecord(
+                    workspace_user_id=workspace_user_id,
+                    chat_id=chat_id,
+                    source="telegram",
+                    kind="build",
+                    prompt=f"Build a production-ready app called {name}",
+                )
+            )
+            mission = await self.mission_runner.run_mission(mission.id or "")
+            await self.transport.send_status_message(chat_id, mission.response_text or "Project created.")
+            return mission.result_summary or "Project created."
+
+        if command == "/build":
+            await self.store.append_conversation(
+                ConversationRecord(user_id=workspace_user_id, role="user", content=f"/build {value}")
+            )
+            mission = await self.store.create_mission(
+                MissionRecord(
+                    workspace_user_id=workspace_user_id,
+                    chat_id=chat_id,
+                    source="telegram",
+                    kind="build",
+                    prompt=value or "Build a production-ready app",
+                )
+            )
+            mission = await self.mission_runner.run_mission(mission.id or "")
+            await self.transport.send_status_message(chat_id, mission.response_text or "Build completed.")
+            return mission.result_summary or "Build completed."
+
+        if command == "/deploy":
+            project = await self.store.get_project_by_name(workspace_user_id, value)
+            if project is None:
+                text = "Project not found. Use /projects to list available project slugs."
+                await self.transport.send_status_message(chat_id, text)
+                return text
+            await self.store.append_conversation(
+                ConversationRecord(user_id=workspace_user_id, role="user", content=f"/deploy {value}")
+            )
+            mission = await self.store.create_mission(
+                MissionRecord(
+                    workspace_user_id=workspace_user_id,
+                    chat_id=chat_id,
+                    source="telegram",
+                    kind="deploy",
+                    prompt=f"Deploy {project.name}",
+                    project_id=project.id,
+                )
+            )
+            mission = await self.mission_runner.run_mission(mission.id or "")
+            await self.transport.send_status_message(chat_id, mission.response_text or "Deployment processed.")
+            return mission.result_summary or "Deployment processed."
+
+        if command == "/files":
+            project = await self.store.get_project_by_name(workspace_user_id, value)
+            if project is None:
+                text = "Project not found. Use /projects to list available project slugs."
+            else:
+                text = "\n".join(f"- {name}" for name in sorted((project.latest_manifest or {}).keys())[:50])
+            await self.transport.send_status_message(chat_id, text)
+            return text[:240]
+
+        fallback = "Unsupported command."
+        await self.transport.send_status_message(chat_id, fallback)
+        return fallback
 
     async def refresh_profile(self, user_id: int, username: str | None) -> None:
         profile = await self.store.get_user_profile(user_id)

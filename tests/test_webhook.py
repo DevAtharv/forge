@@ -6,6 +6,9 @@ from forge.bootstrap import ForgeContainer, create_app
 from forge.agents.aggregator import PipelineAggregator
 from forge.agents.orchestrator import OrchestratorAgent
 from forge.agents.task_agents import CodeAgent, DebugAgent, PlannerAgent, ProfileSummaryAgent, ResearchAgent, ReviewerAgent
+from forge.builder import HybridProjectBuilder
+from forge.integrations import IntegrationService
+from forge.missions import MissionRunner
 from forge.providers.base import Fetcher, FetchedDocument, SearchProvider
 from forge.providers.registry import ProviderRegistry
 from tests.support import FakeAuthClient, FakeTransport, NoopWorker
@@ -41,11 +44,14 @@ class SequencedProvider:
 
 def test_webhook_deduplicates_updates(settings, store) -> None:
     providers = ProviderRegistry(llm_providers={}, search_provider=NoopSearch(), fetcher=NoopFetch())
+    integrations = IntegrationService(settings=settings, store=store)
     container = ForgeContainer(
         settings=settings,
         store=store,
         providers=providers,
+        integrations=integrations,
         transport=FakeTransport(),
+        mission_runner=MissionRunner(store=store, integrations=integrations, transport=FakeTransport(), builder=HybridProjectBuilder()),
         worker=NoopWorker(),
     )
     app = create_app(container)
@@ -72,11 +78,14 @@ def test_webhook_deduplicates_updates(settings, store) -> None:
 
 def test_root_serves_ui_and_demo_plan_endpoint_works(settings, store) -> None:
     providers = ProviderRegistry(llm_providers={}, search_provider=NoopSearch(), fetcher=NoopFetch())
+    integrations = IntegrationService(settings=settings, store=store)
     container = ForgeContainer(
         settings=settings,
         store=store,
         providers=providers,
+        integrations=integrations,
         transport=FakeTransport(),
+        mission_runner=MissionRunner(store=store, integrations=integrations, transport=FakeTransport(), builder=HybridProjectBuilder()),
         worker=NoopWorker(),
     )
     app = create_app(container)
@@ -94,11 +103,14 @@ def test_root_serves_ui_and_demo_plan_endpoint_works(settings, store) -> None:
 
 def test_auth_and_protected_plan_endpoints_work(settings, store) -> None:
     providers = ProviderRegistry(llm_providers={}, search_provider=NoopSearch(), fetcher=NoopFetch())
+    integrations = IntegrationService(settings=settings, store=store)
     container = ForgeContainer(
         settings=settings,
         store=store,
         providers=providers,
+        integrations=integrations,
         transport=FakeTransport(),
+        mission_runner=MissionRunner(store=store, integrations=integrations, transport=FakeTransport(), builder=HybridProjectBuilder()),
         worker=NoopWorker(),
     )
     app = create_app(container)
@@ -184,12 +196,21 @@ def test_dashboard_and_run_endpoints_return_workspace_data(settings, store) -> N
         orchestrator=orchestrator,
         executor=executor,
         profile_summary_agent=ProfileSummaryAgent(settings=settings, providers=providers),
+        mission_runner=MissionRunner(
+            store=store,
+            integrations=IntegrationService(settings=settings, store=store),
+            transport=FakeTransport(),
+            builder=HybridProjectBuilder(),
+        ),
     )
+    integrations = IntegrationService(settings=settings, store=store)
     container = ForgeContainer(
         settings=settings,
         store=store,
         providers=providers,
+        integrations=integrations,
         transport=FakeTransport(),
+        mission_runner=MissionRunner(store=store, integrations=integrations, transport=FakeTransport(), builder=HybridProjectBuilder()),
         worker=ProcessorWorker(processor=processor),
     )
     app = create_app(container)
@@ -207,18 +228,21 @@ def test_dashboard_and_run_endpoints_return_workspace_data(settings, store) -> N
     assert dashboard.status_code == 200
     assert dashboard.json()["user"]["email"] == "demo@forge.dev"
     assert run.status_code == 200
-    assert run.json()["plan"]["stages"][0]["name"] == "plan"
-    assert "Built the FastAPI auth service" in run.json()["delivery"]["text"]
-    assert len(run.json()["history"]) == 2
+    assert run.json()["message"] == "Mission queued. Forge will keep running it in the background."
+    assert run.json()["mission"]["kind"] == "build"
+    assert len(run.json()["history"]) >= 1
 
 
 def test_dashboard_exposes_telegram_link_status_and_link_code(settings, store) -> None:
     providers = ProviderRegistry(llm_providers={}, search_provider=NoopSearch(), fetcher=NoopFetch())
+    integrations = IntegrationService(settings=settings, store=store)
     container = ForgeContainer(
         settings=settings,
         store=store,
         providers=providers,
+        integrations=integrations,
         transport=FakeTransport(),
+        mission_runner=MissionRunner(store=store, integrations=integrations, transport=FakeTransport(), builder=HybridProjectBuilder()),
         worker=NoopWorker(),
     )
     app = create_app(container)

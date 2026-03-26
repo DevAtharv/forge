@@ -483,9 +483,22 @@ async function loadDashboard() {
     renderProfile(payload.profile);
     renderHistory(payload.history);
     renderTelegramLink(payload.telegram_link);
+    els.resultMeta.textContent = `${(payload.projects || []).length} project${(payload.projects || []).length === 1 ? "" : "s"} • ${(payload.integrations || []).length} integration${(payload.integrations || []).length === 1 ? "" : "s"}`;
   } catch (error) {
     els.workspaceFeedback.textContent = error.message;
   }
+}
+
+async function pollMission(missionId) {
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const payload = await fetchAuthedJson(`/api/app/missions/${missionId}`);
+    const mission = payload.mission;
+    if (mission.status === "completed" || mission.status === "failed" || mission.status === "awaiting_approval") {
+      return mission;
+    }
+    await new Promise((resolve) => window.setTimeout(resolve, 1500));
+  }
+  throw new Error("Mission is still running. Check back in a moment.");
 }
 
 async function restoreSession() {
@@ -599,11 +612,16 @@ async function runMission() {
     renderAuthState();
     renderProfile(payload.profile);
     renderHistory(payload.history);
-    renderPlan(payload.plan, `Protected mission • ${payload.user.email || "authenticated user"}`);
-    renderDelivery(payload.delivery);
-    renderArtifacts(payload.stages, payload.delivery);
-    renderTerminal(payload.stages, payload.delivery);
-    els.workspaceFeedback.textContent = `Mission complete: ${payload.plan.intent}`;
+    els.workspaceFeedback.textContent = payload.message || "Mission queued.";
+    const mission = await pollMission(payload.mission.id);
+    renderDelivery({ text: mission.response_text || mission.result_summary || "Mission completed." });
+    renderArtifacts([], null);
+    renderTerminal([], null);
+    els.resultIntent.textContent = mission.result_summary || mission.kind;
+    els.resultContext.textContent = `${mission.kind} • ${mission.status}`;
+    els.resultStages.innerHTML = "";
+    els.workspaceFeedback.textContent = `Mission ${mission.status}: ${mission.result_summary || mission.prompt}`;
+    await loadDashboard();
   } catch (error) {
     els.workspaceFeedback.textContent = error.message;
   } finally {

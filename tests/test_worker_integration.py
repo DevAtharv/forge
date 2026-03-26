@@ -6,6 +6,9 @@ import pytest
 from forge.agents.aggregator import PipelineAggregator
 from forge.agents.orchestrator import OrchestratorAgent
 from forge.agents.task_agents import CodeAgent, DebugAgent, PlannerAgent, ProfileSummaryAgent, ResearchAgent, ReviewerAgent
+from forge.builder import HybridProjectBuilder
+from forge.integrations import IntegrationService
+from forge.missions import MissionRunner
 from forge.providers.base import Fetcher, FetchedDocument, SearchHit, SearchProvider
 from forge.providers.registry import ProviderRegistry
 from forge.schemas import MessageJob
@@ -107,6 +110,7 @@ async def test_worker_processes_code_pipeline_and_updates_memory(settings, store
         fetcher=StaticFetch(),
     )
     transport = FakeTransport()
+    integrations = IntegrationService(settings=settings, store=store)
     orchestrator = OrchestratorAgent(settings=settings, providers=providers)
     executor = PipelineExecutor(
         planner=PlannerAgent(settings=settings, providers=providers),
@@ -123,6 +127,7 @@ async def test_worker_processes_code_pipeline_and_updates_memory(settings, store
         orchestrator=orchestrator,
         executor=executor,
         profile_summary_agent=ProfileSummaryAgent(settings=settings, providers=providers),
+        mission_runner=MissionRunner(store=store, integrations=integrations, transport=transport, builder=HybridProjectBuilder()),
     )
 
     job = await store.enqueue_message_job(
@@ -136,7 +141,7 @@ async def test_worker_processes_code_pipeline_and_updates_memory(settings, store
                     "message_id": 1,
                     "from": {"id": 42, "username": "alice"},
                     "chat": {"id": 42, "type": "private"},
-                    "text": "build me a full flask auth endpoint",
+                    "text": "add a full flask auth endpoint",
                 },
             },
         )
@@ -187,6 +192,7 @@ async def test_worker_processes_image_debug_request(settings, store) -> None:
     )
     transport = FakeTransport()
     transport.photo_bytes = b"fake-image"
+    integrations = IntegrationService(settings=settings, store=store)
     orchestrator = OrchestratorAgent(settings=settings, providers=providers)
     executor = PipelineExecutor(
         planner=PlannerAgent(settings=settings, providers=providers),
@@ -203,6 +209,7 @@ async def test_worker_processes_image_debug_request(settings, store) -> None:
         orchestrator=orchestrator,
         executor=executor,
         profile_summary_agent=ProfileSummaryAgent(settings=settings, providers=providers),
+        mission_runner=MissionRunner(store=store, integrations=integrations, transport=transport, builder=HybridProjectBuilder()),
     )
 
     job = await store.enqueue_message_job(
@@ -264,6 +271,7 @@ async def test_research_agent_falls_back_when_search_is_unavailable(settings, st
         fetcher=StaticFetch(),
     )
     transport = FakeTransport()
+    integrations = IntegrationService(settings=settings, store=store)
     orchestrator = OrchestratorAgent(settings=settings, providers=providers)
     executor = PipelineExecutor(
         planner=PlannerAgent(settings=settings, providers=providers),
@@ -280,6 +288,7 @@ async def test_research_agent_falls_back_when_search_is_unavailable(settings, st
         orchestrator=orchestrator,
         executor=executor,
         profile_summary_agent=ProfileSummaryAgent(settings=settings, providers=providers),
+        mission_runner=MissionRunner(store=store, integrations=integrations, transport=transport, builder=HybridProjectBuilder()),
     )
 
     job = await store.enqueue_message_job(
@@ -321,6 +330,7 @@ async def test_worker_consumes_telegram_link_code_before_pipeline(settings, stor
         fetcher=StaticFetch(),
     )
     transport = FakeTransport()
+    integrations = IntegrationService(settings=settings, store=store)
     orchestrator = OrchestratorAgent(settings=settings, providers=providers)
     executor = PipelineExecutor(
         planner=PlannerAgent(settings=settings, providers=providers),
@@ -337,6 +347,7 @@ async def test_worker_consumes_telegram_link_code_before_pipeline(settings, stor
         orchestrator=orchestrator,
         executor=executor,
         profile_summary_agent=ProfileSummaryAgent(settings=settings, providers=providers),
+        mission_runner=MissionRunner(store=store, integrations=integrations, transport=transport, builder=HybridProjectBuilder()),
     )
 
     job = await store.enqueue_message_job(

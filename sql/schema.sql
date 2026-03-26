@@ -70,6 +70,7 @@ create table if not exists account_links (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+create index if not exists account_links_workspace_idx on account_links(workspace_user_id);
 
 create table if not exists link_tokens (
   code text primary key,
@@ -86,6 +87,92 @@ create table if not exists link_tokens (
 
 create index if not exists link_tokens_web_user_idx on link_tokens(web_user_id, created_at desc);
 create index if not exists link_tokens_expires_idx on link_tokens(expires_at);
+
+create table if not exists oauth_connections (
+  id uuid primary key default gen_random_uuid(),
+  workspace_user_id bigint not null,
+  provider text not null check (provider in ('github', 'vercel')),
+  account_id text not null,
+  account_name text,
+  access_token_encrypted text not null,
+  refresh_token_encrypted text,
+  expires_at timestamptz,
+  scopes jsonb not null default '[]'::jsonb,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (workspace_user_id, provider)
+);
+
+create table if not exists projects (
+  id uuid primary key default gen_random_uuid(),
+  workspace_user_id bigint not null,
+  name text not null,
+  slug text not null,
+  prompt text not null,
+  archetype text not null,
+  repo_owner text,
+  repo_name text,
+  repo_url text,
+  default_branch text not null default 'main',
+  latest_manifest jsonb not null default '{}'::jsonb,
+  deployment_metadata jsonb not null default '{}'::jsonb,
+  latest_preview text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (workspace_user_id, slug)
+);
+
+create table if not exists project_revisions (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references projects(id) on delete cascade,
+  workspace_user_id bigint not null,
+  mission_id uuid,
+  summary text not null,
+  file_manifest jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists deployments (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references projects(id) on delete cascade,
+  workspace_user_id bigint not null,
+  provider text not null check (provider in ('vercel')),
+  status text not null,
+  deployment_url text,
+  external_id text,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists missions (
+  id uuid primary key default gen_random_uuid(),
+  workspace_user_id bigint not null,
+  chat_id bigint,
+  source text not null check (source in ('telegram', 'web')),
+  kind text not null check (kind in ('build', 'deploy', 'edit', 'status')),
+  status text not null check (status in ('queued', 'planning', 'building', 'reviewing', 'deploying', 'awaiting_approval', 'completed', 'failed')),
+  prompt text not null,
+  project_id uuid references projects(id) on delete set null,
+  plan jsonb not null default '{}'::jsonb,
+  result_summary text,
+  response_text text,
+  repo_url text,
+  deployment_url text,
+  changed_files jsonb not null default '[]'::jsonb,
+  approval_request jsonb,
+  error text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  completed_at timestamptz
+);
+
+create index if not exists oauth_connections_user_provider_idx on oauth_connections(workspace_user_id, provider);
+create index if not exists projects_user_updated_idx on projects(workspace_user_id, updated_at desc);
+create index if not exists project_revisions_project_created_idx on project_revisions(project_id, created_at desc);
+create index if not exists deployments_project_created_idx on deployments(project_id, created_at desc);
+create index if not exists missions_claim_idx on missions(status, created_at);
 
 drop trigger if exists conversations_set_updated_at on conversations;
 create trigger conversations_set_updated_at
@@ -114,6 +201,30 @@ execute function set_updated_at();
 drop trigger if exists link_tokens_set_updated_at on link_tokens;
 create trigger link_tokens_set_updated_at
 before update on link_tokens
+for each row
+execute function set_updated_at();
+
+drop trigger if exists oauth_connections_set_updated_at on oauth_connections;
+create trigger oauth_connections_set_updated_at
+before update on oauth_connections
+for each row
+execute function set_updated_at();
+
+drop trigger if exists projects_set_updated_at on projects;
+create trigger projects_set_updated_at
+before update on projects
+for each row
+execute function set_updated_at();
+
+drop trigger if exists deployments_set_updated_at on deployments;
+create trigger deployments_set_updated_at
+before update on deployments
+for each row
+execute function set_updated_at();
+
+drop trigger if exists missions_set_updated_at on missions;
+create trigger missions_set_updated_at
+before update on missions
 for each row
 execute function set_updated_at();
 
@@ -355,5 +466,41 @@ begin
   returning * into link_row;
 
   return link_row;
+end;
+$$;
+
+create or replace function claim_missions(
+  p_worker_id text,
+  p_limit integer default 1,
+  p_lock_timeout_seconds integer default 300
+)
+returns setof missions
+language plpgsql
+security definer
+as $$
+begin
+  return query
+  with candidates as (
+    select id
+    from missions
+    where (
+      status = 'queued'
+      or (
+        status in ('planning', 'building', 'reviewing', 'deploying')
+        and updated_at < now() - make_interval(secs => p_lock_timeout_seconds)
+      )
+    )
+    order by created_at
+    for update skip locked
+    limit p_limit
+  ),
+  updated as (
+    update missions
+    set status = 'planning',
+        plan = coalesce(plan, '{}'::jsonb) || jsonb_build_object('claimed_by', p_worker_id)
+    where id in (select id from candidates)
+    returning *
+  )
+  select * from updated;
 end;
 $$;

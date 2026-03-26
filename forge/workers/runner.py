@@ -33,9 +33,6 @@ class WorkerService:
                 limit=self.settings.worker_batch_size,
                 lock_timeout_seconds=self.settings.worker_lock_timeout_seconds,
             )
-            if not jobs:
-                await self._sleep()
-                continue
             for job in jobs:
                 try:
                     await self.processor.process(job)
@@ -50,6 +47,25 @@ class WorkerService:
                     )
                     if failed.status == "dead_letter":
                         await self.processor.notify_terminal_failure(failed)
+
+            missions = await self.store.claim_missions(
+                worker_id=self.settings.worker_id,
+                limit=self.settings.worker_batch_size,
+                lock_timeout_seconds=self.settings.worker_lock_timeout_seconds,
+            )
+            for mission in missions:
+                try:
+                    await self.processor.mission_runner.run_mission(mission.id or "")
+                except asyncio.CancelledError:
+                    raise
+                except Exception as exc:
+                    await self.store.update_mission(
+                        mission.id or "",
+                        {"status": "failed", "error": str(exc), "response_text": f"Mission failed: {exc}"},
+                    )
+
+            if not jobs and not missions:
+                await self._sleep()
 
     async def _sleep(self) -> None:
         try:
