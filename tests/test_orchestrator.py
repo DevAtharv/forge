@@ -38,6 +38,24 @@ async def test_orchestrator_falls_back_to_heuristics_for_complex_code_request(se
 
 
 @pytest.mark.asyncio
+async def test_orchestrator_uses_full_pipeline_for_website_build_requests(settings) -> None:
+    orchestrator = OrchestratorAgent(settings=settings, providers=BrokenProviderRegistry())
+    profile = UserProfile(user_id=1)
+
+    plan = await orchestrator.plan(
+        "Build me a website for a sweet shop",
+        history=[],
+        profile=profile,
+        has_image=False,
+    )
+
+    assert [stage.name for stage in plan.stages] == ["plan", "implement", "review"]
+    assert plan.stages[0].agents == ["planner"]
+    assert plan.stages[1].agents == ["code"]
+    assert plan.stages[2].agents == ["reviewer"]
+
+
+@pytest.mark.asyncio
 async def test_orchestrator_normalizes_explanation_plans_to_research_only(settings) -> None:
     orchestrator = OrchestratorAgent(
         settings=settings,

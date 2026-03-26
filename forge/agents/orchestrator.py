@@ -80,6 +80,10 @@ class OrchestratorAgent:
             token in lower
             for token in ("error", "exception", "traceback", "crash", "500", "404", "bug", "failing")
         )
+        website_signals = any(
+            token in lower
+            for token in ("website", "web site", "landing page", "portfolio", "frontend", "sweet shop", "ecommerce")
+        )
 
         if not debug_signals:
             normalized_stages: list[StagePlan] = []
@@ -128,6 +132,22 @@ class OrchestratorAgent:
                 stages=[StagePlan(name="research", agents=["research"], tasks={"research": message})],
             )
 
+        if code_signals and website_signals:
+            has_planner = any("planner" in stage.agents for stage in plan.stages)
+            has_code = any("code" in stage.agents for stage in plan.stages)
+            has_reviewer = any("reviewer" in stage.agents for stage in plan.stages)
+            if not (has_planner and has_code and has_reviewer):
+                return OrchestrationPlan(
+                    intent=plan.intent or "Plan and build a production website implementation",
+                    response_format="code",
+                    context_policy="recent_plus_profile_plus_summary",
+                    stages=[
+                        StagePlan(name="plan", agents=["planner"], tasks={"planner": message}),
+                        StagePlan(name="implement", agents=["code"], tasks={"code": message}),
+                        StagePlan(name="review", agents=["reviewer"], tasks={"reviewer": message}),
+                    ],
+                )
+
         return plan
 
     def _heuristic_plan(self, message: str, *, has_image: bool) -> OrchestrationPlan:
@@ -148,6 +168,10 @@ class OrchestratorAgent:
             token in lower
             for token in ("full ", "complete ", "crud", "architecture", "system", "auth", "api", "postgres")
         )
+        website_signals = any(
+            token in lower
+            for token in ("website", "web site", "landing page", "portfolio", "frontend", "sweet shop", "ecommerce")
+        )
 
         if debug_signals and not code_signals and not wants_explanation:
             return OrchestrationPlan(
@@ -165,7 +189,7 @@ class OrchestratorAgent:
                 stages=[StagePlan(name="research", agents=["research"], tasks={"research": message})],
             )
 
-        if code_signals and complex_signals:
+        if code_signals and (complex_signals or website_signals):
             return OrchestrationPlan(
                 intent="Plan, implement, and review the requested build",
                 response_format="code",

@@ -90,6 +90,9 @@ Additional rules:
 - Prefer complete files in artifacts when code is non-trivial.
 - handoff must include "implementation_summary" and may include "files_created".
 - user_visible_text should summarize what was implemented and how to use it.
+- Do not return tutorial-only scaffolds, empty files, TODO comments, placeholder strings, or fake implementation notes.
+- If a frontend/website is requested, provide complete HTML/CSS/JS with responsive layout, meaningful content structure, and working interactions.
+- If the request implies deployment, include concrete deployable files (for example `vercel.json`, `requirements.txt`, `Dockerfile`) when relevant.
 """.strip()
 
 
@@ -127,6 +130,8 @@ Additional rules:
 - user_visible_text should be terse and user-facing.
 - handoff should include "bugs", "security", "performance", and "verdict".
 - Only flag real issues, not style preferences.
+- Mark code as NOT production-ready if it contains placeholders, mock data only, empty scripts, or unimplemented critical paths.
+- If critical gaps exist, include a corrected replacement artifact for the most important file.
 """.strip()
 
 
