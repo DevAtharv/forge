@@ -21,6 +21,18 @@ def test_hybrid_builder_generates_web_project_files() -> None:
     assert "vercel.json" in names
 
 
+def test_hybrid_builder_generates_weather_project_files() -> None:
+    builder = HybridProjectBuilder()
+    blueprint = builder.choose_blueprint("Build a production ready weather app")
+    artifacts = builder.build_files(blueprint, "Build a production ready weather app")
+    files = {item.name: item.content for item in artifacts}
+
+    assert blueprint.archetype == "weather-app"
+    assert "src/App.tsx" in files
+    assert "Open-Meteo" in files["src/App.tsx"]
+    assert "forecast-grid" in files["src/styles.css"]
+
+
 @pytest.mark.asyncio
 async def test_mission_runner_builds_project_and_waits_for_github_connection(settings, store) -> None:
     runner = MissionRunner(

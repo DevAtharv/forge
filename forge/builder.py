@@ -44,6 +44,15 @@ class HybridProjectBuilder:
                 headline="A cinematic portfolio with bold typography, media sections, and a protected workspace.",
                 accent="#22c55e",
             )
+        if any(token in lower for token in ("weather", "forecast", "climate")):
+            return BuildBlueprint(
+                archetype="weather-app",
+                project_name=name,
+                slug=slug,
+                title=f"{name} Weather",
+                headline="A polished live weather dashboard with forecast cards, city search, and launch-ready UI.",
+                accent="#7dd3fc",
+            )
         if any(token in lower for token in ("saas", "dashboard", "auth", "admin")):
             return BuildBlueprint(
                 archetype="auth-saas-dashboard",
@@ -74,6 +83,8 @@ class HybridProjectBuilder:
     def build_files(self, blueprint: BuildBlueprint, prompt: str) -> list[Artifact]:
         if blueprint.archetype == "fastapi-backend":
             return self._build_fastapi_backend(blueprint, prompt)
+        if blueprint.archetype == "weather-app":
+            return self._build_weather_app(blueprint, prompt)
         return self._build_web_app(blueprint, prompt)
 
     def _infer_project_name(self, prompt: str) -> str:
@@ -499,6 +510,470 @@ button {{
 }}""",
             ".env.example": """VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY""",
+            "vercel.json": """{
+  "cleanUrls": true,
+  "trailingSlash": false
+}""",
+            "terminal_commands.sh": """#!/usr/bin/env bash
+set -euo pipefail
+npm install
+npm run build
+npx vercel --prod --yes""",
+        }
+        return [
+            Artifact(
+                name=path,
+                content=content,
+                language=self._language_for_path(path),
+                mime_type=self._mime_for_path(path),
+            )
+            for path, content in files.items()
+        ]
+
+    def _build_weather_app(self, blueprint: BuildBlueprint, prompt: str) -> list[Artifact]:
+        slug = blueprint.slug
+        title = blueprint.title
+        files = {
+            "package.json": f"""{{
+  "name": "{slug}",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {{
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  }},
+  "dependencies": {{
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }},
+  "devDependencies": {{
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  }}
+}}""",
+            "index.html": f"""<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <script type="module" src="/src/main.tsx"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>""",
+            "vite.config.ts": """import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+});""",
+            "tsconfig.json": """{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src"],
+  "references": []
+}""",
+            "src/main.tsx": """import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./styles.css";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);""",
+            "src/App.tsx": """import { useEffect, useState } from "react";
+
+type WeatherPayload = {
+  city: string;
+  temperature: number;
+  windspeed: number;
+  weatherCode: number;
+  time: string;
+  forecast: Array<{ label: string; high: number; low: number }>;
+};
+
+const seedCities = ["London", "Tokyo", "New York", "Delhi"];
+
+const codeLabels: Record<number, string> = {
+  0: "Clear sky",
+  1: "Mostly clear",
+  2: "Partly cloudy",
+  3: "Overcast",
+  45: "Fog",
+  51: "Light drizzle",
+  61: "Light rain",
+  63: "Rain",
+  71: "Snow",
+  95: "Thunderstorm",
+};
+
+async function fetchWeather(city: string): Promise<WeatherPayload> {
+  const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`);
+  const geo = await geoResponse.json();
+  const place = geo.results?.[0];
+  if (!place) {
+    throw new Error("City not found.");
+  }
+
+  const weatherResponse = await fetch(
+    `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`,
+  );
+  const weather = await weatherResponse.json();
+
+  return {
+    city: `${place.name}, ${place.country_code}`,
+    temperature: Math.round(weather.current.temperature_2m),
+    windspeed: Math.round(weather.current.wind_speed_10m),
+    weatherCode: weather.current.weather_code,
+    time: weather.current.time,
+    forecast: weather.daily.time.slice(0, 5).map((date: string, index: number) => ({
+      label: new Date(date).toLocaleDateString(undefined, { weekday: "short" }),
+      high: Math.round(weather.daily.temperature_2m_max[index]),
+      low: Math.round(weather.daily.temperature_2m_min[index]),
+    })),
+  };
+}
+
+export default function App() {
+  const [query, setQuery] = useState("Delhi");
+  const [weather, setWeather] = useState<WeatherPayload | null>(null);
+  const [status, setStatus] = useState("Loading live weather...");
+
+  useEffect(() => {
+    void loadCity("Delhi");
+  }, []);
+
+  const loadCity = async (city: string) => {
+    setStatus(`Loading ${city}...`);
+    try {
+      const payload = await fetchWeather(city);
+      setWeather(payload);
+      setStatus("Live data loaded from Open-Meteo.");
+      setQuery(city);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Failed to load weather.");
+    }
+  };
+
+  return (
+    <main className="shell">
+      <section className="hero">
+        <div className="hero-copy">
+          <p className="eyebrow">Forge Weather Studio</p>
+          <h1>Live forecast, bold visuals, and a landing page that feels like a real product.</h1>
+          <p className="subcopy">
+            Generated from a stronger Forge scaffold for prompts like: __PROMPT__
+          </p>
+          <div className="search-row">
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search a city"
+            />
+            <button onClick={() => void loadCity(query)}>Check weather</button>
+          </div>
+          <div className="chip-row">
+            {seedCities.map((city) => (
+              <button key={city} className="chip" onClick={() => void loadCity(city)}>
+                {city}
+              </button>
+            ))}
+          </div>
+          <p className="status">{status}</p>
+        </div>
+        <div className="hero-card">
+          <p className="hero-card-label">Current Conditions</p>
+          <h2>{weather?.city ?? "Waiting for data"}</h2>
+          <div className="temp-row">
+            <strong>{weather ? `${weather.temperature}°` : "--"}</strong>
+            <span>{weather ? codeLabels[weather.weatherCode] ?? "Dynamic weather" : "Forecast incoming"}</span>
+          </div>
+          <div className="detail-grid">
+            <article>
+              <span>Wind</span>
+              <strong>{weather ? `${weather.windspeed} km/h` : "--"}</strong>
+            </article>
+            <article>
+              <span>Updated</span>
+              <strong>{weather ? new Date(weather.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "--"}</strong>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="forecast-panel">
+        <div className="section-head">
+          <p className="eyebrow">Five Day Outlook</p>
+          <h3>Forecast cards with real temperature ranges</h3>
+        </div>
+        <div className="forecast-grid">
+          {(weather?.forecast ?? []).map((day) => (
+            <article key={day.label} className="forecast-card">
+              <p>{day.label}</p>
+              <strong>{day.high}°</strong>
+              <span>{day.low}° overnight</span>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}""".replace("__PROMPT__", prompt),
+            "src/styles.css": """:root {
+  color-scheme: dark;
+  --bg-1: #031525;
+  --bg-2: #0c2340;
+  --panel: rgba(8, 22, 40, 0.72);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --text: #f3f8ff;
+  --muted: #a9bbd3;
+  --accent: #7dd3fc;
+  --accent-2: #fde68a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Instrument Sans", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(125, 211, 252, 0.32), transparent 28%),
+    radial-gradient(circle at 80% 10%, rgba(253, 230, 138, 0.18), transparent 24%),
+    linear-gradient(145deg, var(--bg-1) 0%, var(--bg-2) 48%, #020814 100%);
+}
+
+.shell {
+  width: min(1180px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 32px 0 72px;
+}
+
+.hero,
+.forecast-panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 28px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.28);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.3fr 0.9fr;
+  gap: 24px;
+  padding: 28px;
+}
+
+.hero-copy h1,
+.hero-card h2,
+.section-head h3 {
+  margin: 0;
+  font-family: Sora, sans-serif;
+}
+
+.hero-copy h1 {
+  font-size: clamp(2.4rem, 5vw, 4.6rem);
+  line-height: 0.96;
+  margin-bottom: 14px;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  font-size: 0.74rem;
+}
+
+.subcopy,
+.status,
+.hero-card-label,
+.forecast-card span,
+.detail-grid span {
+  color: var(--muted);
+}
+
+.search-row {
+  display: flex;
+  gap: 12px;
+  margin: 22px 0 14px;
+}
+
+.search-row input,
+.search-row button,
+.chip {
+  border: 0;
+  border-radius: 16px;
+  font: inherit;
+}
+
+.search-row input {
+  flex: 1;
+  padding: 15px 16px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.search-row button,
+.chip {
+  cursor: pointer;
+}
+
+.search-row button {
+  padding: 15px 18px;
+  background: linear-gradient(135deg, var(--accent), #38bdf8);
+  color: #052033;
+  font-weight: 700;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.hero-card {
+  border-radius: 24px;
+  padding: 24px;
+  background:
+    linear-gradient(180deg, rgba(125, 211, 252, 0.18), rgba(255, 255, 255, 0.02)),
+    rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.temp-row {
+  display: flex;
+  align-items: end;
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.temp-row strong {
+  font-size: clamp(3.5rem, 10vw, 6rem);
+  line-height: 0.9;
+  font-family: Sora, sans-serif;
+}
+
+.detail-grid,
+.forecast-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.detail-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.detail-grid article,
+.forecast-card {
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.forecast-panel {
+  margin-top: 22px;
+  padding: 26px;
+}
+
+.forecast-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.forecast-card strong {
+  display: block;
+  margin: 10px 0 4px;
+  font-size: 1.6rem;
+  font-family: Sora, sans-serif;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .forecast-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .shell {
+    width: min(100vw - 20px, 1180px);
+    padding-top: 18px;
+  }
+
+  .hero,
+  .forecast-panel {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .search-row,
+  .forecast-grid,
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .search-row {
+    display: grid;
+  }
+}""",
+            "README.md": f"""# {title}
+
+Generated by Forge Hybrid Builder.
+
+## What you get
+
+- Vite + React + TypeScript frontend
+- Real live weather data from Open-Meteo
+- Mobile-friendly forecast dashboard
+- Vercel-ready deployment config
+
+## Run locally
+
+```bash
+npm install
+npm run dev
+```""",
             "vercel.json": """{
   "cleanUrls": true,
   "trailingSlash": false

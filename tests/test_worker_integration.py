@@ -297,6 +297,60 @@ async def test_worker_accepts_plain_telegram_link_code(settings, store) -> None:
 
 
 @pytest.mark.asyncio
+async def test_worker_routes_weather_build_prompt_into_mission(settings, store) -> None:
+    providers = ProviderRegistry(
+        llm_providers={"fallback": SequencedProvider([])},
+        search_provider=StaticSearch(),
+        fetcher=StaticFetch(),
+    )
+    transport = FakeTransport()
+    integrations = IntegrationService(settings=settings, store=store)
+    orchestrator = OrchestratorAgent(settings=settings, providers=providers)
+    executor = PipelineExecutor(
+        planner=PlannerAgent(settings=settings, providers=providers),
+        code=CodeAgent(settings=settings, providers=providers),
+        debug=DebugAgent(settings=settings, providers=providers),
+        research=ResearchAgent(settings=settings, providers=providers),
+        reviewer=ReviewerAgent(settings=settings, providers=providers),
+        aggregator=PipelineAggregator(),
+    )
+    processor = JobProcessor(
+        settings=settings,
+        store=store,
+        transport=transport,
+        orchestrator=orchestrator,
+        executor=executor,
+        profile_summary_agent=ProfileSummaryAgent(settings=settings, providers=providers),
+        mission_runner=MissionRunner(store=store, integrations=integrations, transport=transport, builder=HybridProjectBuilder()),
+    )
+
+    job = await store.enqueue_message_job(
+        MessageJob(
+            telegram_update_id=4,
+            user_id=610,
+            chat_id=610,
+            raw_update={
+                "update_id": 4,
+                "message": {
+                    "message_id": 4,
+                    "from": {"id": 610, "username": "atharv"},
+                    "chat": {"id": 610, "type": "private"},
+                    "text": "Build a weather app",
+                },
+            },
+        )
+    )
+
+    await processor.process(job)
+
+    missions = await store.list_missions(610)
+    assert missions
+    assert missions[0].kind == "build"
+    assert transport.status_messages
+    assert "build mission" in transport.status_messages[0][1].lower()
+
+
+@pytest.mark.asyncio
 async def test_research_agent_falls_back_when_search_is_unavailable(settings, store) -> None:
     provider = SequencedProvider(
         [

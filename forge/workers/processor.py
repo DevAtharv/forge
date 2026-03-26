@@ -58,22 +58,26 @@ def _parse_project_command(text: str) -> tuple[str, str] | None:
 
 def _looks_like_build_request(text: str) -> bool:
     lower = text.lower()
-    return any(
-        token in lower
-        for token in (
-            "build me",
-            "create a website",
-            "make a website",
-            "build a website",
-            "deploy it",
-            "landing page",
-            "portfolio",
-            "dashboard",
-            "sweet shop",
-            "ecommerce",
-            "build an app",
-        )
+    keyword_hits = (
+        "create a website",
+        "make a website",
+        "build a website",
+        "build an app",
+        "build a web app",
+        "web app",
+        "landing page",
+        "portfolio",
+        "dashboard",
+        "sweet shop",
+        "ecommerce",
+        "deploy it",
+        "production ready",
+        "weather app",
+        "weather website",
     )
+    if any(token in lower for token in keyword_hits):
+        return True
+    return bool(re.search(r"\b(build|create|make|design)\b.+\b(app|website|site|dashboard|landing page)\b", lower))
 
 
 class PipelineExecutor:
