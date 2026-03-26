@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 from typing import Any, Awaitable, Callable
 
 from forge.agents import (
@@ -33,6 +34,8 @@ def _extract_message(raw_update: dict[str, Any]) -> dict[str, Any] | None:
 
 def _extract_link_code(text: str) -> str | None:
     stripped = text.strip()
+    if re.fullmatch(r"[A-Za-z0-9]{6}", stripped):
+        return stripped.upper()
     if not stripped.lower().startswith("/link"):
         return None
     parts = stripped.split(maxsplit=1)
