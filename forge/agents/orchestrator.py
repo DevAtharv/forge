@@ -81,6 +81,28 @@ class OrchestratorAgent:
             for token in ("error", "exception", "traceback", "crash", "500", "404", "bug", "failing")
         )
 
+        if not debug_signals:
+            normalized_stages: list[StagePlan] = []
+            for stage in plan.stages:
+                filtered_agents = [agent for agent in stage.agents if agent != "debug"]
+                if not filtered_agents:
+                    continue
+                filtered_tasks = {agent: task for agent, task in stage.tasks.items() if agent in filtered_agents}
+                normalized_stages.append(
+                    StagePlan(
+                        name=stage.name,
+                        agents=filtered_agents,
+                        tasks=filtered_tasks,
+                    )
+                )
+            if normalized_stages:
+                plan = OrchestrationPlan(
+                    intent=plan.intent,
+                    response_format=plan.response_format,
+                    context_policy=plan.context_policy,
+                    stages=normalized_stages,
+                )
+
         # Keep pure explanation prompts on the lightweight research path even if the LLM planner
         # tries to opportunistically add code or review stages.
         if plan.response_format == "explanation" and wants_explanation and not code_signals and not debug_signals:

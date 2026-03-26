@@ -82,3 +82,38 @@ def test_openrouter_free_routes_are_normalized() -> None:
 
     assert routes[0].provider == "openrouter"
     assert routes[0].model == "openrouter/auto"
+
+
+@pytest.mark.asyncio
+async def test_orchestrator_drops_debug_stage_when_no_debug_signal(settings) -> None:
+    orchestrator = OrchestratorAgent(
+        settings=settings,
+        providers=FixedProviderRegistry(
+            {
+                "intent": "Build website",
+                "response_format": "mixed",
+                "context_policy": "recent_plus_profile",
+                "stages": [
+                    {
+                        "name": "Implement",
+                        "agents": ["code", "debug", "reviewer"],
+                        "tasks": {
+                            "code": "Build sweet shop website",
+                            "debug": "Test website for errors",
+                            "reviewer": "Review generated website code",
+                        },
+                    }
+                ],
+            }
+        ),
+    )
+    profile = UserProfile(user_id=1)
+
+    plan = await orchestrator.plan(
+        "Build me a website for a sweet shop",
+        history=[],
+        profile=profile,
+        has_image=False,
+    )
+
+    assert "debug" not in plan.stages[0].agents
