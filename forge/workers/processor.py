@@ -51,7 +51,7 @@ def _parse_project_command(text: str) -> tuple[str, str] | None:
     parts = stripped.split(maxsplit=1)
     command = parts[0].lower()
     value = parts[1].strip() if len(parts) > 1 else ""
-    if command in {"/connect", "/deploy", "/projects", "/status", "/new", "/build", "/files"}:
+    if command in {"/connect", "/deploy", "/projects", "/status", "/new", "/build", "/files", "/help", "/start", "/github", "/vercel"}:
         return command, value
     return None
 
@@ -78,6 +78,44 @@ def _looks_like_build_request(text: str) -> bool:
     if any(token in lower for token in keyword_hits):
         return True
     return bool(re.search(r"\b(build|create|make|design)\b.+\b(app|website|site|dashboard|landing page)\b", lower))
+
+
+def _looks_like_greeting(text: str) -> bool:
+    return text.strip().lower() in {"hi", "hello", "hey", "yo", "start", "/start"}
+
+
+def _help_text(*, linked: bool) -> str:
+    lines = [
+        "Forge Telegram Commands",
+        "",
+        "Build:",
+        "/build Build a weather app",
+        "/new My Project",
+        "",
+        "Connect:",
+        "/connect github",
+        "/connect vercel",
+        "/github",
+        "/vercel",
+        "",
+        "Project controls:",
+        "/status",
+        "/projects",
+        "/files PROJECT_SLUG",
+        "/deploy PROJECT_SLUG",
+        "",
+        "Linking:",
+        "Send the 6-digit website code directly here, or use /link CODE.",
+    ]
+    if not linked:
+        lines.extend(
+            [
+                "",
+                "Your Telegram account is not linked to a website workspace yet.",
+                "Open Forge in the browser, generate a Telegram link code, then send that code here.",
+            ]
+        )
+    return "\n".join(lines)
 
 
 class PipelineExecutor:
@@ -226,6 +264,19 @@ class JobProcessor:
             await self.store.complete_message_job(job.id or "", result_preview=result_preview)
             return
 
+        if _looks_like_greeting(text):
+            link = await self.store.get_account_link_for_telegram(user_id)
+            reply = (
+                "Forge is online.\n\n"
+                "Send /help to see commands, or send a request like:\n"
+                "/build Build a weather app"
+            )
+            if link is None:
+                reply += "\n\nTo connect your website workspace, send the 6-digit link code from Forge here."
+            await self.transport.send_status_message(chat_id, reply)
+            await self.store.complete_message_job(job.id or "", result_preview="Greeting handled.")
+            return
+
         if _looks_like_build_request(text) and not photo_sizes:
             link = await self.store.get_account_link_for_telegram(user_id)
             workspace_user_id = link.workspace_user_id if link is not None else user_id
@@ -307,6 +358,19 @@ class JobProcessor:
         workspace_user_id = link.workspace_user_id if link is not None else user_id
         await self.store.ensure_user_profile(workspace_user_id, link.web_email if link else username)
 
+        if command in {"/help", "/start"}:
+            text = _help_text(linked=link is not None)
+            await self.transport.send_status_message(chat_id, text)
+            return text[:240]
+
+        if command == "/github":
+            command = "/connect"
+            value = "github"
+
+        if command == "/vercel":
+            command = "/connect"
+            value = "vercel"
+
         if command == "/status":
             mission = await self.store.create_mission(
                 MissionRecord(
@@ -324,7 +388,7 @@ class JobProcessor:
         if command == "/projects":
             projects = await self.store.list_projects(workspace_user_id)
             if not projects:
-                text = "No projects yet. Use /new PROJECT_NAME or send a build request."
+                text = "No projects yet.\n\nTry:\n/new Weather Studio\n/build Build a production ready weather app"
             else:
                 text = "\n".join(f"- {item.slug}: {item.archetype}" for item in projects[:12])
             await self.transport.send_status_message(chat_id, text)
@@ -333,7 +397,7 @@ class JobProcessor:
         if command == "/connect":
             provider = value.lower().strip()
             if provider not in {"github", "vercel"}:
-                text = "Use /connect github or /connect vercel."
+                text = "Use /connect github or /connect vercel.\nYou can also use /github or /vercel."
                 await self.transport.send_status_message(chat_id, text)
                 return text
             try:
@@ -341,7 +405,10 @@ class JobProcessor:
             except OAuthError as exc:
                 await self.transport.send_status_message(chat_id, str(exc))
                 return str(exc)
-            text = f"Open this link to connect {provider.title()}:\n{url}"
+            text = (
+                f"Connect {provider.title()} to Forge:\n{url}\n\n"
+                f"After approving access, come back here and run /status."
+            )
             await self.transport.send_status_message(chat_id, text)
             return text[:240]
 
@@ -408,11 +475,13 @@ class JobProcessor:
             if project is None:
                 text = "Project not found. Use /projects to list available project slugs."
             else:
-                text = "\n".join(f"- {name}" for name in sorted((project.latest_manifest or {}).keys())[:50])
+                text = f"Files for {project.slug}:\n" + "\n".join(
+                    f"- {name}" for name in sorted((project.latest_manifest or {}).keys())[:50]
+                )
             await self.transport.send_status_message(chat_id, text)
             return text[:240]
 
-        fallback = "Unsupported command."
+        fallback = "Unsupported command.\n\nSend /help to see the available Forge commands."
         await self.transport.send_status_message(chat_id, fallback)
         return fallback
 
