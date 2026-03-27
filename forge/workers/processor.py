@@ -51,6 +51,15 @@ def _parse_project_command(text: str) -> tuple[str, str] | None:
     parts = stripped.split(maxsplit=1)
     command = parts[0].lower()
     value = parts[1].strip() if len(parts) > 1 else ""
+    alias_map = {
+        "/connectgithub": ("/connect", "github"),
+        "/connectvercel": ("/connect", "vercel"),
+        "/gh": ("/connect", "github"),
+        "/vc": ("/connect", "vercel"),
+    }
+    if command in alias_map:
+        mapped_command, mapped_value = alias_map[command]
+        return mapped_command, mapped_value
     if command in {"/connect", "/deploy", "/projects", "/status", "/new", "/build", "/files", "/help", "/start", "/github", "/vercel"}:
         return command, value
     return None
@@ -95,6 +104,8 @@ def _help_text(*, linked: bool) -> str:
         "Connect:",
         "/connect github",
         "/connect vercel",
+        "/connectgithub",
+        "/connectvercel",
         "/github",
         "/vercel",
         "",
@@ -403,11 +414,23 @@ class JobProcessor:
             try:
                 url = self.mission_runner.integrations.build_authorize_url(provider, workspace_user_id=workspace_user_id)
             except OAuthError as exc:
-                await self.transport.send_status_message(chat_id, str(exc))
-                return str(exc)
+                if provider == "github":
+                    text = (
+                        "GitHub connect is not ready yet.\n\n"
+                        "Forge needs the owner to configure GitHub OAuth first. "
+                        "Once that is set up, you will be able to connect your GitHub account here with one tap."
+                    )
+                else:
+                    text = (
+                        "Vercel connect is not ready yet.\n\n"
+                        "Forge needs the owner to configure Vercel OAuth first. "
+                        "Once that is set up, you will be able to connect your Vercel account here with one tap."
+                    )
+                await self.transport.send_status_message(chat_id, text)
+                return text
             text = (
-                f"Connect {provider.title()} to Forge:\n{url}\n\n"
-                f"After approving access, come back here and run /status."
+                f"Tap this link to connect your {provider.title()} account:\n{url}\n\n"
+                "Approve access in the browser, then come back here. Forge will use your own account, not the owner's."
             )
             await self.transport.send_status_message(chat_id, text)
             return text[:240]
