@@ -55,8 +55,52 @@ const els = {
   telegramLinkHelp: document.getElementById("telegram-link-help"),
 };
 
+const views = [...document.querySelectorAll("[data-view]")];
+const routeLinks = [...document.querySelectorAll("[data-route-link]")];
+const homeModeCopy = document.getElementById("home-mode-copy");
+
 function setDot(element, color) {
   element.style.background = color;
+}
+
+function isAuthenticated() {
+  return Boolean(state.user && state.session && state.session.access_token);
+}
+
+function normalizeRoute(hash = window.location.hash) {
+  const route = hash.replace(/^#\/?/, "").split("/")[0] || "home";
+  return ["home", "auth", "dashboard"].includes(route) ? route : "home";
+}
+
+function navigate(route, replace = false) {
+  const nextHash = `#/${route}`;
+  if (replace) {
+    window.history.replaceState(null, "", nextHash);
+    renderRoute();
+    return;
+  }
+  if (window.location.hash === nextHash) {
+    renderRoute();
+    return;
+  }
+  window.location.hash = nextHash;
+}
+
+function renderRoute() {
+  let route = normalizeRoute();
+
+  if (route === "dashboard" && !isAuthenticated()) {
+    route = state.authEnabled ? "auth" : "home";
+    window.history.replaceState(null, "", `#/${route}`);
+  }
+
+  views.forEach((view) => {
+    view.classList.toggle("hidden", view.dataset.view !== route);
+  });
+
+  routeLinks.forEach((link) => {
+    link.classList.toggle("active", link.dataset.routeLink === route);
+  });
 }
 
 function fetchJson(url, options) {
@@ -117,11 +161,14 @@ function loadStoredSession() {
 }
 
 function renderAuthState() {
-  const active = Boolean(state.user && state.session && state.session.access_token);
+  const active = isAuthenticated();
   els.missionStatusChip.textContent = active ? "Protected workspace active" : "Public preview mode";
   els.workspaceRun.disabled = !active;
   els.signoutButton.disabled = !active;
   els.telegramLinkAction.disabled = !active;
+  if (homeModeCopy) {
+    homeModeCopy.textContent = active ? "Authenticated workspace" : "Protected workspace";
+  }
 
   if (!active) {
     els.workspaceUser.textContent = "Not signed in";
@@ -129,12 +176,14 @@ function renderAuthState() {
       ? "Sign in to open the protected mission console."
       : "Supabase auth is not configured yet.";
     renderTelegramLink(null);
+    renderRoute();
     return;
   }
 
   els.workspaceUser.textContent = state.user.email || "Authenticated Forge user";
   els.workspaceUserMeta.textContent =
     "Forge will fetch your profile and conversation memory through protected backend APIs.";
+  renderRoute();
 }
 
 function renderTelegramLink(link) {
@@ -507,6 +556,7 @@ async function restoreSession() {
     renderAuthState();
     renderProfile(null);
     renderHistory([]);
+    renderRoute();
     return;
   }
 
@@ -521,6 +571,11 @@ async function restoreSession() {
 
   renderAuthState();
   await loadDashboard();
+  if (normalizeRoute() === "auth") {
+    navigate("dashboard", true);
+  } else {
+    renderRoute();
+  }
 }
 
 async function handleAuthSubmit(event) {
@@ -552,6 +607,7 @@ async function handleAuthSubmit(event) {
       els.authFeedback.textContent = payload.message || "Authenticated successfully.";
       renderAuthState();
       await loadDashboard();
+      navigate("dashboard");
     } else {
       els.authFeedback.textContent =
         payload.message || "Account created. Check your inbox for confirmation.";
@@ -681,6 +737,7 @@ async function signOut() {
   renderTerminal([], null);
   renderTelegramLink(null);
   els.workspaceFeedback.textContent = "Signed out.";
+  navigate("home");
 }
 
 els.modeSignin.addEventListener("click", () => setAuthMode("signin"));
@@ -695,11 +752,13 @@ els.workspaceFill.addEventListener("click", () => {
   els.workspaceFeedback.textContent = "Loaded a research-style mission.";
 });
 els.signoutButton.addEventListener("click", signOut);
+window.addEventListener("hashchange", renderRoute);
 
 setAuthMode("signin");
 renderAuthState();
 renderTelegramLink(null);
 renderTerminal([], null);
+renderRoute();
 checkHealth();
 checkConfig().then(restoreSession);
 runPreview();
