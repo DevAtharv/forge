@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Authenticate | Forge AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-tint": "#5d5f5f",
+              "secondary-fixed": "#e4e2e2",
+              "on-error-container": "#93000a",
+              "error-container": "#ffdad6",
+              "surface": "#fcf8f8",
+              "outline": "#747878",
+              "inverse-primary": "#c6c6c7",
+              "secondary-fixed-dim": "#c8c6c6",
+              "on-surface-variant": "#444748",
+              "on-primary-container": "#6a6c6c",
+              "tertiary-container": "#f6ece9",
+              "on-secondary-fixed": "#1b1c1c",
+              "on-error": "#ffffff",
+              "surface-variant": "#e5e2e1",
+              "inverse-surface": "#313030",
+              "background": "#fcf8f8",
+              "inverse-on-surface": "#f4f0ef",
+              "tertiary": "#635d5b",
+              "surface-container-high": "#ebe7e7",
+              "secondary": "#5e5e5e",
+              "on-surface": "#1c1b1b",
+              "primary-fixed-dim": "#c6c6c7",
+              "surface-container-low": "#f6f3f2",
+              "surface-bright": "#fcf8f8",
+              "primary": "#5d5f5f",
+              "on-primary-fixed-variant": "#454747",
+              "error": "#ba1a1a",
+              "secondary-container": "#e4e2e2",
+              "primary-fixed": "#e2e2e2",
+              "surface-container-lowest": "#ffffff",
+              "on-tertiary-container": "#716a68",
+              "on-tertiary-fixed-variant": "#4b4644",
+              "tertiary-fixed": "#eae0dd",
+              "surface-container": "#f1edec",
+              "on-secondary-fixed-variant": "#474747",
+              "outline-variant": "#c4c7c8",
+              "surface-container-highest": "#e5e2e1",
+              "tertiary-fixed-dim": "#cec5c2",
+              "on-tertiary": "#ffffff",
+              "on-secondary": "#ffffff",
+              "surface-dim": "#ddd9d9",
+              "on-secondary-container": "#646464",
+              "primary-container": "#eeeeee",
+              "on-primary": "#ffffff",
+              "on-tertiary-fixed": "#1f1b19",
+              "on-primary-fixed": "#1a1c1c",
+              "on-background": "#1c1b1b"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar: Execution of Shared Components JSON -->
+<nav class="fixed top-0 w-full z-50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 shadow-sm font-inter antialiased">
+<div class="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto w-full">
+<div class="flex items-center gap-8">
+<span class="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">Forge AI</span>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors" href="#">Product</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors" href="#">Solutions</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors" href="#">Pricing</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors" href="#">Docs</a>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-4 py-2 text-sm font-medium">Log In</button>
+<button class="bg-primary text-on-primary px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-in-out active:scale-95 shadow-sm">Get Started</button>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-12 relative overflow-hidden">
+<!-- Background Ambient Elements -->
+<div class="absolute top-1/4 -left-20 w-96 h-96 bg-tertiary-container/30 rounded-full blur-[120px] -z-10"></div>
+<div class="absolute bottom-1/4 -right-20 w-96 h-96 bg-primary-container/20 rounded-full blur-[120px] -z-10"></div>
+<!-- Auth Card Shell -->
+<div class="w-full max-w-md bg-surface-container-lowest border border-outline-variant shadow-xl rounded-2xl overflow-hidden transition-all duration-300">
+<!-- Security Header -->
+<div class="bg-surface-container-low px-8 py-6 flex items-center justify-between border-b border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="lock">lock</span>
+</div>
+<div>
+<h1 class="text-lg font-bold text-on-surface leading-tight">Secure Access</h1>
+<p class="text-xs text-on-surface-variant">Encrypted Mission Control Auth</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-xl" data-icon="shield">shield</span>
+</div>
+<div class="p-8">
+<!-- Toggle Control -->
+<div class="flex p-1 bg-surface-container-high rounded-xl mb-8">
+<button class="flex-1 py-2.5 text-sm font-semibold rounded-lg bg-surface-container-lowest text-on-surface shadow-sm transition-all">Sign In</button>
+<button class="flex-1 py-2.5 text-sm font-medium rounded-lg text-on-surface-variant hover:text-on-surface transition-all">Create Account</button>
+</div>
+<!-- Form Fields -->
+<form class="space-y-5">
+<div class="space-y-1.5">
+<label class="text-xs font-bold uppercase tracking-wider text-outline px-1">Email Address</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg" data-icon="mail">mail</span>
+<input class="w-full bg-surface border border-outline-variant rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none" placeholder="commander@forge.ai" type="email"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<div class="flex items-center justify-between px-1">
+<label class="text-xs font-bold uppercase tracking-wider text-outline">Password</label>
+<a class="text-[10px] font-bold text-primary hover:underline" href="#">Forgot?</a>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg" data-icon="key">key</span>
+<input class="w-full bg-surface border border-outline-variant rounded-xl py-3 pl-10 pr-10 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none" placeholder="••••••••••••" type="password"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface" type="button">
+<span class="material-symbols-outlined text-lg" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<!-- Primary Action -->
+<button class="w-full bg-primary hover:bg-surface-tint text-on-primary py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-4">
+                        Authenticate
+                        <span class="material-symbols-outlined text-lg" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</form>
+<!-- Divider -->
+<div class="relative my-8">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-outline-variant"></div>
+</div>
+<div class="relative flex justify-center text-xs uppercase tracking-widest">
+<span class="bg-surface-container-lowest px-4 text-outline font-bold">Or continue with</span>
+</div>
+</div>
+<!-- Social Blocks -->
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-3 py-3 border border-outline-variant rounded-xl hover:bg-surface-container-low transition-all active:scale-95 group">
+<img alt="" class="w-5 h-5" data-alt="Official Google G logo in multicolored branding" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYRd3eqcGQz9RbDahzZTUIe1pRa8x5m1ELr5dIVm5N9vWPQRQy3-1Jp1VcTtyrlH-05eXlUdzZo6fjinmDviqSZhofMXs3sqnPbBeTWWEjgTT64mxbQwXHs9rtUiSHxidDwk7OXGbBTDylsDjS0pqOPfJa70p_EoaxxWbVkJgoKzQgLmJymkHBPyKMgIPqpTtMlaBEfh2AWNs40KYW26P90IOMB603ZZyWGhiB3mpGd0gQP7ejkQLUy9k3StjdKmZF5poutjIIljA"/>
+<span class="text-sm font-semibold text-on-surface-variant group-hover:text-on-surface">Google</span>
+</button>
+<button class="flex items-center justify-center gap-3 py-3 border border-outline-variant rounded-xl hover:bg-surface-container-low transition-all active:scale-95 group">
+<svg class="w-5 h-5 fill-on-surface-variant group-hover:fill-on-surface" viewbox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.041-1.412-4.041-1.412-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22v3.293c0 .319.192.694.805.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path></svg>
+<span class="text-sm font-semibold text-on-surface-variant group-hover:text-on-surface">GitHub</span>
+</button>
+</div>
+</div>
+<!-- Card Footer -->
+<div class="px-8 py-5 bg-surface-container border-t border-outline-variant text-center">
+<p class="text-xs text-on-surface-variant">
+                    By continuing, you agree to our 
+                    <a class="font-bold text-primary hover:underline" href="#">Terms of Service</a> 
+                    and 
+                    <a class="font-bold text-primary hover:underline" href="#">Privacy Policy</a>.
+                </p>
+</div>
+</div>
+<!-- Professional Footer -->
+<footer class="mt-12 w-full max-w-md">
+<div class="flex items-center justify-between text-xs font-semibold text-outline tracking-wider uppercase">
+<a class="flex items-center gap-1.5 hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="home">home</span>
+                    Home
+                </a>
+<div class="flex items-center gap-4">
+<a class="hover:text-on-surface transition-colors" href="#">Support</a>
+<a class="hover:text-on-surface transition-colors" href="#">Status</a>
+<a class="hover:text-on-surface transition-colors" href="#">API</a>
+</div>
+</div>
+<div class="mt-6 text-center">
+<p class="text-[10px] text-outline/60 leading-relaxed max-w-xs mx-auto">
+                    Forge AI Mission Control utilizes end-to-end encryption for all session protocols. Your credentials are never stored in plain text.
+                </p>
+</div>
+</footer>
+</main>
+<!-- Decorative Corner Element -->
+<div class="fixed bottom-6 right-6 flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity cursor-help">
+<div class="px-3 py-1 bg-surface-container-highest rounded-full border border-outline-variant flex items-center gap-2">
+<span class="w-2 h-2 bg-green-500 rounded-full"></span>
+<span class="text-[10px] font-bold text-on-surface-variant tracking-widest uppercase">Nodes Online</span>
+</div>
+</div>
+</body></html>

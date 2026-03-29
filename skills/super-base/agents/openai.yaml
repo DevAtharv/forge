@@ -1,0 +1,4 @@
+interface:
+  display_name: "Super Base"
+  short_description: "Foundation skill for app starting points"
+  default_prompt: "Use $super-base to turn this product idea into a practical base architecture and starter implementation plan."

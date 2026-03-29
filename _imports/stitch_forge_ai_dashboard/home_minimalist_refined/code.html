@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Forge AI | Orchestrate with Neural Precision</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Instrument+Serif:ital@0;1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-tint": "#5d5f5f",
+              "secondary-fixed": "#e4e2e2",
+              "on-error-container": "#93000a",
+              "error-container": "#ffdad6",
+              "surface": "#fcf8f8",
+              "outline": "#747878",
+              "inverse-primary": "#c6c6c7",
+              "secondary-fixed-dim": "#c8c6c6",
+              "on-surface-variant": "#444748",
+              "on-primary-container": "#6a6c6c",
+              "tertiary-container": "#f6ece9",
+              "on-secondary-fixed": "#1b1c1c",
+              "on-error": "#ffffff",
+              "surface-variant": "#e5e2e1",
+              "inverse-surface": "#313030",
+              "background": "#fcf8f8",
+              "inverse-on-surface": "#f4f0ef",
+              "tertiary": "#635d5b",
+              "surface-container-high": "#ebe7e7",
+              "secondary": "#5e5e5e",
+              "on-surface": "#1c1b1b",
+              "primary-fixed-dim": "#c6c6c7",
+              "surface-container-low": "#f6f3f2",
+              "surface-bright": "#fcf8f8",
+              "primary": "#5d5f5f",
+              "on-primary-fixed-variant": "#454747",
+              "error": "#ba1a1a",
+              "secondary-container": "#e4e2e2",
+              "primary-fixed": "#e2e2e2",
+              "surface-container-lowest": "#ffffff",
+              "on-tertiary-container": "#716a68",
+              "on-tertiary-fixed-variant": "#4b4644",
+              "tertiary-fixed": "#eae0dd",
+              "surface-container": "#f1edec",
+              "on-secondary-fixed-variant": "#474747",
+              "outline-variant": "#c4c7c8",
+              "surface-container-highest": "#e5e2e1",
+              "tertiary-fixed-dim": "#cec5c2",
+              "on-tertiary": "#ffffff",
+              "on-secondary": "#ffffff",
+              "surface-dim": "#ddd9d9",
+              "on-secondary-container": "#646464",
+              "primary-container": "#eeeeee",
+              "on-primary": "#ffffff",
+              "on-tertiary-fixed": "#1f1b19",
+              "on-primary-fixed": "#1a1c1c",
+              "on-background": "#1c1b1b",
+              "brand-blue": "#0066FF"
+            },
+            fontFamily: {
+              "headline": ["Inter", "sans-serif"],
+              "body": ["Inter", "sans-serif"],
+              "label": ["Inter", "sans-serif"],
+              "serif": ["Instrument Serif", "serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .glass-card {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface antialiased overflow-x-hidden">
+<!-- TopNavBar: Execution of Shared Component JSON -->
+<header class="fixed top-0 w-full z-50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 shadow-sm font-inter antialiased">
+<div class="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto w-full">
+<div class="flex items-center gap-8">
+<a class="text-xl font-semibold tracking-tight text-slate-900 dark:text-white" href="/">Forge AI</a>
+<nav class="hidden md:flex items-center gap-6">
+<!-- Navigation Links mapping from JSON -->
+<a class="text-slate-900 dark:text-white font-medium border-b-2 border-slate-900 dark:border-white pb-1" href="#">Product</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors" href="#">Solutions</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors" href="#">Pricing</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors" href="#">Docs</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-700 dark:text-slate-300 hover:text-slate-900 font-medium text-sm transition-all duration-200 ease-in-out active:scale-95">Log In</button>
+<button class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ease-in-out active:scale-95">Get Started</button>
+</div>
+</div>
+</header>
+<main class="pt-24">
+<!-- Hero Section -->
+<section class="max-w-7xl mx-auto px-6 pt-20 pb-32 text-center">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant text-xs font-medium mb-8">
+<span class="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></span>
+                v2.0 Beta Now Available
+            </div>
+<h1 class="font-serif text-6xl md:text-8xl lg:text-9xl tracking-tight leading-[0.9] text-on-surface mb-8">
+                Orchestrate with<br/>
+<span class="italic text-brand-blue">Neural Precision</span>
+</h1>
+<p class="max-w-2xl mx-auto text-lg md:text-xl text-on-surface-variant leading-relaxed mb-12">
+                The unified platform for autonomous agent deployment. Connect your data, orchestrate workflows with LLMs, and deploy at scale across any channel.
+            </p>
+<div class="flex flex-col md:flex-row items-center justify-center gap-4">
+<button class="w-full md:w-auto px-8 py-4 bg-slate-900 text-white rounded-xl font-semibold text-lg hover:shadow-xl transition-all active:scale-95">
+                    Get Started
+                </button>
+<button class="w-full md:w-auto px-8 py-4 bg-white border border-outline-variant text-on-surface rounded-xl font-semibold text-lg hover:bg-surface-container-low transition-all active:scale-95 flex items-center justify-center gap-2">
+                    Explore Documentation
+                    <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</section>
+<!-- Product Flow Metric Cards (Bento Style) -->
+<section class="max-w-7xl mx-auto px-6 pb-32">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Connect -->
+<div class="group p-8 rounded-[2rem] bg-surface-container-low border border-outline-variant/30 hover:border-brand-blue/30 transition-all duration-500">
+<div class="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-brand-blue">cable</span>
+</div>
+<h3 class="text-2xl font-bold mb-3">Connect</h3>
+<p class="text-on-surface-variant leading-relaxed mb-6">
+                        Seamlessly ingest data from 100+ sources including SQL, NoSQL, and vector stores.
+                    </p>
+<div class="flex items-center gap-2 text-sm font-bold text-brand-blue">
+<span class="w-1 h-1 rounded-full bg-brand-blue"></span>
+                        102 Integrations Active
+                    </div>
+</div>
+<!-- Orchestrate -->
+<div class="group p-8 rounded-[2rem] bg-white border border-outline-variant/50 shadow-sm hover:shadow-xl transition-all duration-500">
+<div class="w-12 h-12 rounded-2xl bg-brand-blue/10 flex items-center justify-center mb-6 group-hover:rotate-12 transition-transform">
+<span class="material-symbols-outlined text-brand-blue">schema</span>
+</div>
+<h3 class="text-2xl font-bold mb-3">Orchestrate</h3>
+<p class="text-on-surface-variant leading-relaxed mb-6">
+                        Design complex multi-agent reasoning chains with our drag-and-drop neural canvas.
+                    </p>
+<div class="flex items-center gap-2 text-sm font-bold text-brand-blue">
+<span class="w-1 h-1 rounded-full bg-brand-blue"></span>
+                        99.9% Logic Reliability
+                    </div>
+</div>
+<!-- Deploy -->
+<div class="group p-8 rounded-[2rem] bg-surface-container-low border border-outline-variant/30 hover:border-brand-blue/30 transition-all duration-500">
+<div class="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-brand-blue">rocket_launch</span>
+</div>
+<h3 class="text-2xl font-bold mb-3">Deploy</h3>
+<p class="text-on-surface-variant leading-relaxed mb-6">
+                        Push to production with one click. Automatic scaling, monitoring, and version control.
+                    </p>
+<div class="flex items-center gap-2 text-sm font-bold text-brand-blue">
+<span class="w-1 h-1 rounded-full bg-brand-blue"></span>
+                        Global Low-Latency
+                    </div>
+</div>
+</div>
+</section>
+<!-- Telegram Showcase (Asymmetric Layout) -->
+<section class="max-w-7xl mx-auto px-6 pb-40">
+<div class="bg-slate-900 rounded-[3rem] overflow-hidden flex flex-col lg:flex-row items-center">
+<div class="lg:w-1/2 p-12 lg:p-20">
+<div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-blue/20 text-brand-blue text-xs font-bold mb-8 uppercase tracking-widest">
+                        Featured Integration
+                    </div>
+<h2 class="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+                        Forge your agents into <span class="text-brand-blue">Telegram Hub.</span>
+</h2>
+<p class="text-slate-400 text-lg leading-relaxed mb-10">
+                        Convert any neural chain into a powerful Telegram bot instantly. Real-time responses, rich media support, and automated user management built-in.
+                    </p>
+<ul class="space-y-4 mb-12">
+<li class="flex items-center gap-3 text-slate-300">
+<span class="material-symbols-outlined text-brand-blue text-[20px]">check_circle</span>
+                            Native Telegram API bridging
+                        </li>
+<li class="flex items-center gap-3 text-slate-300">
+<span class="material-symbols-outlined text-brand-blue text-[20px]">check_circle</span>
+                            Asynchronous mission updates
+                        </li>
+<li class="flex items-center gap-3 text-slate-300">
+<span class="material-symbols-outlined text-brand-blue text-[20px]">check_circle</span>
+                            Multi-agent collaboration via group chat
+                        </li>
+</ul>
+<button class="px-8 py-4 bg-brand-blue text-white rounded-xl font-bold hover:bg-blue-600 transition-colors flex items-center gap-2 group">
+                        Launch Telegram Hub
+                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">send</span>
+</button>
+</div>
+<div class="lg:w-1/2 w-full h-[500px] lg:h-full min-h-[500px] relative">
+<img class="absolute inset-0 w-full h-full object-cover opacity-80" data-alt="Modern minimalist smartphone interface displaying a sophisticated AI chatbot telegram interface with clean typography and blue highlights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDje5VwrJ3ZJzA2n1C1KULh2qNIJWQn_PS35LAPGc3jwsG1lWqE7xkpaigtK0WqUdNO5zB5W5jOWwfW675odS15juW27AUwKepTVjQWUGz4Tj10ID8hmO0hyVTisUL9Iu6BudW_zw1_152r7EMezIbOZL8XlUGBNdziII8507lhGPJomEr-_4bKjfvDv3XbmpeKbqoZN8JRXnTw8BJpQcHvfbIZEmf3zLcHR3YW_IT_dBEca-9SOIe5b0wU1H5ClPe93h_408uGgUA"/>
+<div class="absolute inset-0 bg-gradient-to-r from-slate-900 via-transparent to-transparent"></div>
+<!-- Floating UI elements -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 p-6 glass-card rounded-2xl shadow-2xl border border-white/20">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-full bg-brand-blue/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-brand-blue">smart_toy</span>
+</div>
+<div>
+<div class="text-xs font-bold text-slate-900">Forge Agent #042</div>
+<div class="text-[10px] text-slate-500">Mission: Analysis</div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+<div class="h-full w-2/3 bg-brand-blue rounded-full"></div>
+</div>
+<div class="flex justify-between text-[10px] font-medium">
+<span class="text-slate-500">Processing...</span>
+<span class="text-brand-blue">67%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="max-w-7xl mx-auto px-6 py-20 border-t border-outline-variant/30">
+<div class="flex flex-col md:flex-row justify-between items-start gap-12">
+<div class="max-w-xs">
+<div class="text-2xl font-bold mb-6">Forge AI</div>
+<p class="text-on-surface-variant leading-relaxed">
+                        Redefining the boundaries of autonomous intelligence. Built for builders, by builders.
+                    </p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-12 lg:gap-24">
+<div>
+<h4 class="font-bold mb-6 text-sm uppercase tracking-widest text-on-surface-variant">Product</h4>
+<ul class="space-y-4 text-on-surface-variant">
+<li><a class="hover:text-brand-blue transition-colors" href="#">Features</a></li>
+<li><a class="hover:text-brand-blue transition-colors" href="#">Integrations</a></li>
+<li><a class="hover:text-brand-blue transition-colors" href="#">Enterprise</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-6 text-sm uppercase tracking-widest text-on-surface-variant">Company</h4>
+<ul class="space-y-4 text-on-surface-variant">
+<li><a class="hover:text-brand-blue transition-colors" href="#">About</a></li>
+<li><a class="hover:text-brand-blue transition-colors" href="#">Blog</a></li>
+<li><a class="hover:text-brand-blue transition-colors" href="#">Careers</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-6 text-sm uppercase tracking-widest text-on-surface-variant">Legal</h4>
+<ul class="space-y-4 text-on-surface-variant">
+<li><a class="hover:text-brand-blue transition-colors" href="#">Privacy</a></li>
+<li><a class="hover:text-brand-blue transition-colors" href="#">Terms</a></li>
+<li><a class="hover:text-brand-blue transition-colors" href="#">Security</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="mt-20 pt-8 border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-on-surface-variant">
+<div>© 2024 Forge AI Technologies Inc. All rights reserved.</div>
+<div class="flex items-center gap-6">
+<a class="hover:text-on-surface" href="#">Twitter</a>
+<a class="hover:text-on-surface" href="#">LinkedIn</a>
+<a class="hover:text-on-surface" href="#">GitHub</a>
+</div>
+</div>
+</footer>
+</main>
+</body></html>

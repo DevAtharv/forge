@@ -62,7 +62,10 @@ class FakeAuthClient:
         self.calls.append(("signup", email))
         return {
             "user": {"id": "user-1", "email": email},
-            "session": {"access_token": "token-1", "refresh_token": "refresh-1"},
+            "access_token": "token-1",
+            "refresh_token": "refresh-1",
+            "expires_in": 3600,
+            "token_type": "bearer",
         }
 
     async def sign_in(self, *, email: str, password: str) -> dict:

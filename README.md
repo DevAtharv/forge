@@ -114,3 +114,23 @@ Operational helpers:
 
 - `python scripts/check_readiness.py`
 - `python scripts/set_telegram_webhook.py --base-url https://your-render-backend.onrender.com`
+
+## Vercel Sandbox
+
+Install the Python SDK with:
+
+```powershell
+pip install -r requirements.txt
+```
+
+Example script:
+
+```powershell
+python scripts/vercel_sandbox_example.py
+```
+
+Notes:
+
+- The repo now tracks `vercel==0.5.2` in [requirements.txt](C:/Users/athar/Desktop/Forge/requirements.txt).
+- The example script lives at [vercel_sandbox_example.py](C:/Users/athar/Desktop/Forge/scripts/vercel_sandbox_example.py).
+- On this Windows machine, importing `vercel.sandbox` currently fails because the installed SDK imports the Unix-only `termios` module. Run the example from Linux, macOS, or WSL until Vercel ships a Windows-compatible release.

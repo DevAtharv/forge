@@ -206,6 +206,13 @@
       }
       .text-button:hover, .ghost-button:hover, .pill-link:hover { color: var(--text); }
       .ghost-button:hover { background: var(--surface-low); }
+      .approval-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 14px;
+        text-decoration: none;
+      }
       .primary-button:hover {
         transform: translateY(-1px);
         box-shadow: 0 18px 32px rgba(93, 95, 95, 0.28);
@@ -700,6 +707,9 @@
         margin-top: 6px;
       }
       .status-headline strong {
+        line-height: 1.25;
+      }
+      .status-headline strong {
         font-size: 24px;
         font-weight: 800;
         letter-spacing: -0.04em;
@@ -746,6 +756,7 @@
         justify-content: space-between;
         margin-top: 16px;
         gap: 12px;
+        flex-wrap: wrap;
       }
       .mini-icon-row { display: flex; gap: 8px; }
       .icon-button {
@@ -830,6 +841,10 @@
         color: var(--soft);
       }
       .artifact-list { display: grid; gap: 12px; }
+      .artifact-head strong,
+      .artifact strong {
+        overflow-wrap: anywhere;
+      }
       .artifact, .stage, .memory-box, .auth-zone { border-radius: 18px; }
       .stage { background: var(--surface-low); }
       .badges { flex-wrap: wrap; margin-top: 10px; }
@@ -912,12 +927,58 @@
           align-items: stretch;
         }
         .nav-cluster, .auth-support-links { flex-wrap: wrap; }
+        .nav-cluster {
+          gap: 14px;
+          justify-content: center;
+        }
+        .status-pill {
+          justify-content: center;
+        }
+        .top-actions {
+          width: 100%;
+        }
+        .top-actions .text-button,
+        .top-actions .primary-button,
+        .top-actions .ghost-button {
+          width: 100%;
+          text-align: center;
+        }
         .hero { padding-top: 32px; }
         .hero-display { font-size: 58px; }
         .hero-copy { font-size: 18px; }
         .features-grid, .footer-columns, .artifact-grid, .social-grid { grid-template-columns: 1fr; }
         .dashboard-main { padding: 20px 12px 90px; }
         .status-headline strong { font-size: 20px; }
+        .status-primary {
+          flex-direction: column;
+        }
+        .status-metrics {
+          display: grid;
+          grid-template-columns: 1fr;
+          width: 100%;
+        }
+        .metric-box {
+          text-align: left;
+        }
+        .mission-toolbar,
+        .button-row,
+        .mini-icon-row {
+          width: 100%;
+        }
+        .button-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .button-row .ghost-button,
+        .button-row .primary-button {
+          width: 100%;
+        }
+        .response-actions {
+          grid-template-columns: 1fr;
+        }
+        .sidebar-links {
+          grid-template-columns: 1fr;
+        }
         .system-fab { right: 18px; bottom: 18px; }
       }
     </style>
@@ -1154,7 +1215,7 @@
             <div class="status-metrics">
               <div class="metric-box"><span class="meta">Throughput</span><p style="font-weight: 700;">1.2k req/m</p></div>
               <div class="metric-box"><span class="meta">Latency</span><p style="font-weight: 700;">42ms</p></div>
-              <button class="ghost-button" id="telegram-link-action" type="button">Re-calibrate</button>
+              <button class="ghost-button" id="telegram-link-action" type="button">Generate Link Code</button>
             </div>
           </header>
 
@@ -1268,7 +1329,7 @@
       <button class="system-fab" type="button" aria-label="Support agent"><span class="material-symbols-outlined">support_agent</span></button>
     </section>
 
-    <script src="./config.js"></script>
-    <script src="./app.js"></script>
+    <script src="/ui/config.js"></script>
+    <script src="/ui/app.js"></script>
   </body>
 </html>

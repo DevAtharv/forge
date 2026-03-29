@@ -60,14 +60,6 @@ class IntegrationService:
         config = self._provider_configs[provider]
         if not self.is_provider_configured(provider):
             raise OAuthError(f"{provider.title()} OAuth is not configured.")
-        if provider == "vercel":
-            if not self.settings.vercel_integration_slug:
-                raise OAuthError("Vercel integration slug is not configured.")
-            state = self.state_codec.encode({"provider": provider, "workspace_user_id": workspace_user_id})
-            return (
-                f"{self.settings.public_base_url.rstrip('/')}/api/integrations/vercel/start"
-                f"?state={state}"
-            )
         redirect_uri = f"{self.settings.public_base_url.rstrip('/')}/api/integrations/{provider}/callback"
         state = self.state_codec.encode({"provider": provider, "workspace_user_id": workspace_user_id})
         params = {

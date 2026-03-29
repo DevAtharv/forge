@@ -15,8 +15,8 @@ from forge.schemas import ConversationRecord, MessageJob, MissionRecord, UserPro
 from forge.supabase_auth import SupabaseAuthError
 
 
-UI_HTML_PATH = Path(__file__).resolve().parent.parent / "ui" / "index.html"
-UI_DIR = Path(__file__).resolve().parent.parent / "ui"
+UI_DIR = Path(__file__).resolve().parents[2] / "frontend"
+UI_HTML_PATH = UI_DIR / "index.html"
 
 
 class DemoPlanRequest(BaseModel):
@@ -282,7 +282,7 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
         }
 
     @router.get("/api/integrations/{provider}/start")
-    async def integration_start(provider: str, request: Request, state: str | None = None):
+    async def integration_start(provider: str, request: Request):
         _user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
         if provider not in {"github", "vercel"}:
             raise HTTPException(status_code=404, detail="Unknown provider.")
@@ -290,42 +290,21 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
             authorize_url = request.app.state.integrations.build_authorize_url(provider, workspace_user_id=workspace_user_id)
         except OAuthError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
-        if provider == "vercel":
-            state_value = state or authorize_url.rsplit("state=", 1)[-1]
-            redirect = RedirectResponse(
-                url=f"https://vercel.com/integrations/{settings.vercel_integration_slug}",
-                status_code=302,
-            )
-            redirect.set_cookie(
-                key="forge_vercel_oauth_state",
-                value=state_value,
-                max_age=600,
-                httponly=True,
-                secure=True,
-                samesite="lax",
-            )
-            return redirect
-        return {"provider": provider, "authorize_url": authorize_url}
+        return RedirectResponse(url=authorize_url, status_code=302)
 
     @router.get("/api/integrations/{provider}/callback")
     async def integration_callback(provider: str, code: str, request: Request, state: str | None = None) -> RedirectResponse:
-        resolved_state = state
-        if provider == "vercel" and not resolved_state:
-            resolved_state = request.cookies.get("forge_vercel_oauth_state")
-        if not resolved_state:
+        if not state:
             raise HTTPException(status_code=400, detail="Missing OAuth state.")
         try:
-            connection = await request.app.state.integrations.complete_oauth(provider, code=code, state=resolved_state)
+            connection = await request.app.state.integrations.complete_oauth(provider, code=code, state=state)
         except OAuthError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         redirect_to = (
             f"{settings.frontend_base_url.rstrip('/')}"
-            f"/?integration={provider}&status=connected&account={connection.account_name or connection.account_id}"
+            f"/?integration={provider}&status=connected&account={connection.account_name or connection.account_id}#/dashboard"
         )
-        response = RedirectResponse(url=redirect_to, status_code=302)
-        if provider == "vercel":
-            response.delete_cookie("forge_vercel_oauth_state")
-        return response
+        return RedirectResponse(url=redirect_to, status_code=302)
 
     @router.get("/api/app/projects")
     async def app_projects(request: Request) -> dict[str, object]:
