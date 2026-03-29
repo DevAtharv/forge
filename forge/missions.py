@@ -20,6 +20,39 @@ def _artifacts_to_manifest(artifacts: list[Artifact]) -> dict[str, dict[str, str
     }
 
 
+def _approval_response_text(action: str, message: str) -> str:
+    if action == "connect_github":
+        return (
+            "Build is ready, but Forge needs your GitHub connection before it can save the project files.\n\n"
+            f"{message}\n\n"
+            "Next step: connect GitHub, then run the build again."
+        )
+    if action == "connect_vercel":
+        return (
+            "Deployment is ready to continue, but Forge needs your Vercel connection first.\n\n"
+            f"{message}\n\n"
+            "Next step: connect Vercel, then run the deploy again."
+        )
+    return message
+
+
+def _mission_memory_summary(mission: MissionRecord) -> str:
+    parts: list[str] = []
+    if mission.kind == "build":
+        parts.append(mission.result_summary or "Build completed.")
+        if mission.repo_url:
+            parts.append(f"GitHub: {mission.repo_url}")
+    elif mission.kind == "deploy":
+        parts.append(mission.result_summary or "Deployment completed.")
+        if mission.deployment_url:
+            parts.append(f"Live URL: {mission.deployment_url}")
+        if mission.repo_url:
+            parts.append(f"GitHub: {mission.repo_url}")
+    else:
+        parts.append(mission.result_summary or mission.response_text or "Mission completed.")
+    return "\n".join(parts)
+
+
 @dataclass
 class MissionRunner:
     store: MemoryStore
@@ -126,6 +159,8 @@ class MissionRunner:
                         "action": "connect_github",
                         "message": str(exc),
                     },
+                    "result_summary": "GitHub connection required",
+                    "response_text": _approval_response_text("connect_github", str(exc)),
                 },
             )
             return mission
@@ -135,7 +170,8 @@ class MissionRunner:
             f"Project `{project.name}` is ready.\n"
             f"Archetype: {project.archetype}\n"
             f"Files generated: {len(changed_files)}\n"
-            f"Repo: {repo_url}\n\n"
+            f"GitHub repo: {repo_url}\n"
+            "GitHub is now the source of truth for project files and assets.\n\n"
             f"Next commands:\n"
             f"/deploy {project.slug}\n"
             f"/files {project.slug}"
@@ -175,6 +211,8 @@ class MissionRunner:
                 {
                     "status": "awaiting_approval",
                     "approval_request": {"action": "connect_vercel", "message": str(exc)},
+                    "result_summary": "Vercel connection required",
+                    "response_text": _approval_response_text("connect_vercel", str(exc)),
                 },
             )
 
@@ -216,7 +254,11 @@ class MissionRunner:
             {
                 "status": "completed",
                 "result_summary": f"Deployed {project.name}",
-                "response_text": f"Deployment complete for {project.name}.\n{deployment_url}",
+                "response_text": (
+                    f"Deployment complete for {project.name}.\n"
+                    f"Live URL: {deployment_url}\n"
+                    f"GitHub repo: {project.repo_url or 'connected repository'}"
+                ),
                 "deployment_url": deployment_url,
                 "repo_url": project.repo_url,
             },
@@ -274,12 +316,13 @@ class MissionRunner:
         await self.transport.send_status_message(link.telegram_user_id, mission.response_text)
 
     async def _persist_mission_memory(self, mission: MissionRecord) -> None:
-        if mission.response_text:
+        memory_summary = _mission_memory_summary(mission)
+        if memory_summary:
             await self.store.append_conversation(
                 ConversationRecord(
                     user_id=mission.workspace_user_id,
                     role="assistant",
-                    content=mission.response_text,
+                    content=memory_summary,
                     agents_used=["builder", mission.kind],
                 )
             )
