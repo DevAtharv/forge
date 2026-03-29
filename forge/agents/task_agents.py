@@ -18,6 +18,98 @@ from forge.providers import ProviderRegistry
 from forge.schemas import AgentResult, Artifact, Citation
 
 
+def _artifact_language_for_path(path: str) -> str | None:
+    lower = path.lower()
+    if lower.endswith(".js") or lower.endswith(".mjs") or lower.endswith(".cjs"):
+        return "javascript"
+    if lower.endswith(".jsx"):
+        return "jsx"
+    if lower.endswith(".ts"):
+        return "typescript"
+    if lower.endswith(".tsx"):
+        return "tsx"
+    if lower.endswith(".css"):
+        return "css"
+    if lower.endswith(".html"):
+        return "html"
+    if lower.endswith(".json"):
+        return "json"
+    if lower.endswith(".md"):
+        return "markdown"
+    if lower.endswith(".sh"):
+        return "bash"
+    return None
+
+
+def _artifact_mime_for_path(path: str) -> str:
+    lower = path.lower()
+    if lower.endswith(".css"):
+        return "text/css"
+    if lower.endswith(".html"):
+        return "text/html"
+    if lower.endswith(".json"):
+        return "application/json"
+    if lower.endswith(".md"):
+        return "text/markdown"
+    if lower.endswith(".sh"):
+        return "text/x-shellscript"
+    if lower.endswith(".js") or lower.endswith(".jsx") or lower.endswith(".ts") or lower.endswith(".tsx"):
+        return "text/javascript"
+    return "text/plain"
+
+
+def _expand_project_manifest_result(result: AgentResult) -> AgentResult:
+    manifest_artifact = next((item for item in result.artifacts if item.name.lower() == "forge_project.json"), None)
+    if manifest_artifact is None:
+        return result
+
+    try:
+        manifest = json.loads(manifest_artifact.content)
+    except Exception:
+        result.internal_notes.append("forge_project_manifest_invalid")
+        return result
+
+    files = manifest.get("files")
+    if not isinstance(files, list):
+        result.internal_notes.append("forge_project_manifest_missing_files")
+        return result
+
+    expanded: list[Artifact] = []
+    seen_names = {item.name for item in result.artifacts}
+    for item in files:
+        if not isinstance(item, dict):
+            continue
+        path = item.get("path")
+        content = item.get("content")
+        if not isinstance(path, str) or not isinstance(content, str):
+            continue
+        if path in seen_names:
+            continue
+        expanded.append(
+            Artifact(
+                name=path,
+                content=content,
+                language=_artifact_language_for_path(path),
+                mime_type=_artifact_mime_for_path(path),
+            )
+        )
+
+    if not expanded:
+        result.internal_notes.append("forge_project_manifest_no_expansion")
+        return result
+
+    dependencies = manifest.get("dependencies")
+    if isinstance(dependencies, dict):
+        result.handoff.setdefault("dependencies", dependencies)
+    project_name = manifest.get("project_name")
+    if isinstance(project_name, str) and project_name.strip():
+        result.handoff.setdefault("project_name", project_name.strip())
+    result.handoff["files_created"] = [item.name for item in (*result.artifacts, *expanded)]
+    result.internal_notes.append("forge_project_manifest_expanded")
+    result.artifacts.extend(expanded)
+    return result
+
+
 def _history_messages(invocation: AgentInvocation) -> list[dict[str, str]]:
     return [{"role": item.role, "content": item.content} for item in invocation.history[-6:]]
 
@@ -489,21 +581,21 @@ def _website_recovery_instruction(invocation: AgentInvocation) -> str:
     return (
         "The previous output quality was too basic. Regenerate with a production build contract.\n\n"
         "Required stack:\n"
-        "- Vite + React + TypeScript\n"
+        "- Next.js latest stable with App Router\n"
         "- Tailwind CSS\n"
+        "- JavaScript only unless the user explicitly asks for TypeScript\n"
         "- Supabase auth (email/password sign-in, sign-up, sign-out)\n"
         "- Protected dashboard route\n\n"
+        "Required primary artifact:\n"
+        "- forge_project.json containing project_name, files[], and dependencies\n\n"
         "Required artifacts (all required):\n"
         "- package.json\n"
-        "- index.html\n"
-        "- vite.config.ts\n"
-        "- tsconfig.json\n"
-        "- src/main.tsx\n"
-        "- src/App.tsx\n"
-        "- src/pages/Login.tsx\n"
-        "- src/pages/Dashboard.tsx\n"
-        "- src/lib/supabase.ts\n"
-        "- src/styles.css\n"
+        "- next.config.js\n"
+        "- tailwind.config.js\n"
+        "- postcss.config.js\n"
+        "- app/layout.js\n"
+        "- app/page.js\n"
+        "- app/globals.css\n"
         "- .env.example\n"
         "- vercel.json\n"
         "- terminal_commands.sh\n\n"
@@ -569,7 +661,7 @@ class CodeAgent:
             max_tokens=3200,
             json_mode=True,
         )
-        result = coerce_agent_result("code", raw)
+        result = _expand_project_manifest_result(coerce_agent_result("code", raw))
         if _needs_website_quality_brief(invocation) and _is_low_quality_website_result(result):
             recovery_raw = await self.providers.generate(
                 self.settings.code_routes,
@@ -582,7 +674,7 @@ class CodeAgent:
                 max_tokens=3600,
                 json_mode=True,
             )
-            recovered = coerce_agent_result("code", recovery_raw)
+            recovered = _expand_project_manifest_result(coerce_agent_result("code", recovery_raw))
             if not _is_low_quality_website_result(recovered):
                 recovered.internal_notes.append("website_quality_recovered:llm_second_pass")
                 return recovered
