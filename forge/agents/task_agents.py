@@ -63,10 +63,11 @@ def _is_low_quality_website_result(result: AgentResult) -> bool:
         return True
     if len(result.artifacts) < 4:
         return True
+    has_project_manifest = any(item.name.lower() == "forge_project.json" for item in result.artifacts)
     has_auth = any("auth" in item.name.lower() or "login" in item.name.lower() for item in result.artifacts)
     has_env = any(item.name.lower() == ".env.example" for item in result.artifacts)
     has_deploy = any(item.name.lower() in {"vercel.json", "terminal_commands.sh"} for item in result.artifacts)
-    return not (has_auth and has_env and has_deploy)
+    return not (has_project_manifest and has_auth and has_env and has_deploy)
 
 
 def _website_upgrade_result(invocation: AgentInvocation, original: AgentResult) -> AgentResult:

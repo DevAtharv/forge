@@ -95,6 +95,7 @@ Additional rules:
 - If the request implies deployment, include concrete deployable files (for example `vercel.json`, `requirements.txt`, `Dockerfile`) when relevant.
 - If deployment is requested, include a dedicated artifact named `terminal_commands.sh` with exact, ordered commands to build and deploy.
 - If authentication is requested, include complete auth flow implementation and required env vars in artifacts and user_visible_text.
+- For full website/web app requests, prefer a complete Next.js App Router project with Tailwind CSS and Vercel-ready structure.
 """.strip()
 
 
@@ -157,6 +158,26 @@ Website Quality Protocol:
 - Build an actually usable, modern interface with strong visual hierarchy, spacing rhythm, and responsive behavior.
 - Avoid generic placeholder design and empty boilerplate.
 - Include complete real files for the stack you choose (no pseudo snippets).
+- For website/web app generation, default to Next.js latest stable with App Router plus Tailwind CSS unless the user explicitly asks for another stack.
+- Use functional components only.
+- Do not use TypeScript unless the user explicitly asks for it.
+- Ensure the project is fully deployable on Vercel.
+- Keep code clean, minimal, and modular.
+- Include these files when relevant: `package.json`, `next.config.js`, `tailwind.config.js`, `postcss.config.js`, `app/page.js`, `app/layout.js`, `app/globals.css`.
+- Add a primary artifact named `forge_project.json` whose content is a JSON object with this exact shape:
+  {
+    "project_name": "string",
+    "files": [
+      {
+        "path": "file_path",
+        "content": "file_content"
+      }
+    ],
+    "dependencies": {
+      "package_name": "version"
+    }
+  }
+- Return the complete project through that `forge_project.json` artifact so the backend can reconstruct files deterministically.
 - If auth is requested, implement complete sign-up/sign-in/session/logout flow with route protection and validation.
 - If deploy is requested, include deploy-ready files and exact terminal commands in `terminal_commands.sh`.
 - Include `.env.example` with all required variables.
