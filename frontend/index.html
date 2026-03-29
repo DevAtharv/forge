@@ -1,866 +1,1272 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Forge | AI Workspace</title>
+    <title>Forge AI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap"
       rel="stylesheet"
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
     <style>
       :root {
         color-scheme: light;
-        --bg: #f3f4f6;
-        --surface: rgba(255, 255, 255, 0.92);
-        --surface-strong: #ffffff;
-        --surface-soft: #f8fafc;
-        --line: rgba(15, 23, 42, 0.08);
-        --line-strong: rgba(15, 23, 42, 0.14);
-        --text: #0f172a;
-        --muted: #5b6474;
-        --soft: #8a94a6;
-        --primary: #111827;
-        --accent: #2563eb;
-        --accent-soft: rgba(37, 99, 235, 0.08);
-        --success: #15803d;
-        --teal: #15803d;
+        --background: #fcf8f8;
+        --surface: #ffffff;
+        --surface-low: #f6f3f2;
+        --surface-mid: #f1edec;
+        --surface-high: #ebe7e7;
+        --outline: #e5e2e1;
+        --outline-strong: #c4c7c8;
+        --text: #1c1b1b;
+        --muted: #5f6364;
+        --soft: #747878;
+        --primary: #5d5f5f;
+        --brand: #0066ff;
+        --brand-soft: rgba(0, 102, 255, 0.1);
+        --teal: #16a34a;
         --gold: #b7791f;
-        --danger: #dc2626;
-        --shadow: 0 24px 60px rgba(15, 23, 42, 0.06);
+        --danger: #ba1a1a;
+        --terminal: #111827;
+        --shadow: 0 22px 50px rgba(15, 23, 42, 0.08);
       }
 
-      * {
-        box-sizing: border-box;
-      }
-
-      html {
-        scroll-behavior: smooth;
-      }
-
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
       body {
         margin: 0;
         min-height: 100vh;
         font-family: "Inter", sans-serif;
         color: var(--text);
         background:
-          radial-gradient(circle at top, rgba(255, 255, 255, 0.96), transparent 35%),
-          linear-gradient(180deg, #fafafa 0%, var(--bg) 100%);
+          radial-gradient(circle at top left, rgba(255, 255, 255, 0.95), transparent 26%),
+          radial-gradient(circle at right 30%, rgba(246, 236, 233, 0.85), transparent 22%),
+          linear-gradient(180deg, #fdfafa 0%, var(--background) 100%);
       }
-
-      a {
-        color: inherit;
-        text-decoration: none;
-      }
-
-      button,
-      input,
-      textarea {
-        font: inherit;
-      }
-
-      .hidden {
-        display: none !important;
-      }
-
+      a { color: inherit; text-decoration: none; }
+      button, input, textarea { font: inherit; }
+      .hidden { display: none !important; }
       .material-symbols-outlined {
-        font-variation-settings: "FILL" 0, "wght" 350, "GRAD" 0, "opsz" 24;
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
       }
-
-      .shell {
-        min-height: 100vh;
-        padding: 20px;
-      }
-
-      .topbar,
-      .topbar-left,
-      .topbar-right,
-      .nav-links,
-      .status-group,
-      .button-row,
-      .panel-head,
-      .split,
-      .user-row,
-      .auth-switch,
-      .footer-links,
-      .badge-row,
-      .badges,
-      .artifact-head,
-      .stage-head {
+      .shell { width: min(1200px, calc(100% - 48px)); margin: 0 auto; }
+      .row, .header-row, .nav-row, .button-row, .status-group, .panel-head, .split, .stage-head, .artifact-head, .user-row, .auth-switch, .badge-row, .badges, .footer-links, .dashboard-topbar, .status-metrics {
         display: flex;
         align-items: center;
         gap: 12px;
       }
-
-      .topbar {
+      .route-link, .pill-link {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--muted);
+        transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+      }
+      .route-link.active { color: var(--text); }
+      .home-header {
         position: sticky;
-        top: 20px;
-        z-index: 10;
+        top: 0;
+        z-index: 40;
+        padding: 22px 0;
+        backdrop-filter: blur(14px);
+      }
+      .home-nav, .auth-nav {
         justify-content: space-between;
-        width: min(1200px, calc(100% - 32px));
-        margin: 0 auto 24px;
         padding: 14px 18px;
-        border: 1px solid var(--line);
         border-radius: 20px;
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(12px);
-        box-shadow: var(--shadow);
+        border: 1px solid rgba(196, 199, 200, 0.35);
+        background: rgba(255, 255, 255, 0.74);
+        box-shadow: 0 10px 30px rgba(28, 27, 27, 0.04);
       }
-
-      .topbar-left,
-      .topbar-right {
-        min-width: 0;
-      }
-
-      .brand-mark {
-        width: 38px;
-        height: 38px;
-        display: grid;
-        place-items: center;
-        border-radius: 12px;
-        background: var(--primary);
-        color: #fff;
-      }
-
-      .brand-copy {
-        display: grid;
+      .brand { display: flex; align-items: center; gap: 14px; }
+      .forge-logo {
+        position: relative;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
         gap: 2px;
       }
-
-      .brand-copy strong {
-        font-size: 14px;
-        font-weight: 700;
+      .forge-logo.compact {
+        transform: scale(0.82);
+        transform-origin: left center;
+      }
+      .forge-logo-arch {
+        width: 72px;
+        height: 28px;
+        border-top-left-radius: 999px;
+        border-top-right-radius: 999px;
+        border: 8px solid #ff7138;
+        border-bottom: 0;
+        margin-bottom: -2px;
+      }
+      .forge-logo-wordmark {
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+        line-height: 1;
+      }
+      .forge-logo-word {
+        font-size: 42px;
+        font-weight: 800;
+        letter-spacing: -0.08em;
+        color: #d8dde5;
+        -webkit-text-stroke: 3px #233245;
+        text-shadow: 0 2px 0 rgba(255,255,255,0.65);
+      }
+      .forge-logo-bot {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        margin-left: 3px;
+        color: #ff7138;
+        font-size: 13px;
+        font-weight: 800;
         letter-spacing: -0.02em;
       }
-
-      .brand-copy span {
-        color: var(--soft);
-        font-size: 11px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
+      .forge-logo-bot span {
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        line-height: 0.95;
       }
-
-      .nav-links a {
-        padding: 8px 12px;
+      .forge-logo-dot {
+        width: 13px;
+        height: 13px;
         border-radius: 999px;
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 600;
-      }
-
-      .nav-links a.active {
         background: #fff;
-        color: var(--primary);
-        box-shadow: inset 0 0 0 1px var(--line);
+        border: 3px solid #233245;
+        box-sizing: border-box;
       }
-
-      .status-pill,
-      .chip,
-      .tiny-chip {
+      .brand-copy { display: grid; gap: 2px; }
+      .brand-copy strong { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+      .brand-copy span {
+        font-size: 11px;
+        color: var(--soft);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+      .nav-cluster { display: flex; align-items: center; gap: 26px; }
+      .nav-cluster .route-link { position: relative; padding-bottom: 2px; }
+      .nav-cluster .route-link.active::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -10px;
+        height: 2px;
+        border-radius: 999px;
+        background: currentColor;
+      }
+      .top-actions { display: flex; align-items: center; gap: 14px; }
+      .status-group { gap: 10px; }
+      .status-pill, .chip, .tiny-chip {
         display: inline-flex;
         align-items: center;
         gap: 8px;
         border-radius: 999px;
         font-size: 11px;
-        font-weight: 600;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
-
       .status-pill {
         padding: 8px 10px;
-        background: rgba(255, 255, 255, 0.86);
-        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(196, 199, 200, 0.45);
         color: var(--muted);
       }
-
       .status-dot {
         width: 8px;
         height: 8px;
         border-radius: 999px;
         background: #cbd5e1;
       }
-
-      .icon-btn,
-      .ghost-btn,
-      .action-btn {
+      .text-button, .ghost-button, .primary-button, .icon-button {
         border: 0;
         cursor: pointer;
-        transition: 160ms ease;
+        transition: all 160ms ease;
       }
-
-      .icon-btn {
+      .text-button { background: transparent; color: var(--muted); font-size: 14px; font-weight: 500; }
+      .ghost-button, .primary-button {
+        padding: 12px 18px;
+        border-radius: 14px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .ghost-button { background: #fff; color: var(--text); border: 1px solid rgba(196, 199, 200, 0.55); }
+      .primary-button {
+        background: var(--primary);
+        color: #fff;
+        box-shadow: 0 14px 30px rgba(93, 95, 95, 0.22);
+      }
+      .text-button:hover, .ghost-button:hover, .pill-link:hover { color: var(--text); }
+      .ghost-button:hover { background: var(--surface-low); }
+      .primary-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 18px 32px rgba(93, 95, 95, 0.28);
+      }
+      .ghost-button.active {
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: inset 0 0 0 1px rgba(196, 199, 200, 0.7);
+      }
+      .ghost-button:disabled, .primary-button:disabled, .text-button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+      .eyebrow, .panel-kicker, .meta, .timeline-role, .label {
+        color: var(--soft);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .hero { padding: 56px 0 120px; }
+      .hero-display {
+        font-family: "Instrument Serif", serif;
+        font-size: clamp(62px, 9vw, 136px);
+        line-height: 0.9;
+        letter-spacing: -0.06em;
+        margin: 0 0 28px;
+      }
+      .hero-display .accent { color: var(--brand); font-style: italic; }
+      .hero-copy {
+        max-width: 760px;
+        margin: 0 auto;
+        color: var(--muted);
+        font-size: 20px;
+        line-height: 1.75;
+      }
+      .home-hero { text-align: center; }
+      .hero-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 30px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: var(--surface-high);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--brand);
+        animation: pulse 1.8s infinite;
+      }
+      @keyframes pulse {
+        0% { transform: scale(0.8); opacity: 0.75; }
+        70% { transform: scale(1.25); opacity: 0.2; }
+        100% { transform: scale(0.8); opacity: 0.75; }
+      }
+      .hero-actions { justify-content: center; margin-top: 34px; }
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 24px;
+        margin-top: 72px;
+      }
+      .feature-card, .card, .metric-card, .timeline-item, .stage, .artifact, .memory-box, .response-box, .empty, .empty-state, .auth-card, .status-bar, .auth-zone {
+        background: var(--surface);
+        border: 1px solid rgba(196, 199, 200, 0.45);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+      }
+      .feature-card, .card, .auth-card, .status-bar { padding: 32px; }
+      .metric-card, .timeline-item, .stage, .artifact, .memory-box, .response-box, .empty, .empty-state, .auth-zone { padding: 18px; }
+      .feature-icon {
+        width: 50px;
+        height: 50px;
+        display: grid;
+        place-items: center;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 8px 24px rgba(28, 27, 27, 0.06);
+        color: var(--brand);
+      }
+      .feature-card h3, .showcase-copy h2, .auth-card h1, .section-title {
+        margin: 14px 0 10px;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+      }
+      .feature-card p, .panel-copy, .muted, .auth-copy, .timeline-body, .response-text, .empty, .empty-state {
+        color: var(--muted);
+        line-height: 1.75;
+      }
+      .feature-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 24px;
+        color: var(--brand);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .feature-meta::before {
+        content: "";
+        width: 4px;
+        height: 4px;
+        border-radius: 999px;
+        background: currentColor;
+      }
+      .showcase {
+        margin-top: 36px;
+        overflow: hidden;
+        background: #0f172a;
+        border-radius: 48px;
+      }
+      .showcase-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+        align-items: stretch;
+      }
+      .showcase-copy { padding: 72px; }
+      .showcase-copy h2 {
+        font-size: clamp(40px, 4vw, 60px);
+        color: #fff;
+        line-height: 1.05;
+      }
+      .showcase-copy .accent { color: var(--brand); }
+      .showcase-copy p, .showcase-copy li {
+        color: rgba(226, 232, 240, 0.82);
+        line-height: 1.8;
+      }
+      .showcase-copy ul {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 34px;
+        display: grid;
+        gap: 12px;
+      }
+      .showcase-copy li { display: flex; align-items: center; gap: 10px; }
+      .showcase-visual {
+        position: relative;
+        min-height: 520px;
+        overflow: hidden;
+        background:
+          linear-gradient(135deg, rgba(0, 102, 255, 0.16), rgba(15, 23, 42, 0.2)),
+          radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent 20%),
+          linear-gradient(180deg, #111827 0%, #1f2937 100%);
+      }
+      .showcase-phone {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+      }
+      .glass-card {
+        width: 290px;
+        padding: 24px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.68);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        box-shadow: 0 26px 48px rgba(15, 23, 42, 0.28);
+      }
+      .glass-row { display: flex; align-items: center; gap: 12px; }
+      .glass-avatar {
         width: 40px;
         height: 40px;
         display: grid;
         place-items: center;
-        border-radius: 14px;
-        background: #fff;
-        color: var(--muted);
-        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(0, 102, 255, 0.14);
+        color: var(--brand);
       }
-
-      .ghost-btn,
-      .action-btn {
-        padding: 11px 14px;
-        border-radius: 14px;
-        font-size: 12px;
-        font-weight: 700;
+      .progress {
+        width: 100%;
+        height: 8px;
+        margin-top: 16px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(148, 163, 184, 0.3);
       }
-
-      .ghost-btn {
-        background: #fff;
-        color: var(--primary);
-        border: 1px solid var(--line);
+      .progress > span {
+        display: block;
+        width: 67%;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--brand);
       }
-
-      .ghost-btn:hover,
-      .ghost-btn.active,
-      .icon-btn:hover {
-        border-color: var(--line-strong);
-        background: var(--surface-soft);
-      }
-
-      .action-btn {
-        color: #fff;
-        background: var(--primary);
-        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
-      }
-
-      .action-btn:hover {
-        transform: translateY(-1px);
-      }
-
-      .ghost-btn:disabled,
-      .action-btn:disabled,
-      .icon-btn:disabled {
-        cursor: not-allowed;
-        opacity: 0.55;
-      }
-
-      .page {
-        width: min(1200px, calc(100% - 32px));
-        margin: 0 auto;
-        padding-bottom: 44px;
-      }
-
-      .hero {
-        padding: 52px 0 32px;
-      }
-
-      .hero-grid,
-      .dashboard-grid {
+      .home-footer { padding: 84px 0 60px; }
+      .footer-grid {
         display: grid;
-        gap: 20px;
-      }
-
-      .hero-grid {
-        grid-template-columns: minmax(0, 1.1fr) 360px;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+        gap: 48px;
         align-items: start;
       }
-
-      .dashboard-grid {
-        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-      }
-
-      .stack,
-      .stage-list,
-      .timeline-list,
-      .artifact-list,
-      .profile-grid,
-      .form-grid,
-      .mission-form {
-        display: grid;
-        gap: 16px;
-      }
-
-      .card,
-      .empty,
-      .empty-state,
-      .memory-box,
-      .response-box,
-      .timeline-item,
-      .stage,
-      .artifact,
-      .auth-zone {
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: 24px;
-        box-shadow: var(--shadow);
-      }
-
-      .hero-panel,
-      .side-panel,
-      .panel-card,
-      .auth-card {
-        padding: 28px;
-      }
-
-      .memory-box,
-      .response-box,
-      .timeline-item,
-      .stage,
-      .artifact,
-      .empty,
-      .empty-state,
-      .auth-zone {
-        padding: 18px;
-      }
-
-      .eyebrow,
-      .panel-kicker,
-      .meta,
-      .label-eyebrow,
-      .timeline-role {
-        color: var(--soft);
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-      }
-
-      .hero-title {
-        margin: 14px 0 16px;
-        max-width: 10ch;
-        font-size: clamp(56px, 8vw, 84px);
-        line-height: 0.96;
-        letter-spacing: -0.06em;
-        font-weight: 800;
-      }
-
-      .hero-copy,
-      .panel-copy,
-      .auth-copy,
-      .muted,
-      .timeline-body,
-      .response-text,
-      .empty,
-      .empty-state {
-        color: var(--muted);
-        line-height: 1.7;
-      }
-
-      .hero-copy {
-        max-width: 52rem;
-        font-size: 16px;
-      }
-
-      .section-title {
-        margin: 4px 0 0;
-        font-size: 22px;
-        letter-spacing: -0.04em;
-      }
-
-      .hero-metrics {
+      .footer-columns {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 14px;
-        margin-top: 28px;
+        gap: 32px;
       }
-
-      .metric,
-      .showcase-box {
-        padding: 18px;
-        border-radius: 18px;
-        background: var(--surface-soft);
-        border: 1px solid var(--line);
+      .footer-columns h4 {
+        margin: 0 0 18px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--soft);
       }
-
-      .metric strong,
-      .showcase-box strong {
-        display: block;
-        margin: 12px 0 4px;
-        color: var(--primary);
-        font-size: 18px;
-        letter-spacing: -0.03em;
-      }
-
-      .showcase-box strong {
-        font-size: 16px;
-      }
-
-      .auth-shell {
-        min-height: calc(100vh - 130px);
+      .footer-columns ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
         display: grid;
-        place-items: center;
-        padding: 32px 0;
+        gap: 12px;
+        color: var(--muted);
       }
-
-      .auth-card {
-        width: min(520px, 100%);
+      .footer-bottom {
+        margin-top: 52px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(196, 199, 200, 0.25);
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        color: var(--muted);
+        font-size: 14px;
       }
-
+      .auth-view { position: relative; min-height: 100vh; overflow: hidden; }
+      .auth-glow, .auth-glow-secondary {
+        position: absolute;
+        width: 360px;
+        height: 360px;
+        border-radius: 999px;
+        filter: blur(120px);
+        z-index: 0;
+      }
+      .auth-glow { top: 18%; left: -140px; background: rgba(246, 236, 233, 0.9); }
+      .auth-glow-secondary { right: -140px; bottom: 14%; background: rgba(238, 238, 238, 0.92); }
+      .auth-stage {
+        position: relative;
+        z-index: 1;
+        min-height: calc(100vh - 110px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 56px 0 80px;
+      }
+      .auth-card { width: min(100%, 520px); overflow: hidden; }
+      .auth-card-top, .auth-card-bottom {
+        padding: 24px 32px;
+        border-bottom: 1px solid rgba(196, 199, 200, 0.42);
+        background: var(--surface-low);
+      }
+      .auth-card-bottom {
+        border-top: 1px solid rgba(196, 199, 200, 0.42);
+        border-bottom: 0;
+        background: var(--surface-mid);
+      }
+      .auth-content { padding: 32px; }
+      .auth-switch {
+        padding: 4px;
+        border-radius: 16px;
+        background: var(--surface-high);
+      }
+      .auth-switch .ghost-button {
+        flex: 1;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+      .auth-switch .ghost-button.active {
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+      .auth-form {
+        display: grid;
+        gap: 18px;
+        margin-top: 26px;
+      }
       label {
         display: grid;
         gap: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--soft);
+      }
+      .input-wrap { position: relative; }
+      .input-wrap .material-symbols-outlined {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--soft);
+        font-size: 20px;
+      }
+      input, textarea {
+        width: 100%;
+        padding: 15px 16px 15px 48px;
+        border: 1px solid rgba(196, 199, 200, 0.55);
+        border-radius: 16px;
+        background: var(--background);
+        color: var(--text);
+        outline: none;
+        transition: border-color 160ms ease, box-shadow 160ms ease;
+      }
+      textarea {
+        min-height: 164px;
+        resize: none;
+        padding-left: 18px;
+      }
+      input:focus, textarea:focus {
+        border-color: rgba(93, 95, 95, 0.55);
+        box-shadow: 0 0 0 4px rgba(93, 95, 95, 0.08);
+      }
+      .auth-feedback {
+        display: block;
+        margin-top: 14px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      .social-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 26px;
+      }
+      .social-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 14px;
+        border: 1px solid rgba(196, 199, 200, 0.55);
+        border-radius: 16px;
+        background: #fff;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .social-button img, .social-button svg { width: 20px; height: 20px; }
+      .divider { position: relative; margin: 28px 0; text-align: center; }
+      .divider::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: rgba(196, 199, 200, 0.55);
+      }
+      .divider span {
+        position: relative;
+        display: inline-block;
+        padding: 0 16px;
+        background: var(--surface);
         color: var(--soft);
         font-size: 11px;
         font-weight: 700;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
       }
-
-      input,
-      textarea {
+      .warn { color: #8a5a00; border-color: rgba(183, 121, 31, 0.36); background: rgba(255, 245, 214, 0.88); }
+      .auth-support { width: min(100%, 520px); margin-top: 22px; }
+      .auth-support-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        color: var(--soft);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .auth-support-links { display: flex; gap: 16px; }
+      .auth-note {
+        margin: 24px auto 0;
+        max-width: 320px;
+        text-align: center;
+        color: rgba(116, 120, 120, 0.72);
+        font-size: 11px;
+        line-height: 1.7;
+      }
+      .dashboard-view { min-height: 100vh; }
+      .dashboard-shell {
+        display: grid;
+        grid-template-columns: 264px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+      .dashboard-sidebar {
+        position: sticky;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        height: 100vh;
+        padding: 18px;
+        border-right: 1px solid rgba(196, 199, 200, 0.42);
+        background: rgba(248, 250, 252, 0.82);
+        backdrop-filter: blur(18px);
+      }
+      .sidebar-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 10px;
+      }
+      .new-mission-button {
         width: 100%;
-        border: 1px solid var(--line);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px 16px;
         border-radius: 16px;
+        background: var(--primary);
+        color: #fff;
+        font-weight: 700;
+        box-shadow: 0 16px 28px rgba(93, 95, 95, 0.2);
+      }
+      .sidebar-links { display: grid; gap: 6px; }
+      .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 16px;
+        color: var(--muted);
+        font-weight: 600;
+        transition: all 160ms ease;
+      }
+      .sidebar-link:hover {
+        background: rgba(229, 226, 225, 0.5);
+        color: var(--text);
+        transform: translateX(4px);
+      }
+      .sidebar-link.active {
         background: #fff;
         color: var(--text);
-        padding: 14px 15px;
+        box-shadow: 0 8px 18px rgba(28, 27, 27, 0.06);
       }
-
-      input:focus,
-      textarea:focus {
-        outline: none;
-        border-color: rgba(37, 99, 235, 0.45);
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+      .sidebar-bottom {
+        margin-top: auto;
+        padding-top: 18px;
+        border-top: 1px solid rgba(196, 199, 200, 0.42);
       }
-
-      textarea {
-        min-height: 220px;
-        resize: vertical;
+      .dashboard-main { padding: 32px; }
+      .status-bar {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) auto;
+        gap: 20px;
+        align-items: center;
       }
-
-      .panel-head,
-      .split,
-      .user-row,
-      .artifact-head,
-      .stage-head {
+      .status-primary { display: flex; gap: 16px; align-items: flex-start; }
+      .hub-icon {
+        position: relative;
+        width: 52px;
+        height: 52px;
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        background: rgba(14, 165, 233, 0.1);
+        color: #0284c7;
+      }
+      .hub-icon::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        bottom: 1px;
+        width: 14px;
+        height: 14px;
+        border: 2px solid #fff;
+        border-radius: 999px;
+        background: var(--teal);
+      }
+      .status-title {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #94a3b8;
+      }
+      .status-headline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-top: 6px;
+      }
+      .status-headline strong {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+      }
+      .green-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: rgba(34, 197, 94, 0.14);
+        color: var(--teal);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .status-explain { margin: 10px 0 0; color: var(--muted); line-height: 1.7; }
+      .status-metrics { justify-content: flex-end; flex-wrap: wrap; }
+      .metric-box { min-width: 92px; text-align: right; }
+      .metric-box p { margin: 0; }
+      .metric-box .meta { display: block; margin-bottom: 6px; }
+      .workspace-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+        gap: 24px;
+        margin-top: 24px;
+      }
+      .stack { display: grid; gap: 24px; }
+      .panel-head, .split, .stage-head, .artifact-head, .user-row { justify-content: space-between; }
+      .panel-head { align-items: flex-start; }
+      .panel-title {
+        margin: 6px 0 0;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+      .mission-chip-group { display: flex; gap: 8px; flex-wrap: wrap; }
+      .tiny-chip { padding: 7px 10px; background: var(--surface-mid); color: var(--muted); }
+      .chip { padding: 7px 10px; background: var(--brand-soft); color: var(--brand); }
+      .chip.neutral { background: var(--surface-mid); color: var(--muted); }
+      .mission-toolbar {
+        display: flex;
+        align-items: center;
         justify-content: space-between;
+        margin-top: 16px;
+        gap: 12px;
       }
-
-      .chip {
-        padding: 7px 11px;
-        color: var(--accent);
-        background: var(--accent-soft);
-      }
-
-      .chip.neutral,
-      .tiny-chip {
-        padding: 7px 11px;
-        background: var(--surface-soft);
+      .mini-icon-row { display: flex; gap: 8px; }
+      .icon-button {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        background: transparent;
         color: var(--muted);
       }
-
-      .timeline-role {
-        color: var(--accent);
-      }
-
-      .timeline-role.user {
+      .icon-button:hover { background: var(--surface-low); color: var(--text); }
+      .response-shell { position: relative; overflow: hidden; }
+      .response-live {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: rgba(238, 238, 238, 0.96);
         color: var(--primary);
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
       }
-
-      .badge-row,
-      .badges {
-        flex-wrap: wrap;
+      .response-box { border-left: 4px solid var(--primary); background: var(--surface-low); }
+      .response-actions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 22px;
       }
-
+      .subtle-button {
+        padding: 12px;
+        border-radius: 12px;
+        border: 0;
+        background: var(--surface-low);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .subtle-button:hover { background: var(--surface-high); color: var(--text); }
+      .timeline-rail { display: grid; gap: 18px; }
+      .timeline-step {
+        position: relative;
+        padding-left: 24px;
+        border-left: 2px solid var(--surface-high);
+      }
+      .timeline-step::before {
+        content: "";
+        position: absolute;
+        left: -9px;
+        top: 2px;
+        width: 14px;
+        height: 14px;
+        border: 4px solid #fff;
+        border-radius: 999px;
+        background: var(--surface-high);
+      }
+      .timeline-step.current::before { background: var(--primary); }
+      .timeline-step p { margin: 4px 0 0; }
+      .timeline-list { display: grid; gap: 12px; }
+      .timeline-item { border-radius: 18px; }
+      .timeline-role { color: var(--primary); }
+      .timeline-role.user { color: var(--brand); }
+      .artifact-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .artifact-tile {
+        aspect-ratio: 1;
+        border: 1px dashed rgba(196, 199, 200, 0.85);
+        border-radius: 18px;
+        background: var(--surface-low);
+        display: grid;
+        place-items: center;
+        padding: 12px;
+        text-align: center;
+        color: var(--soft);
+      }
+      .artifact-list { display: grid; gap: 12px; }
+      .artifact, .stage, .memory-box, .auth-zone { border-radius: 18px; }
+      .stage { background: var(--surface-low); }
+      .badges { flex-wrap: wrap; margin-top: 10px; }
+      .badge-row { flex-wrap: wrap; }
       pre {
         margin: 12px 0 0;
         padding: 16px;
         border-radius: 16px;
         overflow: auto;
+        background: var(--terminal);
+        color: #e5e7eb;
         white-space: pre-wrap;
         word-break: break-word;
-        background: #0b1220;
-        color: #e5e7eb;
         font-size: 12px;
-        line-height: 1.6;
+        line-height: 1.65;
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       }
-
+      .terminal-card {
+        background: var(--terminal);
+        border-radius: 24px;
+        padding: 20px;
+        color: #e5e7eb;
+        box-shadow: 0 24px 44px rgba(15, 23, 42, 0.22);
+      }
+      .terminal-top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+      .terminal-dot { width: 8px; height: 8px; border-radius: 999px; }
+      .terminal-dot.red { background: #ef4444; }
+      .terminal-dot.yellow { background: #f59e0b; }
+      .terminal-dot.green { background: #22c55e; }
+      .terminal-label {
+        margin-left: 10px;
+        color: rgba(148, 163, 184, 0.72);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .terminal-meta {
+        color: rgba(148, 163, 184, 0.7);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+      .system-fab {
+        position: fixed;
+        right: 32px;
+        bottom: 32px;
+        width: 56px;
+        height: 56px;
+        display: grid;
+        place-items: center;
+        border: 0;
+        border-radius: 999px;
+        background: var(--primary);
+        color: #fff;
+        box-shadow: 0 20px 40px rgba(93, 95, 95, 0.24);
+        cursor: pointer;
+      }
       .footer-links {
         justify-content: space-between;
         flex-wrap: wrap;
-        margin-top: 20px;
+        margin-top: 24px;
         color: var(--soft);
         font-size: 11px;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.12em;
       }
-
-      .warn {
-        color: #8a5a00;
-        background: #fff8e8;
-        border-color: rgba(183, 121, 31, 0.28);
+      @media (max-width: 1100px) {
+        .features-grid, .showcase-layout, .footer-grid, .workspace-grid, .status-bar { grid-template-columns: 1fr; }
+        .status-metrics { justify-content: flex-start; }
+        .dashboard-shell { grid-template-columns: 1fr; }
+        .dashboard-sidebar { position: relative; height: auto; }
+        .response-actions { grid-template-columns: 1fr; }
       }
-
-      @media (max-width: 1024px) {
-        .hero-grid,
-        .dashboard-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .hero-title {
-          max-width: none;
-        }
-      }
-
-      @media (max-width: 720px) {
-        .shell {
-          padding: 12px;
-        }
-
-        .topbar,
-        .page {
-          width: calc(100% - 8px);
-        }
-
-        .topbar,
-        .topbar-left,
-        .topbar-right,
-        .nav-links,
-        .status-group,
-        .button-row,
-        .panel-head,
-        .split,
-        .user-row,
-        .auth-switch,
-        .footer-links {
+      @media (max-width: 780px) {
+        .shell { width: calc(100% - 24px); }
+        .home-nav, .auth-nav, .header-row, .nav-row, .button-row, .top-actions, .status-group, .footer-bottom, .footer-links, .dashboard-topbar, .panel-head, .split, .user-row, .auth-support-top {
           flex-direction: column;
           align-items: stretch;
         }
-
-        .hero-title {
-          font-size: 44px;
-        }
-
-        .hero-metrics {
-          grid-template-columns: 1fr;
-        }
-
-        .action-btn,
-        .ghost-btn {
-          width: 100%;
-        }
+        .nav-cluster, .auth-support-links { flex-wrap: wrap; }
+        .hero { padding-top: 32px; }
+        .hero-display { font-size: 58px; }
+        .hero-copy { font-size: 18px; }
+        .features-grid, .footer-columns, .artifact-grid, .social-grid { grid-template-columns: 1fr; }
+        .dashboard-main { padding: 20px 12px 90px; }
+        .status-headline strong { font-size: 20px; }
+        .system-fab { right: 18px; bottom: 18px; }
       }
     </style>
   </head>
   <body>
-    <div class="shell">
-      <header class="topbar">
-        <div class="topbar-left">
-          <div class="brand-mark">
-            <span class="material-symbols-outlined">bolt</span>
-          </div>
-          <div class="brand-copy">
-            <strong>Forge</strong>
-            <span>AI workspace</span>
-          </div>
-        </div>
-
-        <nav class="nav-links">
-          <a data-route-link="home" href="#/home">Home</a>
-          <a data-route-link="auth" href="#/auth">Auth</a>
-          <a data-route-link="dashboard" href="#/dashboard">Dashboard</a>
-        </nav>
-
-        <div class="topbar-right">
-          <div class="status-group">
-            <div class="status-pill">
-              <span class="status-dot" id="health-dot"></span>
-              <span id="health-text">Checking backend</span>
-            </div>
-            <div class="status-pill">
-              <span class="status-dot" id="auth-dot"></span>
-              <span id="auth-text">Checking auth</span>
+    <section data-view="home">
+      <header class="home-header">
+        <div class="shell home-nav row">
+          <div class="brand">
+            <div class="forge-logo compact" aria-label="Forge Bot logo">
+              <div class="forge-logo-arch"></div>
+              <div class="forge-logo-wordmark">
+                <div class="forge-logo-word">FORGE</div>
+                <div class="forge-logo-bot"><span>BOT</span><div class="forge-logo-dot"></div></div>
+              </div>
             </div>
           </div>
-          <button class="icon-btn" type="button" aria-label="Notifications">
-            <span class="material-symbols-outlined">notifications</span>
-          </button>
+          <div class="nav-cluster">
+            <a class="route-link" data-route-link="home" href="#/home">Product</a>
+            <a class="pill-link" href="#features">Solutions</a>
+            <a class="pill-link" href="#showcase">Pricing</a>
+            <a class="pill-link" href="#footer">Docs</a>
+          </div>
+          <div class="top-actions">
+            <div class="status-group">
+              <div class="status-pill"><span class="status-dot" id="health-dot"></span><span id="health-text">Checking backend</span></div>
+              <div class="status-pill"><span class="status-dot" id="auth-dot"></span><span id="auth-text">Checking auth</span></div>
+            </div>
+            <a class="text-button" href="#/auth">Log In</a>
+            <a class="primary-button" href="#/auth">Get Started</a>
+          </div>
         </div>
       </header>
 
-      <main>
-        <section class="page" data-view="home">
-          <section class="hero">
-            <div class="hero-grid">
-              <div class="card hero-panel">
-                <div class="eyebrow">Forge Platform</div>
-                <h1 class="hero-title">AI work should feel focused.</h1>
-                <p class="hero-copy">
-                  Forge now moves through a cleaner product flow: a sharp home
-                  page, a dedicated auth screen, and a protected dashboard for
-                  missions, memory, artifacts, and delivery. Less clutter. More
-                  control.
-                </p>
-                <div class="button-row" style="margin-top: 24px">
-                  <a class="action-btn" href="#/auth">Create account</a>
-                  <a class="ghost-btn" href="#/auth">Sign in</a>
-                  <a class="ghost-btn" href="#/dashboard">Open dashboard</a>
-                </div>
+      <main class="shell hero home-hero">
+        <div class="hero-pill"><span class="pulse-dot"></span><span>v2.0 Beta Now Available</span></div>
+        <h1 class="hero-display">Orchestrate with<br /><span class="accent">Neural Precision</span></h1>
+        <p class="hero-copy">
+          The unified platform for autonomous agent deployment. Connect your data,
+          orchestrate workflows with LLMs, and deploy at scale across any channel
+          without turning the product into one overloaded screen.
+        </p>
+        <div class="button-row hero-actions">
+          <a class="primary-button" href="#/auth">Get Started</a>
+          <a class="ghost-button" href="#/auth">Authenticate</a>
+          <a class="ghost-button" href="#/dashboard">Open Dashboard</a>
+        </div>
 
-                <div class="hero-metrics">
-                  <div class="metric">
-                    <div class="label-eyebrow">Flow</div>
-                    <strong>Home to workspace</strong>
-                    <span class="muted">A product journey instead of one crowded screen.</span>
-                  </div>
-                  <div class="metric">
-                    <div class="label-eyebrow">Access</div>
-                    <strong id="home-mode-copy">Protected workspace</strong>
-                    <span class="muted">Sign in to unlock missions, linking, and memory.</span>
-                  </div>
-                  <div class="metric">
-                    <div class="label-eyebrow">Output</div>
-                    <strong>Plans and artifacts</strong>
-                    <span class="muted">Inspect what Forge produced without digging around.</span>
-                  </div>
-                </div>
-              </div>
-
-              <aside class="card side-panel">
-                <div class="panel-kicker">Product shape</div>
-                <h2 class="section-title">Three distinct surfaces.</h2>
-                <div class="stack" style="margin-top: 18px">
-                  <div class="showcase-box">
-                    <strong>Home</strong>
-                    <p class="muted">Clear positioning, cleaner first impression, stronger product feel.</p>
-                  </div>
-                  <div class="showcase-box">
-                    <strong>Auth</strong>
-                    <p class="muted">Dedicated sign in and account creation instead of mixing it with work.</p>
-                  </div>
-                  <div class="showcase-box">
-                    <strong>Dashboard</strong>
-                    <p class="muted">A focused workspace for missions, state, timeline, and outputs.</p>
-                  </div>
-                </div>
-              </aside>
-            </div>
-          </section>
+        <section class="features-grid" id="features">
+          <article class="feature-card">
+            <div class="feature-icon"><span class="material-symbols-outlined">cable</span></div>
+            <h3>Connect</h3>
+            <p>Seamlessly ingest data from mission history, Telegram, structured backends, and future integrations without breaking the workspace flow.</p>
+            <div class="feature-meta">102 integrations active</div>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" style="background: rgba(0, 102, 255, 0.08);"><span class="material-symbols-outlined" style="color: var(--brand);">schema</span></div>
+            <h3>Orchestrate</h3>
+            <p>Design multi-agent reasoning chains, preview routes, and turn a prompt into a structured mission with visible execution stages.</p>
+            <div class="feature-meta">99.9% logic reliability</div>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon"><span class="material-symbols-outlined">rocket_launch</span></div>
+            <h3>Deploy</h3>
+            <p>Push work into Telegram, artifact pipelines, and production-ready outputs with strong delivery feedback and cleaner handoff.</p>
+            <div class="feature-meta" id="home-mode-copy">Protected workspace</div>
+          </article>
         </section>
 
-        <section class="page hidden" data-view="auth">
-          <div class="auth-shell">
-            <section class="card auth-card">
-              <div class="panel-kicker">Access Forge</div>
-              <h1 class="section-title" style="font-size: 32px">Sign in or create your account</h1>
-              <p class="auth-copy">
-                This page is intentionally simple. Enter through auth here, then
-                move into the protected workspace once your session is ready.
-              </p>
-
-              <div class="auth-switch" style="margin-top: 22px">
-                <button class="ghost-btn active" id="mode-signin" type="button">Sign In</button>
-                <button class="ghost-btn" id="mode-signup" type="button">Create Account</button>
-              </div>
-
-              <form class="form-grid" id="auth-form" style="margin-top: 22px">
-                <label>
-                  Email
-                  <input id="auth-email" type="email" placeholder="founder@forge.dev" required />
-                </label>
-                <label>
-                  Password
-                  <input id="auth-password" type="password" minlength="8" placeholder="At least 8 characters" required />
-                </label>
-                <div class="split">
-                  <button class="action-btn" id="auth-submit" type="submit">Sign In</button>
-                  <span class="meta" id="auth-feedback">Waiting for Supabase auth configuration.</span>
+        <section class="showcase" id="showcase">
+          <div class="showcase-layout">
+            <div class="showcase-copy">
+              <div class="hero-pill" style="margin-bottom: 24px; background: rgba(0,102,255,0.16); color: var(--brand);">Featured Integration</div>
+              <h2>Forge your agents into <span class="accent">Telegram Hub.</span></h2>
+              <p>Convert any neural chain into a powerful Telegram bot instantly. Real-time responses, rich media support, and automated user management are built into the product story from the first click.</p>
+              <ul>
+                <li><span class="material-symbols-outlined" style="color: var(--brand);">check_circle</span>Native Telegram API bridging</li>
+                <li><span class="material-symbols-outlined" style="color: var(--brand);">check_circle</span>Asynchronous mission updates</li>
+                <li><span class="material-symbols-outlined" style="color: var(--brand);">check_circle</span>Multi-agent collaboration via group chat</li>
+              </ul>
+              <a class="primary-button" href="#/auth">Launch Telegram Hub</a>
+            </div>
+            <div class="showcase-visual">
+              <div class="showcase-phone">
+                <div class="glass-card">
+                  <div class="glass-row">
+                    <div class="glass-avatar"><span class="material-symbols-outlined">smart_toy</span></div>
+                    <div>
+                      <div style="font-size: 12px; font-weight: 700; color: #0f172a;">Forge Agent #042</div>
+                      <div style="font-size: 11px; color: #64748b;">Mission: Analysis</div>
+                    </div>
+                  </div>
+                  <div class="progress"><span></span></div>
+                  <div class="split" style="margin-top: 10px;"><span style="font-size: 11px; color: #64748b;">Processing...</span><span style="font-size: 11px; font-weight: 700; color: var(--brand);">67%</span></div>
                 </div>
-              </form>
-
-              <div class="empty-state hidden" id="auth-warning" style="margin-top: 18px"></div>
-
-              <div class="footer-links">
-                <a href="#/home">Back to home</a>
-                <a href="#/dashboard">Go to dashboard</a>
               </div>
-            </section>
+            </div>
           </div>
         </section>
+      </main>
 
-        <section class="page hidden" data-view="dashboard">
-          <div class="dashboard-grid">
+      <footer class="shell home-footer" id="footer">
+        <div class="footer-grid">
+          <div>
+            <div class="forge-logo" aria-label="Forge Bot logo" style="margin-bottom: 18px;">
+              <div class="forge-logo-arch"></div>
+              <div class="forge-logo-wordmark">
+                <div class="forge-logo-word">FORGE</div>
+                <div class="forge-logo-bot"><span>BOT</span><div class="forge-logo-dot"></div></div>
+              </div>
+            </div>
+            <p class="muted" style="max-width: 320px;">Redefining the boundaries of autonomous intelligence. Built for builders who want a clearer entry flow into the real workspace.</p>
+          </div>
+          <div class="footer-columns">
+            <div>
+              <h4>Product</h4>
+              <ul><li><a href="#features">Features</a></li><li><a href="#showcase">Integrations</a></li><li><a href="#/dashboard">Workspace</a></li></ul>
+            </div>
+            <div>
+              <h4>Company</h4>
+              <ul><li><a href="#/home">About</a></li><li><a href="#/home">Blog</a></li><li><a href="#/home">Careers</a></li></ul>
+            </div>
+            <div>
+              <h4>Legal</h4>
+              <ul><li><a href="#/home">Privacy</a></li><li><a href="#/home">Terms</a></li><li><a href="#/home">Security</a></li></ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom"><div>© 2026 Forge AI Technologies. All rights reserved.</div><div class="nav-row"><a href="#/home">Twitter</a><a href="#/home">LinkedIn</a><a href="#/home">GitHub</a></div></div>
+      </footer>
+    </section>
+
+    <section class="auth-view hidden" data-view="auth">
+      <div class="auth-glow"></div>
+      <div class="auth-glow-secondary"></div>
+      <header class="home-header">
+        <div class="shell auth-nav row">
+          <div class="brand">
+            <div class="forge-logo compact" aria-label="Forge Bot logo">
+              <div class="forge-logo-arch"></div>
+              <div class="forge-logo-wordmark">
+                <div class="forge-logo-word">FORGE</div>
+                <div class="forge-logo-bot"><span>BOT</span><div class="forge-logo-dot"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="nav-cluster">
+            <a class="route-link" data-route-link="home" href="#/home">Product</a>
+            <a class="route-link" data-route-link="auth" href="#/auth">Authenticate</a>
+            <a class="route-link" data-route-link="dashboard" href="#/dashboard">Dashboard</a>
+          </div>
+          <div class="top-actions"><a class="text-button" href="#/home">Support</a><a class="primary-button" href="#/dashboard">Mission Control</a></div>
+        </div>
+      </header>
+
+      <main class="shell auth-stage">
+        <div>
+          <section class="auth-card">
+            <div class="auth-card-top split">
+              <div class="row" style="gap: 14px;">
+                <div class="brand-mark" style="background: rgba(93,95,95,0.1); color: var(--primary); box-shadow: none;"><span class="material-symbols-outlined">shield</span></div>
+                <div><div style="font-size: 20px; font-weight: 700; letter-spacing: -0.03em;">Secure Access</div><div class="muted" style="font-size: 13px;">Encrypted Mission Control Auth</div></div>
+              </div>
+              <span class="material-symbols-outlined" style="color: var(--soft);">verified_user</span>
+            </div>
+            <div class="auth-content">
+              <div class="auth-switch">
+                <button class="ghost-button active" id="mode-signin" type="button">Sign In</button>
+                <button class="ghost-button" id="mode-signup" type="button">Create Account</button>
+              </div>
+              <form class="auth-form" id="auth-form">
+                <label>Email Address<div class="input-wrap"><span class="material-symbols-outlined">mail</span><input id="auth-email" type="email" placeholder="commander@forge.ai" required /></div></label>
+                <label>Password<div class="input-wrap"><span class="material-symbols-outlined">key</span><input id="auth-password" type="password" placeholder="••••••••••••" minlength="8" required /></div></label>
+                <button class="primary-button" id="auth-submit" type="submit">Sign In</button>
+              </form>
+              <span class="auth-feedback" id="auth-feedback">Waiting for Supabase auth configuration.</span>
+              <div class="empty-state hidden" id="auth-warning" style="margin-top: 18px;"></div>
+              <div class="divider"><span>Or continue with</span></div>
+              <div class="social-grid">
+                <button class="social-button" type="button"><img alt="Google logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYRd3eqcGQz9RbDahzZTUIe1pRa8x5m1ELr5dIVm5N9vWPQRQy3-1Jp1VcTtyrlH-05eXlUdzZo6fjinmDviqSZhofMXs3sqnPbBeTWWEjgTT64mxbQwXHs9rtUiSHxidDwk7OXGbBTDylsDjS0pqOPfJa70p_EoaxxWbVkJgoKzQgLmJymkHBPyKMgIPqpTtMlaBEfh2AWNs40KYW26P90IOMB603ZZyWGhiB3mpGd0gQP7ejkQLUy9k3StjdKmZF5poutjIIljA" /><span>Google</span></button>
+                <button class="social-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 0C5.373 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.041-1.412-4.041-1.412-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22v3.293c0 .319.192.694.805.576C20.562 21.799 24 17.302 24 12c0-6.627-5.373-12-12-12z"></path></svg><span>GitHub</span></button>
+              </div>
+            </div>
+            <div class="auth-card-bottom"><p class="muted" style="margin: 0; text-align: center; font-size: 12px;">By continuing, you agree to our <a href="#/home" style="font-weight: 700; color: var(--primary);">Terms of Service</a> and <a href="#/home" style="font-weight: 700; color: var(--primary);">Privacy Policy</a>.</p></div>
+          </section>
+          <div class="auth-support">
+            <div class="auth-support-top"><a href="#/home">Home</a><div class="auth-support-links"><a href="#/home">Support</a><a href="#/home">Status</a><a href="#/home">API</a></div></div>
+            <p class="auth-note">Forge AI Mission Control utilizes end-to-end encryption for all session protocols. Your credentials are never stored in plain text.</p>
+          </div>
+        </div>
+      </main>
+    </section>
+    <section class="dashboard-view hidden" data-view="dashboard">
+      <div class="dashboard-shell">
+        <aside class="dashboard-sidebar">
+          <div class="sidebar-top">
+            <div class="forge-logo compact" aria-label="Forge Bot logo">
+              <div class="forge-logo-arch"></div>
+              <div class="forge-logo-wordmark">
+                <div class="forge-logo-word">FORGE</div>
+                <div class="forge-logo-bot"><span>BOT</span><div class="forge-logo-dot"></div></div>
+              </div>
+            </div>
+          </div>
+          <button class="new-mission-button" type="button"><span class="material-symbols-outlined" style="font-size: 18px;">add</span><span>New Mission</span></button>
+          <nav class="sidebar-links">
+            <a class="sidebar-link route-link" data-route-link="dashboard" href="#/dashboard"><span class="material-symbols-outlined">terminal</span><span>Mission Control</span></a>
+            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">smart_toy</span><span>Agents</span></a>
+            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">send</span><span>Telegram Hub</span></a>
+            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">insights</span><span>Analytics</span></a>
+            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">settings</span><span>Settings</span></a>
+          </nav>
+          <div class="sidebar-bottom sidebar-links">
+            <a class="sidebar-link route-link" data-route-link="home" href="#/home"><span class="material-symbols-outlined">home</span><span>Home</span></a>
+            <a class="sidebar-link route-link" data-route-link="auth" href="#/auth"><span class="material-symbols-outlined">shield_lock</span><span>Auth</span></a>
+            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">help_outline</span><span>Help</span></a>
+          </div>
+        </aside>
+
+        <main class="dashboard-main">
+          <header class="status-bar">
+            <div class="status-primary">
+              <div class="hub-icon"><span class="material-symbols-outlined">hub</span></div>
+              <div>
+                <p class="status-title">Telegram Neural Link</p>
+                <div class="status-headline">
+                  <strong id="telegram-link-status">Sign in to generate a Telegram link code.</strong>
+                  <span class="green-chip" id="telegram-link-code">No active code</span>
+                </div>
+                <p class="status-explain" id="telegram-link-expiry">Generate a code, then send /link CODE to the Forge Telegram bot.</p>
+                <p class="muted" id="telegram-link-help" style="margin: 8px 0 0;">Telegram messages will share this workspace after linking.</p>
+              </div>
+            </div>
+            <div class="status-metrics">
+              <div class="metric-box"><span class="meta">Throughput</span><p style="font-weight: 700;">1.2k req/m</p></div>
+              <div class="metric-box"><span class="meta">Latency</span><p style="font-weight: 700;">42ms</p></div>
+              <button class="ghost-button" id="telegram-link-action" type="button">Re-calibrate</button>
+            </div>
+          </header>
+
+          <div class="workspace-grid">
             <div class="stack">
-              <section class="card panel-card">
+              <section class="card">
                 <div class="panel-head">
                   <div>
-                    <div class="panel-kicker">Workspace</div>
-                    <h2 class="section-title">Mission console</h2>
-                    <p class="panel-copy">Run, preview, and manage protected work from one clean command surface.</p>
+                    <div class="panel-kicker">Mission Console</div>
+                    <h2 class="panel-title">Operational Core</h2>
                   </div>
-                  <div class="tiny-chip" id="mission-status-chip">Public preview mode</div>
+                  <div class="mission-chip-group">
+                    <span class="tiny-chip" id="mission-status-chip">Public preview mode</span>
+                    <span class="tiny-chip">GPT-4-TURBO</span>
+                    <span class="tiny-chip">Creative Mode</span>
+                  </div>
                 </div>
-
-                <div class="auth-zone" style="margin-top: 18px">
+                <div class="auth-zone" style="margin-top: 18px;">
                   <div class="user-row">
                     <div>
-                      <strong id="workspace-user" style="font-size: 18px; letter-spacing: -0.03em">Not signed in</strong>
-                      <p class="muted" id="workspace-user-meta" style="margin: 6px 0 0">
-                        Sign in to open the protected mission console.
-                      </p>
+                      <div id="workspace-user" style="font-size: 18px; font-weight: 700;">Not signed in</div>
+                      <p class="muted" id="workspace-user-meta" style="margin: 6px 0 0;">Sign in to open the protected mission console.</p>
                     </div>
-                    <button class="ghost-btn" id="signout-button" type="button">Sign Out</button>
+                    <button class="ghost-button" id="signout-button" type="button">Sign Out</button>
                   </div>
                 </div>
-
-                <form class="mission-form" onsubmit="return false;" style="margin-top: 18px">
-                  <label>
-                    Forge Mission
-                    <textarea id="workspace-input">Build me a production-ready FastAPI auth service with protected routes, login flow, and a reviewer pass.</textarea>
-                  </label>
+                <div style="margin-top: 18px;"><textarea id="workspace-input" placeholder="Define your next mission objective...">Build me a production-ready FastAPI auth service with protected routes, login flow, and a reviewer pass.</textarea></div>
+                <div class="mission-toolbar">
+                  <div class="mini-icon-row">
+                    <button class="icon-button" type="button"><span class="material-symbols-outlined">attach_file</span></button>
+                    <button class="icon-button" type="button"><span class="material-symbols-outlined">mic</span></button>
+                    <button class="icon-button" type="button"><span class="material-symbols-outlined">language</span></button>
+                  </div>
                   <div class="button-row">
-                    <button class="action-btn" id="workspace-run" type="button">Run Mission</button>
-                    <button class="ghost-btn" id="workspace-fill" type="button">Load Research Prompt</button>
-                    <button class="ghost-btn" id="preview-run" type="button">Preview Pipeline</button>
+                    <button class="ghost-button" id="workspace-fill" type="button">Load Research Prompt</button>
+                    <button class="ghost-button" id="preview-run" type="button">Preview Pipeline</button>
+                    <button class="primary-button" id="workspace-run" type="button">Run Mission</button>
                   </div>
-                  <div class="meta" id="workspace-feedback">Authenticated missions will appear here.</div>
-                </form>
+                </div>
+                <p class="muted" id="workspace-feedback" style="margin: 16px 0 0;">Authenticated missions will appear here.</p>
               </section>
 
-              <section class="card panel-card">
-                <div class="panel-head">
-                  <div>
-                    <div class="panel-kicker">Output</div>
-                    <h2 class="section-title">Latest response</h2>
-                  </div>
-                  <div class="tiny-chip" id="result-meta">No request yet</div>
-                </div>
-                <div class="response-box" style="margin-top: 18px">
-                  <p class="response-text" id="result-response">Mission output will render here.</p>
-                </div>
-                <div class="memory-box hidden" id="document-wrap" style="margin-top: 16px">
-                  <div class="meta">Structured document</div>
-                  <pre id="document-output"></pre>
-                </div>
-              </section>
-
-              <section class="card panel-card">
-                <div class="panel-head">
-                  <div>
-                    <div class="panel-kicker">History</div>
-                    <h2 class="section-title">Conversation timeline</h2>
-                  </div>
-                  <div class="tiny-chip" id="timeline-meta">No stored conversation yet</div>
-                </div>
-                <div class="timeline-list" id="timeline-list" style="margin-top: 18px">
-                  <div class="empty">Conversation history will appear here after your first mission.</div>
+              <section class="card response-shell">
+                <div class="response-live" id="result-meta">Live Output</div>
+                <h2 class="panel-title" style="margin-top: 0;">Latest Response</h2>
+                <div class="response-box" style="margin-top: 18px;"><p class="response-text" id="result-response">Mission output will render here.</p></div>
+                <div class="memory-box hidden" id="document-wrap" style="margin-top: 18px;"><div class="meta">Structured Document</div><pre id="document-output"></pre></div>
+                <div class="response-actions">
+                  <button class="subtle-button" type="button">Copy to Clipboard</button>
+                  <button class="subtle-button" type="button">Save to Artifacts</button>
+                  <button class="subtle-button" type="button">Fork Mission</button>
                 </div>
               </section>
             </div>
 
             <div class="stack">
-              <section class="card panel-card">
-                <div class="panel-head">
-                  <div>
-                    <div class="panel-kicker">Plan</div>
-                    <h2 class="section-title">Pipeline preview</h2>
-                  </div>
-                </div>
-                <div class="memory-box" style="margin-top: 18px">
-                  <div class="meta">Intent</div>
-                  <p id="result-intent" class="panel-copy" style="margin: 6px 0 0">Preview a mission to inspect the route.</p>
-                </div>
-                <div class="memory-box" style="margin-top: 16px">
-                  <div class="meta">Context</div>
-                  <p id="result-context" class="panel-copy" style="margin: 6px 0 0">No route selected yet.</p>
-                </div>
-                <div class="stage-list" id="result-stages" style="margin-top: 16px">
-                  <div class="empty">Planned stages will appear here after a preview or mission run.</div>
+              <section class="card">
+                <h2 class="panel-title" style="margin-top: 0;">Plan / Router</h2>
+                <div class="memory-box" style="margin-top: 18px;"><div class="meta">Current Intent</div><p id="result-intent" class="muted" style="margin: 8px 0 0;">Preview a mission to inspect the route.</p></div>
+                <div class="memory-box" style="margin-top: 14px;"><div class="meta">Context</div><p id="result-context" class="muted" style="margin: 8px 0 0;">No route selected yet.</p></div>
+                <div class="timeline-rail" id="result-stages" style="margin-top: 18px;">
+                  <div class="timeline-step current"><p class="meta" style="color: var(--primary); margin: 0;">Current</p><p class="muted" style="margin-top: 6px;">Aggregating Market Sentiment</p></div>
+                  <div class="timeline-step"><p class="meta" style="margin: 0;">Queued</p><p class="muted" style="margin-top: 6px;">Executing Cross-Chain Swap</p></div>
+                  <div class="timeline-step"><p class="meta" style="margin: 0;">Pending</p><p class="muted" style="margin-top: 6px;">Telegram Notification Blast</p></div>
                 </div>
               </section>
 
-              <section class="card panel-card">
-                <div class="panel-head">
-                  <div>
-                    <div class="panel-kicker">Profile</div>
-                    <h2 class="section-title">Workspace memory</h2>
-                  </div>
-                  <div class="tiny-chip" id="profile-skill">Skill level: intermediate</div>
-                </div>
-                <div class="profile-grid" style="margin-top: 18px">
-                  <div class="memory-box">
-                    <div class="meta">Summary</div>
-                    <p class="panel-copy" id="profile-summary" style="margin: 6px 0 0">Sign in to load the workspace profile.</p>
-                  </div>
-                  <div class="memory-box">
-                    <div class="meta">Stack</div>
-                    <div class="badge-row" id="profile-stack-list" style="margin-top: 12px"></div>
-                  </div>
-                  <div class="memory-box">
-                    <div class="meta">Projects</div>
-                    <div class="badge-row" id="profile-projects-list" style="margin-top: 12px"></div>
-                  </div>
-                  <div class="memory-box">
-                    <div class="meta">Active context</div>
-                    <div class="badge-row" id="profile-context-list" style="margin-top: 12px"></div>
-                  </div>
+              <section class="card">
+                <div class="panel-head"><div><div class="panel-kicker">Conversation Memory</div><h2 class="panel-title">Timeline</h2></div><span class="tiny-chip" id="timeline-meta">84.2 GB used</span></div>
+                <div class="timeline-list" id="timeline-list" style="margin-top: 18px;">
+                  <div class="memory-box"><p class="meta" style="margin: 0;">Yesterday</p><p class="muted" style="margin: 6px 0 0;">Tokenomics brainstorming for Project X</p></div>
+                  <div class="memory-box"><p class="meta" style="margin: 0;">Oct 12</p><p class="muted" style="margin: 6px 0 0;">Debugging Solana Smart Contract</p></div>
                 </div>
               </section>
 
-              <section class="card panel-card">
-                <div class="panel-head">
-                  <div>
-                    <div class="panel-kicker">Telegram</div>
-                    <h2 class="section-title">Shared workspace link</h2>
-                  </div>
-                  <button class="ghost-btn" id="telegram-link-action" type="button">Generate Link Code</button>
-                </div>
-                <div class="memory-box" style="margin-top: 18px">
-                  <div class="badge-row">
-                    <span class="chip neutral" id="telegram-link-code">No active code</span>
-                    <span class="meta" id="telegram-link-expiry">Generate a code, then send /link CODE to the Forge Telegram bot.</span>
-                  </div>
-                  <p class="panel-copy" id="telegram-link-status" style="margin: 12px 0 0">
-                    Sign in to generate a Telegram link code.
-                  </p>
-                  <p class="muted" id="telegram-link-help" style="margin: 8px 0 0">
-                    Telegram messages will share this workspace after linking.
-                  </p>
-                </div>
+              <section class="card">
+                <div class="panel-head"><div><div class="panel-kicker">Workspace Profile</div><h2 class="panel-title">Memory Snapshot</h2></div><span class="tiny-chip" id="profile-skill">Skill level: intermediate</span></div>
+                <div class="memory-box" style="margin-top: 18px;"><div class="meta">Summary</div><p class="muted" id="profile-summary" style="margin: 8px 0 0;">Sign in to load the workspace profile.</p></div>
+                <div class="memory-box" style="margin-top: 14px;"><div class="meta">Stack</div><div class="badge-row" id="profile-stack-list" style="margin-top: 12px;"></div></div>
+                <div class="memory-box" style="margin-top: 14px;"><div class="meta">Projects</div><div class="badge-row" id="profile-projects-list" style="margin-top: 12px;"></div></div>
+                <div class="memory-box" style="margin-top: 14px;"><div class="meta">Active Context</div><div class="badge-row" id="profile-context-list" style="margin-top: 12px;"></div></div>
               </section>
 
-              <section class="card panel-card">
-                <div class="split" style="align-items: flex-start">
-                  <section style="flex: 1">
-                    <div class="artifact-head">
-                      <div>
-                        <div class="panel-kicker">Artifacts</div>
-                        <h2 class="section-title">Generated files</h2>
-                      </div>
-                      <div class="tiny-chip" id="artifact-meta">No artifacts yet</div>
-                    </div>
-                    <div class="artifact-list" id="artifact-list" style="margin-top: 18px">
-                      <div class="empty">Artifacts generated by Forge will appear here.</div>
-                    </div>
-                  </section>
-
-                  <section style="flex: 1">
-                    <div class="artifact-head">
-                      <div>
-                        <div class="panel-kicker">Terminal</div>
-                        <h2 class="section-title">Execution trace</h2>
-                      </div>
-                      <div class="tiny-chip" id="terminal-meta">No logs yet</div>
-                    </div>
-                    <div class="artifact-list" style="margin-top: 18px">
-                      <div class="artifact">
-                        <pre id="terminal-output">Terminal output will appear here.</pre>
-                      </div>
-                    </div>
-                  </section>
+              <section class="card">
+                <div class="panel-head"><div><div class="panel-kicker">Artifact Library</div><h2 class="panel-title">Generated Assets</h2></div><span class="tiny-chip" id="artifact-meta">No artifacts yet</span></div>
+                <div class="artifact-grid" style="margin-top: 18px;">
+                  <div class="artifact-tile"><div><span class="material-symbols-outlined" style="font-size: 32px; color: #cbd5e1;">image</span><div class="meta" style="margin-top: 10px;">Hero_Banner_01.png</div></div></div>
+                  <div class="artifact-tile"><div><span class="material-symbols-outlined" style="font-size: 32px; color: #cbd5e1;">article</span><div class="meta" style="margin-top: 10px;">Spec_Doc_v2.pdf</div></div></div>
                 </div>
+                <div class="artifact-list" id="artifact-list" style="margin-top: 18px;"><div class="empty">Artifacts generated by Forge will appear here.</div></div>
+              </section>
+
+              <section class="terminal-card">
+                <div class="split">
+                  <div class="terminal-top" style="margin-bottom: 0;"><span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span><span class="terminal-label">Forge Sys Log</span></div>
+                  <span class="terminal-meta" id="terminal-meta">No logs yet</span>
+                </div>
+                <pre id="terminal-output">Run a mission that asks Forge to build and deploy. Command steps will appear here.</pre>
               </section>
             </div>
           </div>
 
           <div class="footer-links">
-            <a href="#/home">Home</a>
-            <a href="#/auth">Auth</a>
-            <a href="#/dashboard">Dashboard</a>
+            <a class="route-link" data-route-link="home" href="#/home">Home</a>
+            <a class="route-link" data-route-link="auth" href="#/auth">Auth</a>
+            <a class="route-link" data-route-link="dashboard" href="#/dashboard">Dashboard</a>
           </div>
-        </section>
-      </main>
-    </div>
+        </main>
+      </div>
+
+      <button class="system-fab" type="button" aria-label="Support agent"><span class="material-symbols-outlined">support_agent</span></button>
+    </section>
 
     <script src="./config.js"></script>
     <script src="./app.js"></script>
