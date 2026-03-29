@@ -71,6 +71,23 @@ def _serialize_delivery(payload) -> dict[str, object]:
     }
 
 
+def _serialize_auth_session(result: dict[str, object]) -> dict[str, object] | None:
+    nested_session = result.get("session")
+    if isinstance(nested_session, dict):
+        return nested_session
+
+    access_token = result.get("access_token")
+    if not access_token:
+        return None
+
+    return {
+        "access_token": access_token,
+        "refresh_token": result.get("refresh_token"),
+        "expires_in": result.get("expires_in"),
+        "token_type": result.get("token_type"),
+    }
+
+
 def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
     router = APIRouter()
 
@@ -137,12 +154,14 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
         except SupabaseAuthError as exc:
             raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
 
+        session = _serialize_auth_session(result)
+
         return {
             "user": result.get("user"),
-            "session": result.get("session"),
+            "session": session,
             "message": (
                 "Account created. Check your inbox if email confirmation is enabled."
-                if result.get("session") is None
+                if session is None
                 else "Account created and signed in."
             ),
         }
@@ -157,12 +176,7 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
 
         return {
             "user": result.get("user"),
-            "session": {
-                "access_token": result.get("access_token"),
-                "refresh_token": result.get("refresh_token"),
-                "expires_in": result.get("expires_in"),
-                "token_type": result.get("token_type"),
-            },
+            "session": _serialize_auth_session(result),
             "message": "Signed in successfully.",
         }
 
@@ -268,7 +282,7 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
         }
 
     @router.get("/api/integrations/{provider}/start")
-    async def integration_start(provider: str, request: Request) -> dict[str, object]:
+    async def integration_start(provider: str, request: Request, state: str | None = None):
         _user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
         if provider not in {"github", "vercel"}:
             raise HTTPException(status_code=404, detail="Unknown provider.")
@@ -276,19 +290,42 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
             authorize_url = request.app.state.integrations.build_authorize_url(provider, workspace_user_id=workspace_user_id)
         except OAuthError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+        if provider == "vercel":
+            state_value = state or authorize_url.rsplit("state=", 1)[-1]
+            redirect = RedirectResponse(
+                url=f"https://vercel.com/integrations/{settings.vercel_integration_slug}",
+                status_code=302,
+            )
+            redirect.set_cookie(
+                key="forge_vercel_oauth_state",
+                value=state_value,
+                max_age=600,
+                httponly=True,
+                secure=True,
+                samesite="lax",
+            )
+            return redirect
         return {"provider": provider, "authorize_url": authorize_url}
 
     @router.get("/api/integrations/{provider}/callback")
-    async def integration_callback(provider: str, code: str, state: str, request: Request) -> RedirectResponse:
+    async def integration_callback(provider: str, code: str, request: Request, state: str | None = None) -> RedirectResponse:
+        resolved_state = state
+        if provider == "vercel" and not resolved_state:
+            resolved_state = request.cookies.get("forge_vercel_oauth_state")
+        if not resolved_state:
+            raise HTTPException(status_code=400, detail="Missing OAuth state.")
         try:
-            connection = await request.app.state.integrations.complete_oauth(provider, code=code, state=state)
+            connection = await request.app.state.integrations.complete_oauth(provider, code=code, state=resolved_state)
         except OAuthError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         redirect_to = (
             f"{settings.frontend_base_url.rstrip('/')}"
             f"/?integration={provider}&status=connected&account={connection.account_name or connection.account_id}"
         )
-        return RedirectResponse(url=redirect_to, status_code=302)
+        response = RedirectResponse(url=redirect_to, status_code=302)
+        if provider == "vercel":
+            response.delete_cookie("forge_vercel_oauth_state")
+        return response
 
     @router.get("/api/app/projects")
     async def app_projects(request: Request) -> dict[str, object]:

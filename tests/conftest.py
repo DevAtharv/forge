@@ -23,6 +23,7 @@ def settings() -> Settings:
         github_client_secret="github-secret",
         vercel_client_id="vercel-client",
         vercel_client_secret="vercel-secret",
+        vercel_integration_slug="forge",
         supabase_url="https://example.supabase.co",
         supabase_key="supabase-key",
         supabase_anon_key="supabase-anon-key",

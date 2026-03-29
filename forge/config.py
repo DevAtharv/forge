@@ -79,6 +79,7 @@ class Settings:
     github_client_secret: str
     vercel_client_id: str
     vercel_client_secret: str
+    vercel_integration_slug: str
     supabase_url: str
     supabase_key: str
     supabase_anon_key: str
@@ -119,6 +120,7 @@ class Settings:
             github_client_secret=_env("GITHUB_CLIENT_SECRET", "") or "",
             vercel_client_id=_env("VERCEL_CLIENT_ID", "") or "",
             vercel_client_secret=_env("VERCEL_CLIENT_SECRET", "") or "",
+            vercel_integration_slug=_env("VERCEL_INTEGRATION_SLUG", "forge") or "forge",
             supabase_url=_env("SUPABASE_URL", "") or "",
             supabase_key=_env("SUPABASE_KEY", "") or "",
             supabase_anon_key=_env("SUPABASE_ANON_KEY", _env("SUPABASE_KEY", "") or "") or "",
@@ -144,7 +146,7 @@ class Settings:
             ),
             code_routes=parse_model_routes(
                 _env("FORGE_CODE_MODELS", "") or "",
-                "nvidia/nemotron-3-super-120b-a12b,groq/llama-3.3-70b-versatile,openrouter/openrouter/auto",
+                "nvidia/moonshotai/kimi-k2-instruct,groq/llama-3.3-70b-versatile,openrouter/openrouter/auto",
             ),
             debug_routes=parse_model_routes(
                 _env("FORGE_DEBUG_MODELS", "") or "",

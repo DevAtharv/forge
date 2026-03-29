@@ -133,6 +133,29 @@ def test_auth_and_protected_plan_endpoints_work(settings, store) -> None:
     assert plan.json()["plan"]["stages"][0]["name"] == "plan"
 
 
+def test_signup_returns_session_when_supabase_uses_top_level_tokens(settings, store) -> None:
+    providers = ProviderRegistry(llm_providers={}, search_provider=NoopSearch(), fetcher=NoopFetch())
+    integrations = IntegrationService(settings=settings, store=store)
+    container = ForgeContainer(
+        settings=settings,
+        store=store,
+        providers=providers,
+        integrations=integrations,
+        transport=FakeTransport(),
+        mission_runner=MissionRunner(store=store, integrations=integrations, transport=FakeTransport(), builder=HybridProjectBuilder()),
+        worker=NoopWorker(),
+    )
+    app = create_app(container)
+    app.state.auth_client = FakeAuthClient()
+    client = TestClient(app)
+
+    response = client.post("/api/auth/signup", json={"email": "demo@forge.dev", "password": "password123"})
+
+    assert response.status_code == 200
+    assert response.json()["session"]["access_token"] == "token-1"
+    assert response.json()["message"] == "Account created and signed in."
+
+
 def test_dashboard_and_run_endpoints_return_workspace_data(settings, store) -> None:
     provider = SequencedProvider(
         [
@@ -260,3 +283,46 @@ def test_dashboard_exposes_telegram_link_status_and_link_code(settings, store) -
     assert len(link_response.json()["code"]) == 6
     assert dashboard.status_code == 200
     assert dashboard.json()["telegram_link"]["pending_code"] == link_response.json()["code"]
+
+
+def test_vercel_start_redirects_to_install_page_and_callback_uses_cookie_state(settings, store) -> None:
+    providers = ProviderRegistry(llm_providers={}, search_provider=NoopSearch(), fetcher=NoopFetch())
+    integrations = IntegrationService(settings=settings, store=store)
+    container = ForgeContainer(
+        settings=settings,
+        store=store,
+        providers=providers,
+        integrations=integrations,
+        transport=FakeTransport(),
+        mission_runner=MissionRunner(store=store, integrations=integrations, transport=FakeTransport(), builder=HybridProjectBuilder()),
+        worker=NoopWorker(),
+    )
+    app = create_app(container)
+    app.state.auth_client = FakeAuthClient()
+
+    async def fake_complete_oauth(provider: str, *, code: str, state: str):
+        from forge.schemas import OAuthConnection
+
+        assert provider == "vercel"
+        assert code == "code-123"
+        assert state
+        return OAuthConnection(
+            workspace_user_id=-1,
+            provider="vercel",
+            account_id="acct_1",
+            account_name="atharv",
+            access_token_encrypted="encrypted",
+        )
+
+    app.state.integrations.complete_oauth = fake_complete_oauth  # type: ignore[method-assign]
+    client = TestClient(app)
+
+    start = client.get("/api/integrations/vercel/start", headers={"Authorization": "Bearer token-1"}, follow_redirects=False)
+    assert start.status_code == 302
+    assert start.headers["location"] == "https://vercel.com/integrations/forge"
+    assert "forge_vercel_oauth_state=" in start.headers.get("set-cookie", "")
+
+    callback = client.get("/api/integrations/vercel/callback?code=code-123", follow_redirects=False)
+    assert callback.status_code == 302
+    assert "integration=vercel" in callback.headers["location"]
+    assert "status=connected" in callback.headers["location"]
