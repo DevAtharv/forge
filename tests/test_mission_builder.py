@@ -47,6 +47,15 @@ def test_hybrid_builder_attaches_internal_figma_template_for_portfolio() -> None
     assert "Editorial portfolio layout" in (blueprint.figma_template_description or "")
 
 
+def test_hybrid_builder_attaches_food_delivery_template() -> None:
+    builder = HybridProjectBuilder()
+    blueprint = builder.choose_blueprint("build me a food delivery app")
+
+    assert blueprint.archetype == "food-delivery-app"
+    assert blueprint.figma_template_key == "food-delivery-app"
+    assert blueprint.figma_template_name == "Forge Food Delivery"
+
+
 def test_figma_service_resolves_configured_template_url(settings) -> None:
     from forge.figma import FigmaTemplateService
 

@@ -31,6 +31,17 @@ class HybridProjectBuilder:
         lower = prompt.lower()
         name = project_name or self._infer_project_name(prompt)
         slug = slugify(name)
+        if any(token in lower for token in ("food delivery", "delivery app", "restaurant app", "restaurant delivery", "food app")):
+            return self._with_figma_template(
+                BuildBlueprint(
+                archetype="food-delivery-app",
+                project_name=name,
+                slug=slug,
+                title=f"{name} Delivery",
+                headline="A modern food delivery app with restaurant discovery, promos, orders, and a conversion-first mobile flow.",
+                accent="#fb7185",
+                )
+            )
         if any(token in lower for token in ("shop", "store", "sweet", "ecommerce", "e-commerce")):
             return self._with_figma_template(
                 BuildBlueprint(

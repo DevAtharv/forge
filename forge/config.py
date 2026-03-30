@@ -127,6 +127,7 @@ class Settings:
                 "portfolio": _env("FORGE_FIGMA_TEMPLATE_PORTFOLIO", "") or "",
                 "weather-app": _env("FORGE_FIGMA_TEMPLATE_WEATHER_APP", "") or "",
                 "ecommerce-storefront": _env("FORGE_FIGMA_TEMPLATE_ECOMMERCE", "") or "",
+                "food-delivery-app": _env("FORGE_FIGMA_TEMPLATE_FOOD_DELIVERY_APP", "") or "",
                 "auth-saas-dashboard": _env("FORGE_FIGMA_TEMPLATE_AUTH_SAAS_DASHBOARD", "") or "",
                 "fastapi-backend": _env("FORGE_FIGMA_TEMPLATE_FASTAPI_BACKEND", "") or "",
             },

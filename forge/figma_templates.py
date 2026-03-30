@@ -41,6 +41,13 @@ DEFAULT_FIGMA_TEMPLATES: dict[str, FigmaTemplate] = {
         description="Modern storefront layout with collection shelves, merchandising banners, and conversion CTAs.",
         frame_url="https://www.figma.com/community/file/1102233251923362930",
     ),
+    "food-delivery-app": FigmaTemplate(
+        key="food-delivery-app",
+        name="Forge Food Delivery",
+        archetype="food-delivery-app",
+        description="Delivery-first product layout with restaurant discovery, order flow, promos, and live cart surfaces.",
+        frame_url="https://www.figma.com/community/file/1286020678004143861",
+    ),
     "auth-saas-dashboard": FigmaTemplate(
         key="auth-saas-dashboard",
         name="Forge SaaS Console",
