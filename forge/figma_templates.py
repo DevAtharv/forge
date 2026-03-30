@@ -46,6 +46,7 @@ DEFAULT_FIGMA_TEMPLATES: dict[str, FigmaTemplate] = {
         name="Forge SaaS Console",
         archetype="auth-saas-dashboard",
         description="Product dashboard with auth shell, metrics, feeds, settings surfaces, and action rails.",
+        frame_url="https://www.figma.com/community/file/1202668208106821162",
     ),
     "fastapi-backend": FigmaTemplate(
         key="fastapi-backend",
