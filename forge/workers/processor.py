@@ -104,6 +104,7 @@ def _help_text(*, linked: bool) -> str:
         "Connect:",
         "/connect github",
         "/connect vercel",
+        "/vercel YOUR_TOKEN",
         "/connectgithub",
         "/connectvercel",
         "/github",
@@ -380,7 +381,7 @@ class JobProcessor:
 
         if command == "/vercel":
             command = "/connect"
-            value = "vercel"
+            value = f"vercel {value}".strip()
 
         if command == "/status":
             mission = await self.store.create_mission(
@@ -406,11 +407,35 @@ class JobProcessor:
             return text[:240]
 
         if command == "/connect":
-            provider = value.lower().strip()
+            raw_value = value.strip()
+            provider, _, provider_payload = raw_value.partition(" ")
+            provider = provider.lower().strip()
+            provider_payload = provider_payload.strip()
             if provider not in {"github", "vercel"}:
                 text = "Use /connect github or /connect vercel.\nYou can also use /github or /vercel."
                 await self.transport.send_status_message(chat_id, text)
                 return text
+            if provider == "vercel" and provider_payload:
+                try:
+                    connection = await self.mission_runner.integrations.connect_vercel_token(
+                        workspace_user_id=workspace_user_id,
+                        token=provider_payload,
+                    )
+                except OAuthError as exc:
+                    text = (
+                        "That Vercel token did not work.\n\n"
+                        f"{exc}\n\n"
+                        "Create a fresh Vercel personal token and send:\n"
+                        "/vercel YOUR_TOKEN"
+                    )
+                    await self.transport.send_status_message(chat_id, text)
+                    return text[:240]
+                text = (
+                    f"Vercel connected as {connection.account_name or connection.account_id}.\n\n"
+                    "Forge can now deploy projects using your Vercel account."
+                )
+                await self.transport.send_status_message(chat_id, text)
+                return text[:240]
             try:
                 url = self.mission_runner.integrations.build_authorize_url(provider, workspace_user_id=workspace_user_id)
             except OAuthError as exc:
@@ -422,15 +447,22 @@ class JobProcessor:
                     )
                 else:
                     text = (
-                        "Vercel connect is not ready yet.\n\n"
-                        "Forge needs the owner to configure Vercel OAuth first. "
-                        "Once that is set up, you will be able to connect your Vercel account here with one tap."
+                        "Vercel one-tap connect is not ready yet.\n\n"
+                        "You can still connect Vercel right now with a personal token:\n"
+                        "/vercel YOUR_TOKEN\n\n"
+                        "Or, once the owner finishes Vercel OAuth, you will be able to connect with one tap."
                     )
                 await self.transport.send_status_message(chat_id, text)
                 return text
             text = (
                 f"Tap this link to connect your {provider.title()} account:\n{url}\n\n"
-                "Approve access in the browser, then come back here. Forge will use your own account, not the owner's."
+                + (
+                    "If Vercel still shows an app error, you can fallback to:\n"
+                    "/vercel YOUR_TOKEN\n\n"
+                    if provider == "vercel"
+                    else ""
+                )
+                + "Approve access in the browser, then come back here. Forge will use your own account, not the owner's."
             )
             await self.transport.send_status_message(chat_id, text)
             return text[:240]

@@ -385,3 +385,45 @@ def test_vercel_callback_without_state_redirects_with_human_message(settings, st
     assert "integration=vercel" in callback.headers["location"]
     assert "status=error" in callback.headers["location"]
     assert "Connection+expired" in callback.headers["location"]
+
+
+def test_vercel_token_connect_endpoint_stores_connection(settings, store) -> None:
+    providers = ProviderRegistry(llm_providers={}, search_provider=NoopSearch(), fetcher=NoopFetch())
+    integrations = IntegrationService(settings=settings, store=store)
+    container = ForgeContainer(
+        settings=settings,
+        store=store,
+        providers=providers,
+        integrations=integrations,
+        transport=FakeTransport(),
+        mission_runner=MissionRunner(store=store, integrations=integrations, transport=FakeTransport(), builder=HybridProjectBuilder()),
+        worker=NoopWorker(),
+    )
+    app = create_app(container)
+    app.state.auth_client = FakeAuthClient()
+
+    async def fake_connect_vercel_token(*, workspace_user_id: int, token: str):
+        from forge.schemas import OAuthConnection
+
+        assert workspace_user_id
+        assert token == "vercel-token-123"
+        return OAuthConnection(
+            workspace_user_id=workspace_user_id,
+            provider="vercel",
+            account_id="acct_1",
+            account_name="atharv",
+            access_token_encrypted="encrypted",
+        )
+
+    app.state.integrations.connect_vercel_token = fake_connect_vercel_token  # type: ignore[method-assign]
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/integrations/vercel/token",
+        json={"token": "vercel-token-123"},
+        headers={"Authorization": "Bearer token-1"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["connection"]["provider"] == "vercel"
+    assert "Vercel connected as" in response.json()["message"]

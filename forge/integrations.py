@@ -153,6 +153,30 @@ class IntegrationService:
         )
         return await self.store.upsert_oauth_connection(connection)
 
+    async def connect_vercel_token(self, *, workspace_user_id: int, token: str) -> OAuthConnection:
+        token = token.strip()
+        if not token:
+            raise OAuthError("Missing Vercel token.")
+        user = await self._client.get(
+            "https://api.vercel.com/v2/user",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        if user.status_code == 401:
+            raise OAuthError("That Vercel token is invalid or expired.")
+        user.raise_for_status()
+        user_data = user.json().get("user", user.json())
+        connection = OAuthConnection(
+            workspace_user_id=workspace_user_id,
+            provider="vercel",
+            account_id=str(user_data.get("id") or user_data.get("uid") or ""),
+            account_name=user_data.get("username") or user_data.get("name"),
+            access_token_encrypted=self.secret_box.encrypt(token),
+            refresh_token_encrypted=None,
+            scopes=["manual_token"],
+            metadata={"connection_mode": "manual_token"},
+        )
+        return await self.store.upsert_oauth_connection(connection)
+
     async def get_decrypted_connection(self, workspace_user_id: int, provider: str) -> tuple[OAuthConnection, str]:
         connection = await self.store.get_oauth_connection(workspace_user_id, provider)
         if connection is None:

@@ -238,6 +238,72 @@ async def test_worker_processes_image_debug_request(settings, store) -> None:
 
 
 @pytest.mark.asyncio
+async def test_worker_accepts_vercel_token_command(settings, store) -> None:
+    providers = ProviderRegistry(
+        llm_providers={},
+        search_provider=StaticSearch(),
+        fetcher=StaticFetch(),
+    )
+    transport = FakeTransport()
+    integrations = IntegrationService(settings=settings, store=store)
+
+    async def fake_connect_vercel_token(*, workspace_user_id: int, token: str):
+        from forge.schemas import OAuthConnection
+
+        assert workspace_user_id == 42
+        assert token == "vercel-token-123"
+        return OAuthConnection(
+            workspace_user_id=workspace_user_id,
+            provider="vercel",
+            account_id="acct_1",
+            account_name="atharv",
+            access_token_encrypted="encrypted",
+        )
+
+    integrations.connect_vercel_token = fake_connect_vercel_token  # type: ignore[method-assign]
+    orchestrator = OrchestratorAgent(settings=settings, providers=providers)
+    executor = PipelineExecutor(
+        planner=PlannerAgent(settings=settings, providers=providers),
+        code=CodeAgent(settings=settings, providers=providers),
+        debug=DebugAgent(settings=settings, providers=providers),
+        research=ResearchAgent(settings=settings, providers=providers),
+        reviewer=ReviewerAgent(settings=settings, providers=providers),
+        aggregator=PipelineAggregator(),
+    )
+    processor = JobProcessor(
+        settings=settings,
+        store=store,
+        transport=transport,
+        orchestrator=orchestrator,
+        executor=executor,
+        profile_summary_agent=ProfileSummaryAgent(settings=settings, providers=providers),
+        mission_runner=MissionRunner(store=store, integrations=integrations, transport=transport, builder=HybridProjectBuilder()),
+    )
+
+    job = await store.enqueue_message_job(
+        MessageJob(
+            telegram_update_id=999,
+            user_id=42,
+            chat_id=42,
+            raw_update={
+                "update_id": 999,
+                "message": {
+                    "message_id": 999,
+                    "from": {"id": 42, "username": "alice"},
+                    "chat": {"id": 42, "type": "private"},
+                    "text": "/vercel vercel-token-123",
+                },
+            },
+        )
+    )
+
+    await processor.process(job)
+
+    assert transport.status_messages
+    assert "Vercel connected as atharv" in transport.status_messages[-1][1]
+
+
+@pytest.mark.asyncio
 async def test_worker_accepts_plain_telegram_link_code(settings, store) -> None:
     providers = ProviderRegistry(
         llm_providers={"fallback": SequencedProvider([])},

@@ -50,6 +50,10 @@ class DeployRequest(BaseModel):
     project_id: str
 
 
+class VercelTokenConnectRequest(BaseModel):
+    token: str = Field(min_length=10, max_length=5000)
+
+
 def _extract_message(raw_update: dict) -> dict | None:
     for key in ("message", "edited_message", "channel_post", "edited_channel_post"):
         if raw_update.get(key):
@@ -395,6 +399,22 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
         if provider == "vercel":
             response.delete_cookie("forge_vercel_oauth_state")
         return response
+
+    @router.post("/api/integrations/vercel/token")
+    async def connect_vercel_token(payload: VercelTokenConnectRequest, request: Request) -> dict[str, object]:
+        user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
+        try:
+            connection = await request.app.state.integrations.connect_vercel_token(
+                workspace_user_id=workspace_user_id,
+                token=payload.token,
+            )
+        except OAuthError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        return {
+            "user": user,
+            "connection": connection.model_dump(mode="json", exclude={"access_token_encrypted", "refresh_token_encrypted"}),
+            "message": f"Vercel connected as {connection.account_name or connection.account_id}.",
+        }
 
     @router.get("/api/app/projects")
     async def app_projects(request: Request) -> dict[str, object]:
