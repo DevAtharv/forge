@@ -39,6 +39,7 @@ DEFAULT_FIGMA_TEMPLATES: dict[str, FigmaTemplate] = {
         name="Forge Storefront",
         archetype="ecommerce-storefront",
         description="Modern storefront layout with collection shelves, merchandising banners, and conversion CTAs.",
+        frame_url="https://www.figma.com/community/file/1102233251923362930",
     ),
     "auth-saas-dashboard": FigmaTemplate(
         key="auth-saas-dashboard",
