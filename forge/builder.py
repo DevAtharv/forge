@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from forge.figma_templates import get_figma_template_for_archetype
 from forge.schemas import Artifact
 
 
@@ -19,6 +20,10 @@ class BuildBlueprint:
     title: str
     headline: str
     accent: str
+    figma_template_key: str | None = None
+    figma_template_name: str | None = None
+    figma_template_url: str | None = None
+    figma_template_description: str | None = None
 
 
 class HybridProjectBuilder:
@@ -27,57 +32,86 @@ class HybridProjectBuilder:
         name = project_name or self._infer_project_name(prompt)
         slug = slugify(name)
         if any(token in lower for token in ("shop", "store", "sweet", "ecommerce", "e-commerce")):
-            return BuildBlueprint(
+            return self._with_figma_template(
+                BuildBlueprint(
                 archetype="ecommerce-storefront",
                 project_name=name,
                 slug=slug,
                 title=f"{name} Storefront",
                 headline="A premium storefront with account access, featured collections, and rapid checkout cues.",
                 accent="#f59e0b",
+                )
             )
         if any(token in lower for token in ("portfolio", "artist", "singer", "creator")):
-            return BuildBlueprint(
+            return self._with_figma_template(
+                BuildBlueprint(
                 archetype="portfolio",
                 project_name=name,
                 slug=slug,
                 title=f"{name} Portfolio",
                 headline="A cinematic portfolio with bold typography, media sections, and a protected workspace.",
                 accent="#22c55e",
+                )
             )
         if any(token in lower for token in ("weather", "forecast", "climate")):
-            return BuildBlueprint(
+            return self._with_figma_template(
+                BuildBlueprint(
                 archetype="weather-app",
                 project_name=name,
                 slug=slug,
                 title=f"{name} Weather",
                 headline="A polished live weather dashboard with forecast cards, city search, and launch-ready UI.",
                 accent="#7dd3fc",
+                )
             )
         if any(token in lower for token in ("saas", "dashboard", "auth", "admin")):
-            return BuildBlueprint(
+            return self._with_figma_template(
+                BuildBlueprint(
                 archetype="auth-saas-dashboard",
                 project_name=name,
                 slug=slug,
                 title=f"{name} Workspace",
                 headline="A product-grade authenticated dashboard with mission feed, projects, and deploy controls.",
                 accent="#38bdf8",
+                )
             )
         if any(token in lower for token in ("api", "fastapi", "backend")):
-            return BuildBlueprint(
+            return self._with_figma_template(
+                BuildBlueprint(
                 archetype="fastapi-backend",
                 project_name=name,
                 slug=slug,
                 title=f"{name} API",
                 headline="A backend-first workspace with generated endpoints, auth hooks, and deploy commands.",
                 accent="#a78bfa",
+                )
             )
-        return BuildBlueprint(
+        return self._with_figma_template(
+            BuildBlueprint(
             archetype="landing-page",
             project_name=name,
             slug=slug,
             title=name,
             headline="A polished launch-ready web experience with authentication and deploy-ready structure.",
             accent="#38bdf8",
+            )
+        )
+
+    def _with_figma_template(self, blueprint: BuildBlueprint) -> BuildBlueprint:
+        template = get_figma_template_for_archetype(blueprint.archetype)
+        if template is None:
+            return blueprint
+        return BuildBlueprint(
+            archetype=blueprint.archetype,
+            project_name=blueprint.project_name,
+            slug=blueprint.slug,
+            title=blueprint.title,
+            headline=blueprint.headline,
+            accent=blueprint.accent,
+            figma_template_key=template.key,
+            figma_template_name=template.name,
+            figma_template_url=template.frame_url,
+            figma_template_description=template.description,
         )
 
     def build_files(self, blueprint: BuildBlueprint, prompt: str) -> list[Artifact]:

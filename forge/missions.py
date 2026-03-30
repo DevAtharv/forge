@@ -108,6 +108,13 @@ class MissionRunner:
                     "project_name": blueprint.project_name,
                     "slug": blueprint.slug,
                     "file_count": len(artifacts),
+                    "design_source": {
+                        "type": "internal_figma_template" if blueprint.figma_template_key else "scaffold",
+                        "template_key": blueprint.figma_template_key,
+                        "template_name": blueprint.figma_template_name,
+                        "template_url": blueprint.figma_template_url,
+                        "template_description": blueprint.figma_template_description,
+                    },
                 },
             },
         )
@@ -166,10 +173,18 @@ class MissionRunner:
             return mission
 
         project = await self.store.update_project(project.id or "", {"repo_url": repo_url})
+        design_line = ""
+        if blueprint.figma_template_name:
+            design_line = (
+                f"Design source: {blueprint.figma_template_name}"
+                + (f" ({blueprint.figma_template_key})" if blueprint.figma_template_key else "")
+                + "\n"
+            )
         response_text = (
             f"Project `{project.name}` is ready.\n"
             f"Archetype: {project.archetype}\n"
             f"Files generated: {len(changed_files)}\n"
+            f"{design_line}"
             f"GitHub repo: {repo_url}\n"
             "GitHub is now the source of truth for project files and assets.\n\n"
             f"Next commands:\n"

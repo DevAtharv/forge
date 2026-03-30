@@ -16,6 +16,8 @@ def test_hybrid_builder_generates_web_project_files() -> None:
     names = {item.name for item in artifacts}
 
     assert blueprint.archetype == "ecommerce-storefront"
+    assert blueprint.figma_template_key == "ecommerce-storefront"
+    assert blueprint.figma_template_name == "Forge Storefront"
     assert "package.json" in names
     assert "src/App.tsx" in names
     assert "vercel.json" in names
@@ -28,9 +30,21 @@ def test_hybrid_builder_generates_weather_project_files() -> None:
     files = {item.name: item.content for item in artifacts}
 
     assert blueprint.archetype == "weather-app"
+    assert blueprint.figma_template_key == "weather-app"
+    assert blueprint.figma_template_name == "Forge Weather Studio"
     assert "src/App.tsx" in files
     assert "Open-Meteo" in files["src/App.tsx"]
     assert "forecast-grid" in files["src/styles.css"]
+
+
+def test_hybrid_builder_attaches_internal_figma_template_for_portfolio() -> None:
+    builder = HybridProjectBuilder()
+    blueprint = builder.choose_blueprint("build me a bold singer portfolio")
+
+    assert blueprint.archetype == "portfolio"
+    assert blueprint.figma_template_key == "portfolio"
+    assert blueprint.figma_template_name == "Forge Creator Portfolio"
+    assert "Editorial portfolio layout" in (blueprint.figma_template_description or "")
 
 
 @pytest.mark.asyncio
