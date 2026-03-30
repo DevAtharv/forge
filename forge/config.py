@@ -80,6 +80,7 @@ class Settings:
     vercel_client_id: str
     vercel_client_secret: str
     vercel_integration_slug: str
+    figma_template_urls: dict[str, str]
     supabase_url: str
     supabase_key: str
     supabase_anon_key: str
@@ -121,6 +122,14 @@ class Settings:
             vercel_client_id=_env("VERCEL_CLIENT_ID", "") or "",
             vercel_client_secret=_env("VERCEL_CLIENT_SECRET", "") or "",
             vercel_integration_slug=_env("VERCEL_INTEGRATION_SLUG", "forge") or "forge",
+            figma_template_urls={
+                "landing-page": _env("FORGE_FIGMA_TEMPLATE_LANDING_PAGE", "") or "",
+                "portfolio": _env("FORGE_FIGMA_TEMPLATE_PORTFOLIO", "") or "",
+                "weather-app": _env("FORGE_FIGMA_TEMPLATE_WEATHER_APP", "") or "",
+                "ecommerce-storefront": _env("FORGE_FIGMA_TEMPLATE_ECOMMERCE", "") or "",
+                "auth-saas-dashboard": _env("FORGE_FIGMA_TEMPLATE_AUTH_SAAS_DASHBOARD", "") or "",
+                "fastapi-backend": _env("FORGE_FIGMA_TEMPLATE_FASTAPI_BACKEND", "") or "",
+            },
             supabase_url=_env("SUPABASE_URL", "") or "",
             supabase_key=_env("SUPABASE_KEY", "") or "",
             supabase_anon_key=_env("SUPABASE_ANON_KEY", _env("SUPABASE_KEY", "") or "") or "",

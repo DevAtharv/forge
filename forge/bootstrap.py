@@ -13,6 +13,7 @@ from forge.agents.task_agents import CodeAgent, DebugAgent, PlannerAgent, Profil
 from forge.api import build_router
 from forge.builder import HybridProjectBuilder
 from forge.config import Settings
+from forge.figma import FigmaTemplateService
 from forge.integrations import IntegrationService
 from forge.memory import InMemoryStore, ResilientMemoryStore, SupabaseMemoryStore
 from forge.missions import MissionRunner
@@ -33,6 +34,7 @@ class ForgeContainer:
     transport: TelegramTransport
     mission_runner: MissionRunner
     worker: WorkerService
+    figma: FigmaTemplateService | None = None
 
     async def start(self) -> None:
         try:
@@ -102,10 +104,12 @@ def build_container(settings: Settings | None = None) -> ForgeContainer:
 
     transport = TelegramTransport(settings.telegram_token)
     integrations = IntegrationService(settings=settings, store=store)
+    figma = FigmaTemplateService(settings)
     builder = HybridProjectBuilder()
     mission_runner = MissionRunner(
         store=store,
         integrations=integrations,
+        figma=figma,
         transport=transport,
         builder=builder,
     )
@@ -133,6 +137,7 @@ def build_container(settings: Settings | None = None) -> ForgeContainer:
         store=store,
         providers=providers,
         integrations=integrations,
+        figma=figma,
         transport=transport,
         mission_runner=mission_runner,
         worker=worker,
@@ -168,6 +173,7 @@ def create_app(container: ForgeContainer | None = None) -> FastAPI:
     app.state.settings = container.settings
     app.state.store = container.store
     app.state.integrations = container.integrations
+    app.state.figma = container.figma or FigmaTemplateService(container.settings)
     app.state.mission_runner = container.mission_runner
     app.state.orchestrator = (
         container.worker.processor.orchestrator

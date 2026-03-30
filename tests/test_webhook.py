@@ -7,6 +7,7 @@ from forge.agents.aggregator import PipelineAggregator
 from forge.agents.orchestrator import OrchestratorAgent
 from forge.agents.task_agents import CodeAgent, DebugAgent, PlannerAgent, ProfileSummaryAgent, ResearchAgent, ReviewerAgent
 from forge.builder import HybridProjectBuilder
+from forge.figma import FigmaTemplateService
 from forge.integrations import IntegrationService
 from forge.missions import MissionRunner
 from forge.providers.base import Fetcher, FetchedDocument, SearchProvider
@@ -283,6 +284,40 @@ def test_dashboard_exposes_telegram_link_status_and_link_code(settings, store) -
     assert len(link_response.json()["code"]) == 6
     assert dashboard.status_code == 200
     assert dashboard.json()["telegram_link"]["pending_code"] == link_response.json()["code"]
+    assert len(dashboard.json()["figma_templates"]) >= 1
+    assert any(item["configured"] for item in dashboard.json()["figma_templates"])
+
+
+def test_client_config_exposes_figma_template_status(settings, store) -> None:
+    providers = ProviderRegistry(llm_providers={}, search_provider=NoopSearch(), fetcher=NoopFetch())
+    integrations = IntegrationService(settings=settings, store=store)
+    figma = FigmaTemplateService(settings)
+    container = ForgeContainer(
+        settings=settings,
+        store=store,
+        providers=providers,
+        integrations=integrations,
+        figma=figma,
+        transport=FakeTransport(),
+        mission_runner=MissionRunner(
+            store=store,
+            integrations=integrations,
+            figma=figma,
+            transport=FakeTransport(),
+            builder=HybridProjectBuilder(),
+        ),
+        worker=NoopWorker(),
+    )
+    app = create_app(container)
+    app.state.auth_client = FakeAuthClient()
+    client = TestClient(app)
+
+    response = client.get("/api/client-config")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["integrations"]["figma"] is True
+    assert any(item["configured"] for item in payload["figma_templates"])
 
 
 def test_vercel_start_redirects_to_install_page_and_callback_uses_cookie_state(settings, store) -> None:

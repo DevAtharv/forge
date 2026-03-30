@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from forge.builder import HybridProjectBuilder, slugify
+from forge.figma import FigmaTemplateService
 from forge.integrations import GitHubRepoClient, IntegrationService, OAuthError, VercelDeployClient
 from forge.memory import MemoryStore
 from forge.schemas import Artifact, ConversationRecord, DeliveryPayload, DeploymentRecord, MissionRecord, ProjectRecord, ProjectRevision
@@ -59,6 +60,7 @@ class MissionRunner:
     integrations: IntegrationService
     transport: TelegramTransport
     builder: HybridProjectBuilder
+    figma: FigmaTemplateService | None = None
 
     async def enqueue_web_mission(self, *, workspace_user_id: int, prompt: str, kind: str = "build") -> MissionRecord:
         mission = MissionRecord(
@@ -98,6 +100,18 @@ class MissionRunner:
         blueprint = self.builder.choose_blueprint(mission.prompt, project_name=project.name if project else None)
         artifacts = self.builder.build_files(blueprint, mission.prompt)
         manifest = _artifacts_to_manifest(artifacts)
+        design_source = (
+            self.figma.build_design_context(blueprint.archetype)
+            if self.figma is not None
+            else {
+                "type": "internal_figma_template" if blueprint.figma_template_key else "scaffold",
+                "configured": bool(blueprint.figma_template_url),
+                "template_key": blueprint.figma_template_key,
+                "template_name": blueprint.figma_template_name,
+                "template_url": blueprint.figma_template_url,
+                "template_description": blueprint.figma_template_description,
+            }
+        )
 
         mission = await self.store.update_mission(
             mission.id or "",
@@ -108,13 +122,7 @@ class MissionRunner:
                     "project_name": blueprint.project_name,
                     "slug": blueprint.slug,
                     "file_count": len(artifacts),
-                    "design_source": {
-                        "type": "internal_figma_template" if blueprint.figma_template_key else "scaffold",
-                        "template_key": blueprint.figma_template_key,
-                        "template_name": blueprint.figma_template_name,
-                        "template_url": blueprint.figma_template_url,
-                        "template_description": blueprint.figma_template_description,
-                    },
+                    "design_source": design_source,
                 },
             },
         )
@@ -174,7 +182,16 @@ class MissionRunner:
 
         project = await self.store.update_project(project.id or "", {"repo_url": repo_url})
         design_line = ""
-        if blueprint.figma_template_name:
+        design_name = str(design_source.get("template_name") or "")
+        design_key = str(design_source.get("template_key") or "")
+        design_configured = bool(design_source.get("configured"))
+        if design_name:
+            design_line = (
+                f"Design source: {design_name}"
+                + (f" ({design_key})" if design_key else "")
+                + (" [configured]\n" if design_configured else " [template slot ready]\n")
+            )
+        elif blueprint.figma_template_name:
             design_line = (
                 f"Design source: {blueprint.figma_template_name}"
                 + (f" ({blueprint.figma_template_key})" if blueprint.figma_template_key else "")

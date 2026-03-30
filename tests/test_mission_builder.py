@@ -47,6 +47,27 @@ def test_hybrid_builder_attaches_internal_figma_template_for_portfolio() -> None
     assert "Editorial portfolio layout" in (blueprint.figma_template_description or "")
 
 
+def test_figma_service_resolves_configured_template_url(settings) -> None:
+    from forge.figma import FigmaTemplateService
+
+    service = FigmaTemplateService(settings)
+    template = service.get_template_for_archetype("weather-app")
+
+    assert template is not None
+    assert template.frame_url == "https://figma.com/design/forge/weather?node-id=3-4"
+
+
+def test_figma_service_marks_missing_template_slots(settings) -> None:
+    from forge.figma import FigmaTemplateService
+
+    service = FigmaTemplateService(settings)
+    context = service.build_design_context("portfolio")
+
+    assert context["type"] == "internal_figma_template"
+    assert context["configured"] is False
+    assert context["template_key"] == "portfolio"
+
+
 @pytest.mark.asyncio
 async def test_mission_runner_builds_project_and_waits_for_github_connection(settings, store) -> None:
     runner = MissionRunner(

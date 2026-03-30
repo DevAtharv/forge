@@ -144,6 +144,7 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
     @router.get("/api/client-config")
     async def client_config(request: Request) -> dict[str, object]:
         auth_client = request.app.state.auth_client
+        figma_templates = request.app.state.figma.list_templates()
         return {
             "auth_enabled": auth_client.is_configured,
             "auth_provider": "supabase",
@@ -152,7 +153,19 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
             "integrations": {
                 "github": request.app.state.integrations.is_provider_configured("github"),
                 "vercel": request.app.state.integrations.is_provider_configured("vercel"),
+                "figma": any(item.frame_url for item in figma_templates),
             },
+            "figma_templates": [
+                {
+                    "key": item.key,
+                    "name": item.name,
+                    "archetype": item.archetype,
+                    "description": item.description,
+                    "configured": bool(item.frame_url),
+                    "frame_url": item.frame_url,
+                }
+                for item in figma_templates
+            ],
         }
 
     @router.post("/api/auth/signup")
@@ -249,6 +262,7 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
         projects = await request.app.state.store.list_projects(workspace_user_id)
         missions = await request.app.state.store.list_missions(workspace_user_id, limit=10)
         integrations = await request.app.state.store.list_oauth_connections(workspace_user_id)
+        figma_templates = request.app.state.figma.list_templates()
         return {
             "user": user,
             "profile": profile.model_dump(mode="json"),
@@ -256,6 +270,17 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
             "projects": [item.model_dump(mode="json") for item in projects],
             "missions": [item.model_dump(mode="json") for item in missions],
             "integrations": [item.model_dump(mode="json", exclude={"access_token_encrypted", "refresh_token_encrypted"}) for item in integrations],
+            "figma_templates": [
+                {
+                    "key": item.key,
+                    "name": item.name,
+                    "archetype": item.archetype,
+                    "description": item.description,
+                    "configured": bool(item.frame_url),
+                    "frame_url": item.frame_url,
+                }
+                for item in figma_templates
+            ],
             "telegram_link": {
                 "linked": link is not None,
                 "telegram_user_id": link.telegram_user_id if link else None,
@@ -264,6 +289,24 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
                 "pending_code": token.code if token else None,
                 "pending_expires_at": token.expires_at if token else None,
             },
+        }
+
+    @router.get("/api/figma/templates")
+    async def figma_templates(request: Request) -> dict[str, object]:
+        _user, _web_user_id, _workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
+        templates = request.app.state.figma.list_templates()
+        return {
+            "templates": [
+                {
+                    "key": item.key,
+                    "name": item.name,
+                    "archetype": item.archetype,
+                    "description": item.description,
+                    "configured": bool(item.frame_url),
+                    "frame_url": item.frame_url,
+                }
+                for item in templates
+            ]
         }
 
     @router.post("/api/app/link/telegram")
