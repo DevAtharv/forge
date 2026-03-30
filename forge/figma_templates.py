@@ -18,6 +18,7 @@ DEFAULT_FIGMA_TEMPLATES: dict[str, FigmaTemplate] = {
         name="Forge Landing Page",
         archetype="landing-page",
         description="Launch-ready marketing layout with hero, proof, feature bands, and CTA sections.",
+        frame_url="https://www.figma.com/design/hrRH2ovobT1su8jB2j8emP/Illustration-Based-Portfolio-Website-Template--Community-?node-id=412-655&m=dev&t=osgzVLja695fzhgv-1",
     ),
     "portfolio": FigmaTemplate(
         key="portfolio",
