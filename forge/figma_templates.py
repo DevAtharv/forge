@@ -32,6 +32,7 @@ DEFAULT_FIGMA_TEMPLATES: dict[str, FigmaTemplate] = {
         name="Forge Weather Studio",
         archetype="weather-app",
         description="Data-forward weather dashboard with search, current conditions, and 5-day forecast cards.",
+        frame_url="https://www.figma.com/community/file/1388954110053705224",
     ),
     "ecommerce-storefront": FigmaTemplate(
         key="ecommerce-storefront",
