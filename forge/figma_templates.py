@@ -53,6 +53,7 @@ DEFAULT_FIGMA_TEMPLATES: dict[str, FigmaTemplate] = {
         name="Forge Backend Console",
         archetype="fastapi-backend",
         description="Internal operator console for backend-first products with docs, status, and deployment surfaces.",
+        frame_url="https://www.figma.com/community/file/1348918649926004990",
     ),
 }
 
