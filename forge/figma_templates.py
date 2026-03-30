@@ -25,6 +25,7 @@ DEFAULT_FIGMA_TEMPLATES: dict[str, FigmaTemplate] = {
         name="Forge Creator Portfolio",
         archetype="portfolio",
         description="Editorial portfolio layout with media-led hero, story sections, gallery, and contact blocks.",
+        frame_url="https://www.figma.com/community/file/1364626512225196457",
     ),
     "weather-app": FigmaTemplate(
         key="weather-app",
