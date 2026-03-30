@@ -40,6 +40,10 @@ class SupabaseMemoryStore(MemoryStore):
             headers["Prefer"] = prefer
         return headers
 
+    @staticmethod
+    def _insert_payload(model: Any) -> dict[str, Any]:
+        return model.model_dump(mode="json", exclude_none=True)
+
     async def _rpc(self, name: str, payload: dict[str, Any]) -> Any:
         response = await self._client.post(f"/rpc/{name}", json=payload)
         response.raise_for_status()
@@ -87,7 +91,7 @@ class SupabaseMemoryStore(MemoryStore):
         return [ConversationRecord.model_validate(item) for item in response.json()]
 
     async def append_conversation(self, record: ConversationRecord) -> ConversationRecord:
-        response = await self._client.post("/conversations", json=record.model_dump(mode="json"))
+        response = await self._client.post("/conversations", json=self._insert_payload(record))
         response.raise_for_status()
         return ConversationRecord.model_validate(response.json()[0])
 
@@ -250,7 +254,7 @@ class SupabaseMemoryStore(MemoryStore):
         response = await self._client.post(
             "/oauth_connections",
             headers=self._headers(prefer="resolution=merge-duplicates,return=representation"),
-            json=connection.model_dump(mode="json"),
+            json=self._insert_payload(connection),
         )
         response.raise_for_status()
         return OAuthConnection.model_validate(response.json()[0])
@@ -278,7 +282,7 @@ class SupabaseMemoryStore(MemoryStore):
         return [OAuthConnection.model_validate(item) for item in response.json()]
 
     async def create_project(self, project: ProjectRecord) -> ProjectRecord:
-        response = await self._client.post("/projects", json=project.model_dump(mode="json"))
+        response = await self._client.post("/projects", json=self._insert_payload(project))
         response.raise_for_status()
         return ProjectRecord.model_validate(response.json()[0])
 
@@ -321,7 +325,7 @@ class SupabaseMemoryStore(MemoryStore):
         return [ProjectRecord.model_validate(item) for item in response.json()]
 
     async def create_project_revision(self, revision: ProjectRevision) -> ProjectRevision:
-        response = await self._client.post("/project_revisions", json=revision.model_dump(mode="json"))
+        response = await self._client.post("/project_revisions", json=self._insert_payload(revision))
         response.raise_for_status()
         return ProjectRevision.model_validate(response.json()[0])
 
@@ -334,7 +338,7 @@ class SupabaseMemoryStore(MemoryStore):
         return [ProjectRevision.model_validate(item) for item in response.json()]
 
     async def create_deployment(self, deployment: DeploymentRecord) -> DeploymentRecord:
-        response = await self._client.post("/deployments", json=deployment.model_dump(mode="json"))
+        response = await self._client.post("/deployments", json=self._insert_payload(deployment))
         response.raise_for_status()
         return DeploymentRecord.model_validate(response.json()[0])
 
@@ -356,7 +360,7 @@ class SupabaseMemoryStore(MemoryStore):
         return [DeploymentRecord.model_validate(item) for item in response.json()]
 
     async def create_mission(self, mission: MissionRecord) -> MissionRecord:
-        response = await self._client.post("/missions", json=mission.model_dump(mode="json"))
+        response = await self._client.post("/missions", json=self._insert_payload(mission))
         response.raise_for_status()
         return MissionRecord.model_validate(response.json()[0])
 
