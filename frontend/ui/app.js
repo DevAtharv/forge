@@ -107,6 +107,27 @@ function renderRoute() {
   });
 }
 
+function consumeIntegrationStatus() {
+  const current = new URL(window.location.href);
+  const provider = current.searchParams.get("integration");
+  const status = current.searchParams.get("status");
+  const message = current.searchParams.get("message");
+  const account = current.searchParams.get("account");
+
+  if (!provider || !status) {
+    return;
+  }
+
+  if (status === "connected") {
+    els.workspaceFeedback.textContent = message || `${provider} connected${account ? ` as ${account}` : ""}.`;
+  } else {
+    els.workspaceFeedback.textContent = message || `${provider} connection failed.`;
+  }
+
+  current.search = "";
+  window.history.replaceState(null, "", current.toString());
+}
+
 function fetchJson(url, options) {
   const target = url.startsWith("http://") || url.startsWith("https://") ? url : `${API_BASE}${url}`;
   return fetch(target, options).then(async (response) => {
@@ -899,6 +920,7 @@ renderAuthState();
 renderTelegramLink(null);
 renderTerminal([], null);
 renderRoute();
+consumeIntegrationStatus();
 checkHealth();
 checkConfig().then(restoreSession);
 runPreview();

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+from urllib.parse import quote_plus
 
 from fastapi import APIRouter, Header, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
@@ -90,6 +91,14 @@ def _serialize_auth_session(result: dict[str, object]) -> dict[str, object] | No
 
 def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
     router = APIRouter()
+
+    def integration_redirect(provider: str, *, status: str, message: str | None = None, account: str | None = None) -> str:
+        params = [f"integration={quote_plus(provider)}", f"status={quote_plus(status)}"]
+        if account:
+            params.append(f"account={quote_plus(account)}")
+        if message:
+            params.append(f"message={quote_plus(message)}")
+        return f"{settings.frontend_base_url.rstrip('/')}?{'&'.join(params)}#/dashboard"
 
     def bearer_token_from_request(request: Request) -> str:
         header = request.headers.get("Authorization", "")
@@ -286,6 +295,25 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
         _user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
         if provider not in {"github", "vercel"}:
             raise HTTPException(status_code=404, detail="Unknown provider.")
+        if provider == "vercel":
+            if not request.app.state.integrations.is_provider_configured("vercel"):
+                raise HTTPException(status_code=400, detail="Vercel OAuth is not configured.")
+            state = request.app.state.integrations.state_codec.encode(
+                {"provider": "vercel", "workspace_user_id": workspace_user_id}
+            )
+            response = RedirectResponse(
+                url=f"https://vercel.com/integrations/{settings.vercel_integration_slug}",
+                status_code=302,
+            )
+            response.set_cookie(
+                "forge_vercel_oauth_state",
+                state,
+                max_age=600,
+                httponly=True,
+                samesite="lax",
+                secure=request.url.scheme == "https",
+            )
+            return response
         try:
             authorize_url = request.app.state.integrations.build_authorize_url(provider, workspace_user_id=workspace_user_id)
         except OAuthError as exc:
@@ -294,17 +322,36 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
 
     @router.get("/api/integrations/{provider}/callback")
     async def integration_callback(provider: str, code: str, request: Request, state: str | None = None) -> RedirectResponse:
-        if not state:
-            raise HTTPException(status_code=400, detail="Missing OAuth state.")
+        resolved_state = state
+        if provider == "vercel" and not resolved_state:
+            resolved_state = request.cookies.get("forge_vercel_oauth_state")
+        if not resolved_state:
+            return RedirectResponse(
+                url=integration_redirect(provider, status="error", message="Connection expired. Start the connect flow again."),
+                status_code=302,
+            )
         try:
-            connection = await request.app.state.integrations.complete_oauth(provider, code=code, state=state)
+            connection = await request.app.state.integrations.complete_oauth(provider, code=code, state=resolved_state)
         except OAuthError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
-        redirect_to = (
-            f"{settings.frontend_base_url.rstrip('/')}"
-            f"/?integration={provider}&status=connected&account={connection.account_name or connection.account_id}#/dashboard"
+            response = RedirectResponse(
+                url=integration_redirect(provider, status="error", message=str(exc) or "Connection failed."),
+                status_code=302,
+            )
+            if provider == "vercel":
+                response.delete_cookie("forge_vercel_oauth_state")
+            return response
+        response = RedirectResponse(
+            url=integration_redirect(
+                provider,
+                status="connected",
+                account=connection.account_name or connection.account_id,
+                message=f"{provider.title()} connected successfully.",
+            ),
+            status_code=302,
         )
-        return RedirectResponse(url=redirect_to, status_code=302)
+        if provider == "vercel":
+            response.delete_cookie("forge_vercel_oauth_state")
+        return response
 
     @router.get("/api/app/projects")
     async def app_projects(request: Request) -> dict[str, object]:

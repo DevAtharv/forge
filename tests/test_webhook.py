@@ -326,3 +326,27 @@ def test_vercel_start_redirects_to_install_page_and_callback_uses_cookie_state(s
     assert callback.status_code == 302
     assert "integration=vercel" in callback.headers["location"]
     assert "status=connected" in callback.headers["location"]
+
+
+def test_vercel_callback_without_state_redirects_with_human_message(settings, store) -> None:
+    providers = ProviderRegistry(llm_providers={}, search_provider=NoopSearch(), fetcher=NoopFetch())
+    integrations = IntegrationService(settings=settings, store=store)
+    container = ForgeContainer(
+        settings=settings,
+        store=store,
+        providers=providers,
+        integrations=integrations,
+        transport=FakeTransport(),
+        mission_runner=MissionRunner(store=store, integrations=integrations, transport=FakeTransport(), builder=HybridProjectBuilder()),
+        worker=NoopWorker(),
+    )
+    app = create_app(container)
+    app.state.auth_client = FakeAuthClient()
+    client = TestClient(app)
+
+    callback = client.get("/api/integrations/vercel/callback?code=code-123", follow_redirects=False)
+
+    assert callback.status_code == 302
+    assert "integration=vercel" in callback.headers["location"]
+    assert "status=error" in callback.headers["location"]
+    assert "Connection+expired" in callback.headers["location"]
