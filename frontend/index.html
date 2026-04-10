@@ -1301,6 +1301,231 @@
         .dashboard-main { padding: 18px 12px 90px; }
         .nav-cluster { width: 100%; justify-content: center; }
       }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+        gap: 28px;
+        align-items: center;
+        text-align: left;
+      }
+
+      .hero-copy-wrap {
+        display: grid;
+        gap: 18px;
+      }
+
+      .hero-copy-wrap .hero-copy {
+        margin: 0;
+        max-width: 640px;
+      }
+
+      .hero-actions.left {
+        justify-content: flex-start;
+        margin-top: 8px;
+      }
+
+      .hero-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .hero-stat-card {
+        padding: 16px 18px;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.82);
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        box-shadow: var(--shadow-soft);
+      }
+
+      .hero-stat-card strong {
+        display: block;
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+      }
+
+      .hero-preview {
+        position: relative;
+        padding: 18px;
+        border-radius: 32px;
+        background:
+          radial-gradient(circle at top right, rgba(124,58,237,0.2), transparent 30%),
+          radial-gradient(circle at bottom left, rgba(0,111,238,0.16), transparent 26%),
+          linear-gradient(180deg, rgba(255,255,255,0.88) 0%, rgba(246,249,255,0.96) 100%);
+        border: 1px solid rgba(15,23,42,0.06);
+        box-shadow: 0 28px 70px rgba(15, 23, 42, 0.12);
+      }
+
+      .hero-preview::before {
+        content: "";
+        position: absolute;
+        inset: 14px;
+        border-radius: 24px;
+        border: 1px solid rgba(255,255,255,0.7);
+        pointer-events: none;
+      }
+
+      .hero-preview-stack {
+        position: relative;
+        display: grid;
+        gap: 14px;
+      }
+
+      .hero-preview-panel {
+        padding: 18px;
+        border-radius: 22px;
+        background: rgba(255,255,255,0.78);
+        border: 1px solid rgba(15,23,42,0.06);
+        box-shadow: 0 14px 32px rgba(15,23,42,0.08);
+      }
+
+      .hero-preview-panel.dark {
+        background: linear-gradient(180deg, #0c1423 0%, #101a2e 100%);
+        color: #e5edf7;
+      }
+
+      .hero-chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .hero-chip {
+        padding: 8px 10px;
+        border-radius: 999px;
+        background: rgba(0,111,238,0.1);
+        color: var(--brand);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .hero-preview-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .hero-preview-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: rgba(255,255,255,0.72);
+      }
+
+      .hero-preview-item.dark {
+        background: rgba(255,255,255,0.06);
+      }
+
+      .auth-layout {
+        display: grid;
+        grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr);
+        gap: 28px;
+        align-items: stretch;
+      }
+
+      .auth-showcase {
+        padding: 32px;
+        border-radius: 30px;
+        background:
+          radial-gradient(circle at top right, rgba(124,58,237,0.24), transparent 34%),
+          radial-gradient(circle at bottom left, rgba(0,111,238,0.2), transparent 30%),
+          linear-gradient(180deg, #0b1220 0%, #111c31 100%);
+        color: #eef5ff;
+        box-shadow: 0 28px 70px rgba(15, 23, 42, 0.2);
+      }
+
+      .auth-showcase h2 {
+        margin: 0 0 12px;
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: -0.06em;
+        line-height: 1.02;
+      }
+
+      .auth-showcase p {
+        margin: 0;
+        color: rgba(226,232,240,0.82);
+        line-height: 1.8;
+      }
+
+      .auth-showcase-list {
+        display: grid;
+        gap: 12px;
+        margin: 24px 0 0;
+      }
+
+      .auth-showcase-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.08);
+      }
+
+      .auth-mini-card {
+        margin-top: 28px;
+        padding: 18px;
+        border-radius: 22px;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.1);
+      }
+
+      .auth-mini-card .hero-chip {
+        background: rgba(255,255,255,0.14);
+        color: #d8e7ff;
+      }
+
+      .dashboard-sidebar {
+        background:
+          radial-gradient(circle at top, rgba(124,58,237,0.08), transparent 26%),
+          linear-gradient(180deg, rgba(255,255,255,0.88) 0%, rgba(244,247,251,0.88) 100%);
+      }
+
+      .status-bar {
+        background:
+          radial-gradient(circle at top right, rgba(0,111,238,0.08), transparent 24%),
+          linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(247,250,255,0.94) 100%);
+      }
+
+      .card {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(255,255,255,0.18), transparent 20%);
+        pointer-events: none;
+      }
+
+      @media (max-width: 1100px) {
+        .hero-grid,
+        .auth-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 780px) {
+        .hero-actions.left {
+          justify-content: stretch;
+        }
+        .hero-stat-grid {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
   </head>
   <body>
@@ -1334,17 +1559,71 @@
       </header>
 
       <main class="shell hero home-hero">
-        <div class="hero-pill"><span class="pulse-dot"></span><span>Forge Workspace 2.0</span></div>
-        <h1 class="hero-display">Ship AI Products<br /><span class="accent">Without Workflow Debt</span></h1>
-        <p class="hero-copy">
-          A cleaner home, a focused auth flow, and an operational dashboard built for
-          teams using missions, memory, Telegram delivery, artifacts, and live deploys
-          in one polished workspace.
-        </p>
-        <div class="button-row hero-actions">
-          <a class="primary-button" href="#/auth">Start Building</a>
-          <a class="ghost-button" href="#/auth">See Auth Flow</a>
-          <a class="ghost-button" href="#/dashboard">Open Dashboard</a>
+        <div class="hero-grid">
+          <div class="hero-copy-wrap">
+            <div class="hero-pill"><span class="pulse-dot"></span><span>Forge Workspace 2.0</span></div>
+            <h1 class="hero-display">Build, Launch, and<br /><span class="accent">Deliver AI Products</span></h1>
+            <p class="hero-copy">
+              Forge gives your product a proper front door, a polished auth experience,
+              and an operational dashboard for missions, memory, Telegram delivery,
+              GitHub sync, and live deploy handoff.
+            </p>
+            <div class="button-row hero-actions left">
+              <a class="primary-button" href="#/auth">Get Started</a>
+              <a class="ghost-button" href="#/auth">Try Auth Flow</a>
+              <a class="ghost-button" href="#/dashboard">Preview Dashboard</a>
+            </div>
+            <div class="hero-stat-grid">
+              <div class="hero-stat-card">
+                <span class="meta">Mission Flow</span>
+                <strong>3-step</strong>
+                <span class="muted">Home to auth to dashboard.</span>
+              </div>
+              <div class="hero-stat-card">
+                <span class="meta">Delivery</span>
+                <strong>GitHub + Vercel</strong>
+                <span class="muted">Cleaner output visibility.</span>
+              </div>
+              <div class="hero-stat-card">
+                <span class="meta">Assist</span>
+                <strong>Telegram</strong>
+                <span class="muted">Shared web and bot memory.</span>
+              </div>
+            </div>
+          </div>
+          <div class="hero-preview">
+            <div class="hero-preview-stack">
+              <div class="hero-preview-panel">
+                <div class="split">
+                  <div>
+                    <div class="meta">Current Product Stack</div>
+                    <div style="font-size: 26px; font-weight: 800; letter-spacing: -0.05em; margin-top: 6px;">Forge Launch Workspace</div>
+                  </div>
+                  <div class="feature-icon"><span class="material-symbols-outlined">rocket_launch</span></div>
+                </div>
+                <div class="hero-chip-row">
+                  <span class="hero-chip">Auth</span>
+                  <span class="hero-chip">Missions</span>
+                  <span class="hero-chip">Artifacts</span>
+                  <span class="hero-chip">Deploy</span>
+                </div>
+              </div>
+              <div class="hero-preview-panel dark">
+                <div class="split">
+                  <div>
+                    <div class="meta" style="color: rgba(203,213,225,0.8);">Latest Output</div>
+                    <div style="font-size: 22px; font-weight: 800; letter-spacing: -0.05em; margin-top: 6px;">HeroUI-style product shell generated</div>
+                  </div>
+                  <span class="green-chip">Ready</span>
+                </div>
+                <div class="hero-preview-list">
+                  <div class="hero-preview-item dark"><span>Marketing home refreshed</span><span style="color:#7cb7ff;">done</span></div>
+                  <div class="hero-preview-item dark"><span>Auth flow polished</span><span style="color:#7cb7ff;">live</span></div>
+                  <div class="hero-preview-item dark"><span>Deploy handoff surfaced</span><span style="color:#7cb7ff;">linked</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <section class="features-grid" id="features">
@@ -1455,6 +1734,25 @@
       </header>
 
       <main class="shell auth-stage">
+        <div class="auth-layout">
+          <section class="auth-showcase">
+            <div class="hero-pill" style="margin-bottom: 20px; background: rgba(255,255,255,0.12); color: #dbeafe; border-color: rgba(255,255,255,0.12);">Secure entry layer</div>
+            <h2>Sign in to the product,<br />not just a form.</h2>
+            <p>Forge authentication should feel like part of the product experience. Clean, guided, fast, and built to move users directly into the workspace.</p>
+            <div class="auth-showcase-list">
+              <div class="auth-showcase-item"><span class="material-symbols-outlined">bolt</span><span>Fast transition into dashboard state</span></div>
+              <div class="auth-showcase-item"><span class="material-symbols-outlined">shield_lock</span><span>Protected memory, missions, and integrations</span></div>
+              <div class="auth-showcase-item"><span class="material-symbols-outlined">hub</span><span>Telegram linking after sign-in, not before</span></div>
+            </div>
+            <div class="auth-mini-card">
+              <div class="meta" style="color: #c9daf5;">Workspace access includes</div>
+              <div class="hero-chip-row">
+                <span class="hero-chip">Mission Runs</span>
+                <span class="hero-chip">Project History</span>
+                <span class="hero-chip">Deploy State</span>
+              </div>
+            </div>
+          </section>
         <div>
           <section class="auth-card">
             <div class="auth-card-top split">
@@ -1488,6 +1786,7 @@
             <div class="auth-support-top"><a href="#/home">Home</a><div class="auth-support-links"><a href="#/home">Support</a><a href="#/home">Status</a><a href="#/home">API</a></div></div>
             <p class="auth-note">Designed like a product, not an admin form. Sign in to unlock the dashboard, shared memory, delivery tools, and mission history.</p>
           </div>
+        </div>
         </div>
       </main>
     </section>

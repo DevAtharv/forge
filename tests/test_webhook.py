@@ -3,6 +3,7 @@ import json
 from fastapi.testclient import TestClient
 
 from forge.bootstrap import ForgeContainer, create_app
+from forge.api.webhook import _derive_workspace_user_id
 from forge.agents.aggregator import PipelineAggregator
 from forge.agents.orchestrator import OrchestratorAgent
 from forge.agents.task_agents import CodeAgent, DebugAgent, PlannerAgent, ProfileSummaryAgent, ResearchAgent, ReviewerAgent
@@ -447,9 +448,10 @@ def test_project_detail_files_download_and_publish_endpoints(settings, store) ->
     app.state.auth_client = FakeAuthClient()
     client = TestClient(app)
 
+    workspace_user_id = _derive_workspace_user_id({"id": "user-1", "email": "demo@forge.dev"})
     project = ProjectRecord(
         id="project-1",
-        workspace_user_id=-359812737456354032,
+        workspace_user_id=workspace_user_id,
         name="Bright Studio",
         slug="bright-studio",
         prompt="build me a bright studio website",
@@ -462,7 +464,7 @@ def test_project_detail_files_download_and_publish_endpoints(settings, store) ->
     store._project_revisions["revision-1"] = ProjectRevision(  # noqa: SLF001
         id="revision-1",
         project_id=project.id or "",
-        workspace_user_id=project.workspace_user_id,
+        workspace_user_id=workspace_user_id,
         summary="Generated 1 files for Bright Studio",
         file_manifest={"package.json": {"content": "{}"}},
         bundle_name="bright-studio.zip",

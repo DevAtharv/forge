@@ -108,6 +108,12 @@ async def _project_detail_payload(store: MemoryStore, project_id: str) -> dict[s
         "files": sorted(manifest.keys()),
         "manifest": manifest,
         "download_name": bundle_name,
+        "download_url": f"/api/app/projects/{project_id}/download",
+        "preview_url": project.preview_url,
+        "publish_urls": {
+            "github": f"/api/app/projects/{project_id}/publish/github",
+            "vercel": f"/api/app/projects/{project_id}/publish/vercel",
+        },
     }
 
 
