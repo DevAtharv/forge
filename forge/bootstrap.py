@@ -17,12 +17,31 @@ from forge.figma import FigmaTemplateService
 from forge.integrations import IntegrationService
 from forge.memory import InMemoryStore, ResilientMemoryStore, SupabaseMemoryStore
 from forge.missions import MissionRunner
-from forge.providers import DuckDuckGoSearchProvider, GroqProvider, HttpPageFetcher, OpenAICompatibleProvider, ProviderRegistry
+from forge.providers import (
+    DuckDuckGoSearchProvider,
+    GroqProvider,
+    HttpPageFetcher,
+    OpenAICompatibleProvider,
+    ProviderRegistry,
+    TavilySearchProvider,
+)
 from forge.supabase_auth import SupabaseAuthClient
 from forge.telegram import TelegramTransport
 from forge.workers import JobProcessor, PipelineExecutor, WorkerService
 
 logger = logging.getLogger(__name__)
+
+
+def _build_search_provider(settings: Settings):
+    provider_name = settings.search_provider.strip().lower()
+    if provider_name in {"auto", "tavily"} and settings.tavily_api_key:
+        return TavilySearchProvider(
+            api_key=settings.tavily_api_key,
+            timeout_seconds=settings.fetch_timeout_seconds,
+        )
+    if provider_name == "tavily":
+        logger.warning("FORGE_SEARCH_PROVIDER is set to tavily but TAVILY_API_KEY is missing; falling back to DuckDuckGo.")
+    return DuckDuckGoSearchProvider()
 
 
 @dataclass
@@ -98,7 +117,7 @@ def build_container(settings: Settings | None = None) -> ForgeContainer:
                 },
             ),
         },
-        search_provider=DuckDuckGoSearchProvider(),
+        search_provider=_build_search_provider(settings),
         fetcher=HttpPageFetcher(timeout_seconds=settings.fetch_timeout_seconds),
     )
 

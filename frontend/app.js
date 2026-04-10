@@ -6,6 +6,8 @@ const state = {
   authEnabled: false,
   session: null,
   user: null,
+  dashboardRefreshTimer: null,
+  dashboardRefreshInFlight: false,
 };
 
 const els = {
@@ -53,7 +55,14 @@ const els = {
   telegramLinkExpiry: document.getElementById("telegram-link-expiry"),
   telegramLinkAction: document.getElementById("telegram-link-action"),
   telegramLinkHelp: document.getElementById("telegram-link-help"),
+  missionCountMetric: document.getElementById("mission-count-metric"),
+  activeMissionMetric: document.getElementById("active-mission-metric"),
+  projectCountChip: document.getElementById("project-count-chip"),
+  integrationCountChip: document.getElementById("integration-count-chip"),
 };
+
+const ACTIVE_MISSION_STATUSES = new Set(["queued", "planning", "building", "reviewing", "deploying"]);
+const DASHBOARD_REFRESH_MS = 5000;
 
 const views = [...document.querySelectorAll("[data-view]")];
 const routeLinks = [...document.querySelectorAll("[data-route-link]")];
@@ -355,6 +364,18 @@ function renderHistory(history) {
     });
 }
 
+function updateDashboardMetrics({ projects = [], missions = [], integrations = [] }) {
+  const activeMissions = missions.filter((mission) => ACTIVE_MISSION_STATUSES.has(mission.status));
+  els.missionCountMetric.textContent = `${missions.length} total`;
+  els.activeMissionMetric.textContent = `${activeMissions.length} running`;
+  els.projectCountChip.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"}`;
+  els.integrationCountChip.textContent = `${integrations.length} integration${integrations.length === 1 ? "" : "s"}`;
+}
+
+function resetDashboardMetrics() {
+  updateDashboardMetrics({ projects: [], missions: [], integrations: [] });
+}
+
 function renderPlan(plan, sourceLabel) {
   els.resultStages.innerHTML = "";
   els.resultIntent.textContent = plan.intent;
@@ -574,6 +595,10 @@ function renderMissionResult(mission) {
     renderApprovalPrompt(mission);
     els.documentWrap.classList.add("hidden");
     els.documentOutput.textContent = "";
+  } else if (ACTIVE_MISSION_STATUSES.has(mission.status)) {
+    renderDelivery({
+      text: mission.response_text || `Mission is ${mission.status.replaceAll("_", " ")}.`,
+    });
   } else {
     renderDelivery({
       text: mission.response_text || mission.result_summary || "Mission completed.",
@@ -677,9 +702,14 @@ async function loadDashboard() {
   if (!(state.session && state.session.access_token)) {
     renderProfile(null);
     renderHistory([]);
+    resetDashboardMetrics();
+    return;
+  }
+  if (state.dashboardRefreshInFlight) {
     return;
   }
 
+  state.dashboardRefreshInFlight = true;
   try {
     const payload = await fetchAuthedJson("/api/app/dashboard");
     state.user = payload.user;
@@ -689,18 +719,42 @@ async function loadDashboard() {
     renderTelegramLink(payload.telegram_link);
     const projects = payload.projects || [];
     const missions = payload.missions || [];
-    els.resultMeta.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"} • ${(payload.integrations || []).length} integration${(payload.integrations || []).length === 1 ? "" : "s"}`;
+    const integrations = payload.integrations || [];
+    updateDashboardMetrics({ projects, missions, integrations });
+    els.resultMeta.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"} • ${integrations.length} integration${integrations.length === 1 ? "" : "s"}`;
 
     const latestMission = missions
       .slice()
       .sort((a, b) => new Date(b.updated_at || b.created_at || 0) - new Date(a.updated_at || a.created_at || 0))[0];
 
-    if (latestMission && (latestMission.response_text || latestMission.result_summary)) {
+    if (latestMission) {
       renderMissionResult(latestMission);
     }
   } catch (error) {
     els.workspaceFeedback.textContent = error.message;
+  } finally {
+    state.dashboardRefreshInFlight = false;
   }
+}
+
+function stopDashboardRefresh() {
+  if (state.dashboardRefreshTimer) {
+    window.clearInterval(state.dashboardRefreshTimer);
+    state.dashboardRefreshTimer = null;
+  }
+}
+
+function startDashboardRefresh() {
+  stopDashboardRefresh();
+  if (!(state.session && state.session.access_token)) {
+    return;
+  }
+  state.dashboardRefreshTimer = window.setInterval(() => {
+    if (document.hidden || normalizeRoute() !== "dashboard") {
+      return;
+    }
+    loadDashboard();
+  }, DASHBOARD_REFRESH_MS);
 }
 
 async function pollMission(missionId) {
@@ -732,10 +786,13 @@ async function restoreSession() {
     saveSession(stored.session, payload.user);
   } catch (_error) {
     clearSession();
+    stopDashboardRefresh();
+    resetDashboardMetrics();
   }
 
   renderAuthState();
   await loadDashboard();
+  startDashboardRefresh();
   if (normalizeRoute() === "auth") {
     navigate("dashboard", true);
   } else {
@@ -772,6 +829,7 @@ async function handleAuthSubmit(event) {
       els.authFeedback.textContent = payload.message || "Authenticated successfully.";
       renderAuthState();
       await loadDashboard();
+      startDashboardRefresh();
       navigate("dashboard");
     } else {
       els.authFeedback.textContent =
@@ -890,9 +948,11 @@ async function signOut() {
   }
 
   clearSession();
+  stopDashboardRefresh();
   renderAuthState();
   renderProfile(null);
   renderHistory([]);
+  resetDashboardMetrics();
   renderDelivery(null);
   renderArtifacts([], null);
   renderTerminal([], null);
@@ -913,7 +973,17 @@ els.workspaceFill.addEventListener("click", () => {
   els.workspaceFeedback.textContent = "Loaded a research-style mission.";
 });
 els.signoutButton.addEventListener("click", signOut);
-window.addEventListener("hashchange", renderRoute);
+window.addEventListener("hashchange", () => {
+  renderRoute();
+  if (normalizeRoute() === "dashboard") {
+    loadDashboard();
+  }
+});
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && normalizeRoute() === "dashboard") {
+    loadDashboard();
+  }
+});
 
 setAuthMode("signin");
 renderAuthState();
