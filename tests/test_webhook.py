@@ -12,6 +12,7 @@ from forge.integrations import IntegrationService
 from forge.missions import MissionRunner
 from forge.providers.base import Fetcher, FetchedDocument, SearchProvider
 from forge.providers.registry import ProviderRegistry
+from forge.schemas import ProjectRecord, ProjectRevision
 from tests.support import FakeAuthClient, FakeTransport, NoopWorker
 from forge.workers.processor import JobProcessor, PipelineExecutor
 from tests.support import ProcessorWorker
@@ -427,3 +428,73 @@ def test_vercel_token_connect_endpoint_stores_connection(settings, store) -> Non
     assert response.status_code == 200
     assert response.json()["connection"]["provider"] == "vercel"
     assert "Vercel connected as" in response.json()["message"]
+
+
+def test_project_detail_files_download_and_publish_endpoints(settings, store) -> None:
+    providers = ProviderRegistry(llm_providers={}, search_provider=NoopSearch(), fetcher=NoopFetch())
+    integrations = IntegrationService(settings=settings, store=store)
+    runner = MissionRunner(store=store, integrations=integrations, transport=FakeTransport(), builder=HybridProjectBuilder())
+    container = ForgeContainer(
+        settings=settings,
+        store=store,
+        providers=providers,
+        integrations=integrations,
+        transport=FakeTransport(),
+        mission_runner=runner,
+        worker=NoopWorker(),
+    )
+    app = create_app(container)
+    app.state.auth_client = FakeAuthClient()
+    client = TestClient(app)
+
+    project = ProjectRecord(
+        id="project-1",
+        workspace_user_id=-359812737456354032,
+        name="Bright Studio",
+        slug="bright-studio",
+        prompt="build me a bright studio website",
+        archetype="landing-page",
+        latest_manifest={"package.json": {"content": "{}"}},
+        preview_url="https://preview.example.vercel.app",
+        preview_status="ready",
+    )
+    store._projects[project.id] = project  # noqa: SLF001
+    store._project_revisions["revision-1"] = ProjectRevision(  # noqa: SLF001
+        id="revision-1",
+        project_id=project.id or "",
+        workspace_user_id=project.workspace_user_id,
+        summary="Generated 1 files for Bright Studio",
+        file_manifest={"package.json": {"content": "{}"}},
+        bundle_name="bright-studio.zip",
+        bundle_file_count=1,
+        preview_url=project.preview_url,
+        preview_status="ready",
+    )
+
+    async def fake_refresh_project_preview(*, workspace_user_id: int, project_id: str):
+        assert workspace_user_id == project.workspace_user_id
+        assert project_id == "project-1"
+        return await store.update_project(
+            "project-1",
+            {"preview_url": "https://preview-refresh.example.vercel.app", "preview_status": "ready"},
+        )
+
+    app.state.mission_runner.refresh_project_preview = fake_refresh_project_preview  # type: ignore[method-assign]
+
+    detail = client.get("/api/app/projects/project-1", headers={"Authorization": "Bearer token-1"})
+    files = client.get("/api/app/projects/project-1/files", headers={"Authorization": "Bearer token-1"})
+    download = client.get("/api/app/projects/project-1/download", headers={"Authorization": "Bearer token-1"})
+    preview = client.post("/api/app/projects/project-1/preview", headers={"Authorization": "Bearer token-1"})
+    publish = client.post("/api/app/projects/project-1/publish/github", headers={"Authorization": "Bearer token-1"})
+
+    assert detail.status_code == 200
+    assert detail.json()["project"]["slug"] == "bright-studio"
+    assert detail.json()["latest_revision"]["bundle_name"] == "bright-studio.zip"
+    assert files.status_code == 200
+    assert files.json()["files"] == ["package.json"]
+    assert download.status_code == 200
+    assert download.headers["content-type"] == "application/zip"
+    assert preview.status_code == 200
+    assert preview.json()["project"]["preview_url"] == "https://preview-refresh.example.vercel.app"
+    assert publish.status_code == 200
+    assert publish.json()["mission"]["kind"] == "publish"

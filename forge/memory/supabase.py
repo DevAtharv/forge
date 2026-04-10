@@ -329,6 +329,15 @@ class SupabaseMemoryStore(MemoryStore):
         response.raise_for_status()
         return ProjectRevision.model_validate(response.json()[0])
 
+    async def update_project_revision(self, revision_id: str, updates: dict[str, Any]) -> ProjectRevision:
+        response = await self._client.patch(
+            "/project_revisions",
+            params={"id": f"eq.{revision_id}", "select": "*"},
+            json=updates,
+        )
+        response.raise_for_status()
+        return ProjectRevision.model_validate(response.json()[0])
+
     async def list_project_revisions(self, project_id: str) -> list[ProjectRevision]:
         response = await self._client.get(
             "/project_revisions",

@@ -247,20 +247,43 @@ class GitHubRepoClient:
 
 
 class VercelDeployClient:
-    def __init__(self, token: str) -> None:
+    def __init__(self, token: str, *, team_id: str | None = None, team_slug: str | None = None) -> None:
+        self._team_id = (team_id or "").strip()
+        self._team_slug = (team_slug or "").strip()
         self._client = httpx.AsyncClient(
             base_url="https://api.vercel.com",
             timeout=30,
             headers={"Authorization": f"Bearer {token}"},
         )
 
-    async def deploy_files(self, *, project_name: str, files: dict[str, str]) -> dict[str, Any]:
+    async def deploy_files(
+        self,
+        *,
+        project_name: str,
+        files: dict[str, str],
+        project: str | None = None,
+        target: str | None = None,
+        project_settings: dict[str, Any] | None = None,
+        meta: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        params: dict[str, str] = {}
+        if self._team_id:
+            params["teamId"] = self._team_id
+        if self._team_slug:
+            params["slug"] = self._team_slug
         payload = {
             "name": project_name,
             "files": [{"file": path, "data": content} for path, content in files.items()],
-            "projectSettings": {"framework": None},
         }
-        response = await self._client.post("/v13/deployments", json=payload)
+        if project:
+            payload["project"] = project
+        if target:
+            payload["target"] = target
+        if project_settings:
+            payload["projectSettings"] = project_settings
+        if meta:
+            payload["meta"] = meta
+        response = await self._client.post("/v13/deployments", params=params, json=payload)
         response.raise_for_status()
         return response.json()
 

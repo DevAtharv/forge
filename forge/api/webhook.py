@@ -5,13 +5,14 @@ from pathlib import Path
 from urllib.parse import quote_plus
 
 from fastapi import APIRouter, Header, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
 from pydantic import BaseModel, Field
 
 from forge.config import Settings
 from forge.integrations import OAuthError
 from forge.memory import MemoryStore
 from forge.memory.context import build_user_context
+from forge.project_bundle import build_project_bundle
 from forge.schemas import ConversationRecord, MessageJob, MissionRecord, UserProfile
 from forge.supabase_auth import SupabaseAuthError
 
@@ -90,6 +91,23 @@ def _serialize_auth_session(result: dict[str, object]) -> dict[str, object] | No
         "refresh_token": result.get("refresh_token"),
         "expires_in": result.get("expires_in"),
         "token_type": result.get("token_type"),
+    }
+
+
+async def _project_detail_payload(store: MemoryStore, project_id: str) -> dict[str, object] | None:
+    project = await store.get_project(project_id)
+    if project is None:
+        return None
+    revisions = await store.list_project_revisions(project_id)
+    latest_revision = revisions[0] if revisions else None
+    manifest = latest_revision.file_manifest if latest_revision is not None else (project.latest_manifest or {})
+    bundle_name = latest_revision.bundle_name if latest_revision is not None else None
+    return {
+        "project": project.model_dump(mode="json"),
+        "latest_revision": latest_revision.model_dump(mode="json") if latest_revision else None,
+        "files": sorted(manifest.keys()),
+        "manifest": manifest,
+        "download_name": bundle_name,
     }
 
 
@@ -422,6 +440,67 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
         projects = await request.app.state.store.list_projects(workspace_user_id)
         return {"user": user, "projects": [item.model_dump(mode="json") for item in projects]}
 
+    @router.get("/api/app/projects/{project_id}")
+    async def app_project_detail(project_id: str, request: Request) -> dict[str, object]:
+        user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
+        detail = await _project_detail_payload(request.app.state.store, project_id)
+        if detail is None:
+            raise HTTPException(status_code=404, detail="Project not found.")
+        project = detail["project"]
+        if not isinstance(project, dict) or project.get("workspace_user_id") != workspace_user_id:
+            raise HTTPException(status_code=404, detail="Project not found.")
+        return {"user": user, **detail}
+
+    @router.get("/api/app/projects/{project_id}/files")
+    async def app_project_files(project_id: str, request: Request) -> dict[str, object]:
+        user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
+        detail = await _project_detail_payload(request.app.state.store, project_id)
+        if detail is None:
+            raise HTTPException(status_code=404, detail="Project not found.")
+        project = detail["project"]
+        if not isinstance(project, dict) or project.get("workspace_user_id") != workspace_user_id:
+            raise HTTPException(status_code=404, detail="Project not found.")
+        return {
+            "user": user,
+            "project": project,
+            "files": detail["files"],
+            "manifest": detail["manifest"],
+        }
+
+    @router.get("/api/app/projects/{project_id}/download")
+    async def app_project_download(project_id: str, request: Request) -> Response:
+        _user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
+        detail = await _project_detail_payload(request.app.state.store, project_id)
+        if detail is None:
+            raise HTTPException(status_code=404, detail="Project not found.")
+        project = detail["project"]
+        if not isinstance(project, dict) or project.get("workspace_user_id") != workspace_user_id:
+            raise HTTPException(status_code=404, detail="Project not found.")
+        manifest = detail["manifest"]
+        if not isinstance(manifest, dict) or not manifest:
+            raise HTTPException(status_code=400, detail="Project has no files.")
+        bundle_name, bundle_bytes = build_project_bundle(str(project.get("slug") or "forge-project"), manifest)
+        return Response(
+            content=bundle_bytes,
+            media_type="application/zip",
+            headers={"Content-Disposition": f'attachment; filename="{bundle_name}"'},
+        )
+
+    @router.post("/api/app/projects/{project_id}/preview")
+    async def app_project_preview(project_id: str, request: Request) -> dict[str, object]:
+        user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
+        project = await request.app.state.store.get_project(project_id)
+        if project is None or project.workspace_user_id != workspace_user_id:
+            raise HTTPException(status_code=404, detail="Project not found.")
+        try:
+            refreshed = await request.app.state.mission_runner.refresh_project_preview(
+                workspace_user_id=workspace_user_id,
+                project_id=project_id,
+            )
+        except RuntimeError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        return {"user": user, "project": refreshed.model_dump(mode="json")}
+
     @router.get("/api/app/missions")
     async def app_missions(request: Request) -> dict[str, object]:
         user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
@@ -459,9 +538,52 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
             MissionRecord(
                 workspace_user_id=workspace_user_id,
                 source="web",
-                kind="deploy",
-                prompt=f"Deploy {project.name}",
+                kind="publish",
+                prompt=f"Publish {project.name} to vercel",
                 project_id=project.id,
+                plan={"target": "vercel"},
+            )
+        )
+        import asyncio
+
+        asyncio.create_task(request.app.state.mission_runner.run_mission(mission.id or ""))
+        return {"user": user, "mission": mission.model_dump(mode="json")}
+
+    @router.post("/api/app/projects/{project_id}/publish/github")
+    async def app_publish_github(project_id: str, request: Request) -> dict[str, object]:
+        user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
+        project = await request.app.state.store.get_project(project_id)
+        if project is None or project.workspace_user_id != workspace_user_id:
+            raise HTTPException(status_code=404, detail="Project not found.")
+        mission = await request.app.state.store.create_mission(
+            MissionRecord(
+                workspace_user_id=workspace_user_id,
+                source="web",
+                kind="publish",
+                prompt=f"Publish {project.name} to github",
+                project_id=project.id,
+                plan={"target": "github"},
+            )
+        )
+        import asyncio
+
+        asyncio.create_task(request.app.state.mission_runner.run_mission(mission.id or ""))
+        return {"user": user, "mission": mission.model_dump(mode="json")}
+
+    @router.post("/api/app/projects/{project_id}/publish/vercel")
+    async def app_publish_vercel(project_id: str, request: Request) -> dict[str, object]:
+        user, _web_user_id, workspace_user_id, _username, _profile = await authenticate_workspace_request(request)
+        project = await request.app.state.store.get_project(project_id)
+        if project is None or project.workspace_user_id != workspace_user_id:
+            raise HTTPException(status_code=404, detail="Project not found.")
+        mission = await request.app.state.store.create_mission(
+            MissionRecord(
+                workspace_user_id=workspace_user_id,
+                source="web",
+                kind="publish",
+                prompt=f"Publish {project.name} to vercel",
+                project_id=project.id,
+                plan={"target": "vercel"},
             )
         )
         import asyncio

@@ -76,6 +76,9 @@ class Settings:
     openrouter_api_key: str
     tavily_api_key: str
     search_provider: str
+    managed_preview_vercel_token: str
+    managed_preview_vercel_team_id: str
+    managed_preview_vercel_team_slug: str
     credential_secret: str
     github_client_id: str
     github_client_secret: str
@@ -120,6 +123,9 @@ class Settings:
             openrouter_api_key=_env("OPENROUTER_API_KEY", "") or "",
             tavily_api_key=_env("TAVILY_API_KEY", "") or "",
             search_provider=_env("FORGE_SEARCH_PROVIDER", "auto") or "auto",
+            managed_preview_vercel_token=_env("FORGE_MANAGED_PREVIEW_VERCEL_TOKEN", "") or "",
+            managed_preview_vercel_team_id=_env("FORGE_MANAGED_PREVIEW_VERCEL_TEAM_ID", "") or "",
+            managed_preview_vercel_team_slug=_env("FORGE_MANAGED_PREVIEW_VERCEL_TEAM_SLUG", "") or "",
             credential_secret=_env("FORGE_CREDENTIAL_SECRET", "forge-dev-secret") or "forge-dev-secret",
             github_client_id=_env("GITHUB_CLIENT_ID", "") or "",
             github_client_secret=_env("GITHUB_CLIENT_SECRET", "") or "",
