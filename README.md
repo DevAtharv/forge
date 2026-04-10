@@ -44,6 +44,7 @@ pip install -r requirements.txt
 - `GROQ_API_KEY`
 - `NVIDIA_API_KEY`
 - `OPENROUTER_API_KEY`
+- `TAVILY_API_KEY` (optional, for keyed live web search)
 - `FORGE_PUBLIC_BASE_URL`
 - `FORGE_FRONTEND_BASE_URL`
 - `FORGE_CREDENTIAL_SECRET`
@@ -54,6 +55,12 @@ pip install -r requirements.txt
 - `SUPABASE_URL`
 - `SUPABASE_KEY`
 - `SUPABASE_ANON_KEY`
+
+Optional live web search:
+
+- Set `TAVILY_API_KEY` to enable API-backed web search for the research agent.
+- `FORGE_SEARCH_PROVIDER=auto` uses Tavily when a key is present and falls back to DuckDuckGo otherwise.
+- Set `FORGE_SEARCH_PROVIDER=tavily` to force Tavily, or `FORGE_SEARCH_PROVIDER=duckduckgo` to force the legacy provider.
 
 3. Apply `sql/schema.sql` to your Supabase database.
 

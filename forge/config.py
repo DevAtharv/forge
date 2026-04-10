@@ -74,6 +74,8 @@ class Settings:
     groq_api_key: str
     nvidia_api_key: str
     openrouter_api_key: str
+    tavily_api_key: str
+    search_provider: str
     credential_secret: str
     github_client_id: str
     github_client_secret: str
@@ -116,6 +118,8 @@ class Settings:
             groq_api_key=_env("GROQ_API_KEY", "") or "",
             nvidia_api_key=_env("NVIDIA_API_KEY", "") or "",
             openrouter_api_key=_env("OPENROUTER_API_KEY", "") or "",
+            tavily_api_key=_env("TAVILY_API_KEY", "") or "",
+            search_provider=_env("FORGE_SEARCH_PROVIDER", "auto") or "auto",
             credential_secret=_env("FORGE_CREDENTIAL_SECRET", "forge-dev-secret") or "forge-dev-secret",
             github_client_id=_env("GITHUB_CLIENT_ID", "") or "",
             github_client_secret=_env("GITHUB_CLIENT_SECRET", "") or "",

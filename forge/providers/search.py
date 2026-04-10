@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import re
 
 import httpx
@@ -25,6 +26,64 @@ class DuckDuckGoSearchProvider(SearchProvider):
                 continue
             hits.append(SearchHit(title=title.strip(), url=url.strip(), snippet=(item.get("body") or "").strip()))
         return hits
+
+
+class TavilySearchProvider(SearchProvider):
+    _FRESHNESS_TOKENS = (
+        "latest",
+        "today",
+        "current",
+        "right now",
+        "breaking",
+        "news",
+        "price",
+        "stock",
+        "btc",
+        "bitcoin",
+        "ethereum",
+        "weather",
+        "score",
+    )
+
+    def __init__(self, *, api_key: str, timeout_seconds: int = 15) -> None:
+        self._api_key = api_key.strip()
+        self._client = httpx.AsyncClient(
+            timeout=timeout_seconds,
+            headers={
+                "Content-Type": "application/json",
+            },
+        )
+
+    async def search(self, query: str, *, max_results: int) -> list[SearchHit]:
+        topic = "news" if self._looks_fresh(query) else "general"
+        payload = {
+            "api_key": self._api_key,
+            "query": query,
+            "topic": topic,
+            "search_depth": "advanced",
+            "max_results": max_results,
+            "include_answer": False,
+            "include_raw_content": False,
+        }
+        response = await self._client.post("https://api.tavily.com/search", content=json.dumps(payload))
+        response.raise_for_status()
+        data = response.json()
+        hits: list[SearchHit] = []
+        for item in data.get("results") or []:
+            url = (item.get("url") or "").strip()
+            if not url:
+                continue
+            title = (item.get("title") or item.get("url") or "Untitled").strip()
+            snippet = (item.get("content") or "").strip()
+            hits.append(SearchHit(title=title, url=url, snippet=snippet))
+        return hits
+
+    def _looks_fresh(self, query: str) -> bool:
+        lowered = query.lower()
+        return any(token in lowered for token in self._FRESHNESS_TOKENS)
+
+    async def close(self) -> None:
+        await self._client.aclose()
 
 
 class HttpPageFetcher(Fetcher):
