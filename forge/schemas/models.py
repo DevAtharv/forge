@@ -159,6 +159,11 @@ class ProjectRecord(BaseModel):
     latest_manifest: dict[str, Any] = Field(default_factory=dict)
     deployment_metadata: dict[str, Any] = Field(default_factory=dict)
     latest_preview: str | None = None
+    preview_url: str | None = None
+    preview_status: str | None = None
+    preview_deployment_id: str | None = None
+    preview_updated_at: datetime | None = None
+    preview_metadata: dict[str, Any] = Field(default_factory=dict)
     created_at: datetime | None = None
     updated_at: datetime | None = None
 
@@ -170,6 +175,12 @@ class ProjectRevision(BaseModel):
     mission_id: str | None = None
     summary: str
     file_manifest: dict[str, Any] = Field(default_factory=dict)
+    bundle_name: str | None = None
+    bundle_file_count: int = 0
+    preview_url: str | None = None
+    preview_status: str | None = None
+    preview_deployment_id: str | None = None
+    preview_metadata: dict[str, Any] = Field(default_factory=dict)
     created_at: datetime | None = None
 
 
@@ -191,12 +202,13 @@ class MissionRecord(BaseModel):
     workspace_user_id: int
     chat_id: int | None = None
     source: Literal["telegram", "web"]
-    kind: Literal["build", "deploy", "edit", "status"]
+    kind: Literal["build", "deploy", "edit", "publish", "status"]
     status: Literal[
         "queued",
         "planning",
         "building",
         "reviewing",
+        "previewing",
         "deploying",
         "awaiting_approval",
         "completed",
@@ -209,6 +221,8 @@ class MissionRecord(BaseModel):
     response_text: str | None = None
     repo_url: str | None = None
     deployment_url: str | None = None
+    preview_url: str | None = None
+    bundle_name: str | None = None
     changed_files: list[str] = Field(default_factory=list)
     approval_request: dict[str, Any] | None = None
     error: str | None = None

@@ -60,7 +60,22 @@ def _parse_project_command(text: str) -> tuple[str, str] | None:
     if command in alias_map:
         mapped_command, mapped_value = alias_map[command]
         return mapped_command, mapped_value
-    if command in {"/connect", "/deploy", "/projects", "/status", "/new", "/build", "/files", "/help", "/start", "/github", "/vercel"}:
+    if command in {
+        "/connect",
+        "/deploy",
+        "/projects",
+        "/status",
+        "/new",
+        "/build",
+        "/edit",
+        "/preview",
+        "/publish",
+        "/files",
+        "/help",
+        "/start",
+        "/github",
+        "/vercel",
+    }:
         return command, value
     return None
 
@@ -93,13 +108,26 @@ def _looks_like_greeting(text: str) -> bool:
     return text.strip().lower() in {"hi", "hello", "hey", "yo", "start", "/start"}
 
 
+def _project_status_line(project: Any) -> str:
+    preview = project.preview_status or "no-preview"
+    return f"{project.archetype} | preview: {preview}"
+
+
 def _help_text(*, linked: bool) -> str:
     lines = [
         "Forge Telegram Commands",
         "",
-        "Build:",
-        "/build Build a weather app",
-        "/new My Project",
+        "Build and edit:",
+        "/build Build a modern cafe website",
+        "/new My Portfolio",
+        "/edit Add a testimonials section",
+        "/preview",
+        "/files",
+        "",
+        "Publish:",
+        "/publish github",
+        "/publish vercel",
+        "/deploy PROJECT_SLUG",
         "",
         "Connect:",
         "/connect github",
@@ -110,11 +138,9 @@ def _help_text(*, linked: bool) -> str:
         "/github",
         "/vercel",
         "",
-        "Project controls:",
+        "Workspace:",
         "/status",
         "/projects",
-        "/files PROJECT_SLUG",
-        "/deploy PROJECT_SLUG",
         "",
         "Linking:",
         "Send the 6-digit website code directly here, or use /link CODE.",
@@ -294,7 +320,7 @@ class JobProcessor:
             workspace_user_id = link.workspace_user_id if link is not None else user_id
             await self.store.ensure_user_profile(workspace_user_id, link.web_email if link else username)
             await self.store.append_conversation(ConversationRecord(user_id=workspace_user_id, role="user", content=text))
-            status_message_id = await self.transport.send_status_message(chat_id, "Forge queued your build mission...")
+            status_message_id = await self.transport.send_status_message(chat_id, "Forge is generating your website and preview...")
             mission = await self.store.create_mission(
                 MissionRecord(
                     workspace_user_id=workspace_user_id,
@@ -305,7 +331,8 @@ class JobProcessor:
                 )
             )
             mission = await self.mission_runner.run_mission(mission.id or "")
-            await self.transport.edit_status_message(chat_id, status_message_id, mission.response_text or "Build completed.")
+            payload = await self.mission_runner.delivery_from_mission(mission)
+            await self.transport.deliver(chat_id, payload, status_message_id=status_message_id)
             await self.store.complete_message_job(job.id or "", result_preview=mission.result_summary or "Build completed.")
             return
 
@@ -400,9 +427,12 @@ class JobProcessor:
         if command == "/projects":
             projects = await self.store.list_projects(workspace_user_id)
             if not projects:
-                text = "No projects yet.\n\nTry:\n/new Weather Studio\n/build Build a production ready weather app"
+                text = "No projects yet.\n\nTry:\n/new Bright Studio\n/build Build a modern cafe website"
             else:
-                text = "\n".join(f"- {item.slug}: {item.archetype}" for item in projects[:12])
+                text = "\n".join(
+                    f"- {item.slug}: {_project_status_line(item)}"
+                    for item in projects[:12]
+                )
             await self.transport.send_status_message(chat_id, text)
             return text[:240]
 
@@ -478,11 +508,12 @@ class JobProcessor:
                     chat_id=chat_id,
                     source="telegram",
                     kind="build",
-                    prompt=f"Build a production-ready app called {name}",
+                    prompt=f"Build a polished React + Vite website called {name}",
                 )
             )
             mission = await self.mission_runner.run_mission(mission.id or "")
-            await self.transport.send_status_message(chat_id, mission.response_text or "Project created.")
+            payload = await self.mission_runner.delivery_from_mission(mission)
+            await self.transport.deliver(chat_id, payload)
             return mission.result_summary or "Project created."
 
         if command == "/build":
@@ -495,38 +526,98 @@ class JobProcessor:
                     chat_id=chat_id,
                     source="telegram",
                     kind="build",
-                    prompt=value or "Build a production-ready app",
+                    prompt=value or "Build a polished React + Vite website",
                 )
             )
             mission = await self.mission_runner.run_mission(mission.id or "")
-            await self.transport.send_status_message(chat_id, mission.response_text or "Build completed.")
+            payload = await self.mission_runner.delivery_from_mission(mission)
+            await self.transport.deliver(chat_id, payload)
             return mission.result_summary or "Build completed."
 
-        if command == "/deploy":
-            project = await self.store.get_project_by_name(workspace_user_id, value)
+        if command == "/edit":
+            project, instruction = await self._resolve_project_with_instruction(workspace_user_id, value)
             if project is None:
                 text = "Project not found. Use /projects to list available project slugs."
                 await self.transport.send_status_message(chat_id, text)
                 return text
+            if not instruction:
+                text = "Use `/edit your change request` or `/edit project-slug your change request`."
+                await self.transport.send_status_message(chat_id, text)
+                return text
             await self.store.append_conversation(
-                ConversationRecord(user_id=workspace_user_id, role="user", content=f"/deploy {value}")
+                ConversationRecord(user_id=workspace_user_id, role="user", content=f"/edit {value}")
             )
             mission = await self.store.create_mission(
                 MissionRecord(
                     workspace_user_id=workspace_user_id,
                     chat_id=chat_id,
                     source="telegram",
-                    kind="deploy",
-                    prompt=f"Deploy {project.name}",
+                    kind="edit",
+                    prompt=instruction,
                     project_id=project.id,
                 )
             )
             mission = await self.mission_runner.run_mission(mission.id or "")
-            await self.transport.send_status_message(chat_id, mission.response_text or "Deployment processed.")
-            return mission.result_summary or "Deployment processed."
+            payload = await self.mission_runner.delivery_from_mission(mission)
+            await self.transport.deliver(chat_id, payload)
+            return mission.result_summary or "Project updated."
+
+        if command == "/preview":
+            project = await self._resolve_project(workspace_user_id, value)
+            if project is None:
+                text = "Project not found. Use /projects to list available project slugs."
+                await self.transport.send_status_message(chat_id, text)
+                return text
+            if not project.preview_url or project.preview_status != "ready":
+                try:
+                    project = await self.mission_runner.refresh_project_preview(
+                        workspace_user_id=workspace_user_id,
+                        project_id=project.id or "",
+                    )
+                except Exception as exc:
+                    text = f"Preview is not ready yet.\n\n{exc}"
+                    await self.transport.send_status_message(chat_id, text)
+                    return text[:240]
+            text = (
+                f"{project.name} preview\n"
+                f"{project.preview_url}\n\n"
+                "This is the temporary Forge-managed preview for your latest revision."
+            )
+            await self.transport.send_status_message(chat_id, text)
+            return text[:240]
+
+        if command in {"/publish", "/deploy"}:
+            target, project_hint = self._parse_publish_value(command=command, value=value)
+            project = await self._resolve_project(workspace_user_id, project_hint)
+            if project is None:
+                text = "Project not found. Use /projects to list available project slugs."
+                await self.transport.send_status_message(chat_id, text)
+                return text
+            if target not in {"github", "vercel", "all"}:
+                text = "Use `/publish github`, `/publish vercel`, or `/publish all`."
+                await self.transport.send_status_message(chat_id, text)
+                return text
+            await self.store.append_conversation(
+                ConversationRecord(user_id=workspace_user_id, role="user", content=f"/publish {target} {project.slug}".strip())
+            )
+            mission = await self.store.create_mission(
+                MissionRecord(
+                    workspace_user_id=workspace_user_id,
+                    chat_id=chat_id,
+                    source="telegram",
+                    kind="publish" if command == "/publish" else "deploy",
+                    prompt=f"Publish {project.name} to {target}",
+                    project_id=project.id,
+                    plan={"target": target},
+                )
+            )
+            mission = await self.mission_runner.run_mission(mission.id or "")
+            payload = await self.mission_runner.delivery_from_mission(mission)
+            await self.transport.deliver(chat_id, payload)
+            return mission.result_summary or "Publish processed."
 
         if command == "/files":
-            project = await self.store.get_project_by_name(workspace_user_id, value)
+            project = await self._resolve_project(workspace_user_id, value)
             if project is None:
                 text = "Project not found. Use /projects to list available project slugs."
             else:
@@ -539,6 +630,37 @@ class JobProcessor:
         fallback = "Unsupported command.\n\nSend /help to see the available Forge commands."
         await self.transport.send_status_message(chat_id, fallback)
         return fallback
+
+    async def _resolve_project(self, workspace_user_id: int, value: str) -> Any | None:
+        candidate = value.strip()
+        if candidate:
+            project = await self.store.get_project_by_name(workspace_user_id, candidate)
+            if project is not None:
+                return project
+        projects = await self.store.list_projects(workspace_user_id)
+        return projects[0] if projects else None
+
+    async def _resolve_project_with_instruction(self, workspace_user_id: int, value: str) -> tuple[Any | None, str]:
+        raw = value.strip()
+        if not raw:
+            project = await self._resolve_project(workspace_user_id, "")
+            return project, ""
+        first, _, remainder = raw.partition(" ")
+        explicit_project = await self.store.get_project_by_name(workspace_user_id, first)
+        if explicit_project is not None:
+            return explicit_project, remainder.strip()
+        project = await self._resolve_project(workspace_user_id, "")
+        return project, raw
+
+    def _parse_publish_value(self, *, command: str, value: str) -> tuple[str, str]:
+        if command == "/deploy":
+            return "vercel", value.strip()
+        parts = value.strip().split(maxsplit=1)
+        if not parts:
+            return "", ""
+        target = parts[0].lower()
+        project_hint = parts[1].strip() if len(parts) > 1 else ""
+        return target, project_hint
 
     async def refresh_profile(self, user_id: int, username: str | None) -> None:
         profile = await self.store.get_user_profile(user_id)

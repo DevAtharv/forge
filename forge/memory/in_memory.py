@@ -307,6 +307,19 @@ class InMemoryStore(MemoryStore):
             self._project_revisions[stored.id] = stored
             return stored.model_copy(deep=True)
 
+    async def update_project_revision(self, revision_id: str, updates: dict[str, Any]) -> ProjectRevision:
+        async with self._lock:
+            revision = self._project_revisions[revision_id]
+            data = revision.model_dump(mode="json")
+            for key, value in updates.items():
+                if value is not None:
+                    data[key] = value
+            updated = ProjectRevision.model_validate(data)
+            updated.id = revision.id
+            updated.created_at = revision.created_at
+            self._project_revisions[revision_id] = updated
+            return updated.model_copy(deep=True)
+
     async def list_project_revisions(self, project_id: str) -> list[ProjectRevision]:
         items = [item for item in self._project_revisions.values() if item.project_id == project_id]
         items.sort(key=lambda item: item.created_at or datetime.min.replace(tzinfo=UTC), reverse=True)
@@ -365,7 +378,7 @@ class InMemoryStore(MemoryStore):
         claimed: list[MissionRecord] = []
         async with self._lock:
             for mission in sorted(self._missions.values(), key=lambda item: item.created_at or now):
-                stale_lock = mission.status in {"planning", "building", "reviewing", "deploying"} and mission.updated_at and (
+                stale_lock = mission.status in {"planning", "building", "reviewing", "previewing", "deploying"} and mission.updated_at and (
                     mission.updated_at < now - timedelta(seconds=lock_timeout_seconds)
                 )
                 if mission.status != "queued" and not stale_lock:

@@ -78,7 +78,7 @@ def test_figma_service_marks_missing_template_slots(settings) -> None:
 
 
 @pytest.mark.asyncio
-async def test_mission_runner_builds_project_and_waits_for_github_connection(settings, store) -> None:
+async def test_mission_runner_builds_project_without_github_and_marks_preview_pending_when_unconfigured(settings, store) -> None:
     runner = MissionRunner(
         store=store,
         integrations=IntegrationService(settings=settings, store=store),
@@ -96,10 +96,50 @@ async def test_mission_runner_builds_project_and_waits_for_github_connection(set
 
     result = await runner.run_mission(mission.id or "")
 
-    assert result.status == "awaiting_approval"
-    assert result.approval_request is not None
-    assert result.approval_request["action"] == "connect_github"
-    assert "connect GitHub" in result.response_text
+    assert result.status == "completed"
+    assert result.approval_request is None
+    assert result.bundle_name is not None
+    assert "Code generated successfully" in result.response_text
+    assert "Preview: not ready yet" in result.response_text
+
+    projects = await store.list_projects(1)
+    assert len(projects) == 1
+    assert projects[0].preview_status == "failed"
+
+
+@pytest.mark.asyncio
+async def test_mission_runner_builds_project_with_managed_preview(settings, store, monkeypatch) -> None:
+    settings.managed_preview_vercel_token = "forge-preview-token"
+
+    async def fake_deploy_files(self, **kwargs):
+        assert kwargs["project_name"].startswith("forge-preview-")
+        return {"id": "dep_preview_1", "url": "preview-forge.vercel.app"}
+
+    monkeypatch.setattr("forge.missions.VercelDeployClient.deploy_files", fake_deploy_files)
+
+    runner = MissionRunner(
+        store=store,
+        integrations=IntegrationService(settings=settings, store=store),
+        transport=FakeTransport(),
+        builder=HybridProjectBuilder(),
+    )
+    mission = await store.create_mission(
+        MissionRecord(
+            workspace_user_id=1,
+            source="web",
+            kind="build",
+            prompt="build me a landing page for a portfolio",
+        )
+    )
+
+    result = await runner.run_mission(mission.id or "")
+
+    assert result.status == "completed"
+    assert result.preview_url == "https://preview-forge.vercel.app"
+    assert "temporary Forge-managed preview" in result.response_text
+    projects = await store.list_projects(1)
+    assert projects[0].preview_url == "https://preview-forge.vercel.app"
+    assert projects[0].preview_status == "ready"
 
 
 @pytest.mark.asyncio
@@ -172,7 +212,7 @@ async def test_mission_runner_persists_compact_memory_summary(settings, store) -
             status="completed",
             result_summary="Built Landing Page",
             response_text="Long response that should not be stored verbatim.",
-            repo_url="https://github.com/octocat/landing-page",
+            preview_url="https://preview.forgetest.dev",
         )
     )
 
@@ -180,4 +220,4 @@ async def test_mission_runner_persists_compact_memory_summary(settings, store) -
 
     history = await store.get_recent_conversations(44, limit=5)
     assert history
-    assert history[-1].content == "Built Landing Page\nGitHub: https://github.com/octocat/landing-page"
+    assert history[-1].content == "Built Landing Page\nPreview: https://preview.forgetest.dev"

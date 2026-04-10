@@ -409,11 +409,15 @@ async def test_worker_routes_weather_build_prompt_into_mission(settings, store) 
 
     await processor.process(job)
 
-    missions = await store.list_missions(610)
+    missions = await store.list_missions(610, limit=10)
     assert missions
     assert missions[0].kind == "build"
     assert transport.status_messages
-    assert "build mission" in transport.status_messages[0][1].lower()
+    assert "website and preview" in transport.status_messages[0][1].lower()
+    assert transport.deliveries
+    payload = transport.deliveries[0][1]
+    assert payload.document_name is not None
+    assert payload.document_bytes is not None
 
 
 @pytest.mark.asyncio

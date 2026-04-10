@@ -118,6 +118,11 @@ create table if not exists projects (
   latest_manifest jsonb not null default '{}'::jsonb,
   deployment_metadata jsonb not null default '{}'::jsonb,
   latest_preview text,
+  preview_url text,
+  preview_status text,
+  preview_deployment_id text,
+  preview_updated_at timestamptz,
+  preview_metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (workspace_user_id, slug)
@@ -130,6 +135,12 @@ create table if not exists project_revisions (
   mission_id uuid,
   summary text not null,
   file_manifest jsonb not null default '{}'::jsonb,
+  bundle_name text,
+  bundle_file_count integer not null default 0,
+  preview_url text,
+  preview_status text,
+  preview_deployment_id text,
+  preview_metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );
 
@@ -151,8 +162,8 @@ create table if not exists missions (
   workspace_user_id bigint not null,
   chat_id bigint,
   source text not null check (source in ('telegram', 'web')),
-  kind text not null check (kind in ('build', 'deploy', 'edit', 'status')),
-  status text not null check (status in ('queued', 'planning', 'building', 'reviewing', 'deploying', 'awaiting_approval', 'completed', 'failed')),
+  kind text not null check (kind in ('build', 'deploy', 'edit', 'publish', 'status')),
+  status text not null check (status in ('queued', 'planning', 'building', 'reviewing', 'previewing', 'deploying', 'awaiting_approval', 'completed', 'failed')),
   prompt text not null,
   project_id uuid references projects(id) on delete set null,
   plan jsonb not null default '{}'::jsonb,
@@ -160,6 +171,8 @@ create table if not exists missions (
   response_text text,
   repo_url text,
   deployment_url text,
+  preview_url text,
+  bundle_name text,
   changed_files jsonb not null default '[]'::jsonb,
   approval_request jsonb,
   error text,
@@ -173,6 +186,30 @@ create index if not exists projects_user_updated_idx on projects(workspace_user_
 create index if not exists project_revisions_project_created_idx on project_revisions(project_id, created_at desc);
 create index if not exists deployments_project_created_idx on deployments(project_id, created_at desc);
 create index if not exists missions_claim_idx on missions(status, created_at);
+
+alter table projects add column if not exists preview_url text;
+alter table projects add column if not exists preview_status text;
+alter table projects add column if not exists preview_deployment_id text;
+alter table projects add column if not exists preview_updated_at timestamptz;
+alter table projects add column if not exists preview_metadata jsonb not null default '{}'::jsonb;
+
+alter table project_revisions add column if not exists bundle_name text;
+alter table project_revisions add column if not exists bundle_file_count integer not null default 0;
+alter table project_revisions add column if not exists preview_url text;
+alter table project_revisions add column if not exists preview_status text;
+alter table project_revisions add column if not exists preview_deployment_id text;
+alter table project_revisions add column if not exists preview_metadata jsonb not null default '{}'::jsonb;
+
+alter table missions add column if not exists preview_url text;
+alter table missions add column if not exists bundle_name text;
+
+alter table missions drop constraint if exists missions_kind_check;
+alter table missions add constraint missions_kind_check check (kind in ('build', 'deploy', 'edit', 'publish', 'status'));
+
+alter table missions drop constraint if exists missions_status_check;
+alter table missions add constraint missions_status_check check (
+  status in ('queued', 'planning', 'building', 'reviewing', 'previewing', 'deploying', 'awaiting_approval', 'completed', 'failed')
+);
 
 drop trigger if exists conversations_set_updated_at on conversations;
 create trigger conversations_set_updated_at
@@ -486,7 +523,7 @@ begin
     where (
       status = 'queued'
       or (
-        status in ('planning', 'building', 'reviewing', 'deploying')
+        status in ('planning', 'building', 'reviewing', 'previewing', 'deploying')
         and updated_at < now() - make_interval(secs => p_lock_timeout_seconds)
       )
     )

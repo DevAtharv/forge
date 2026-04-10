@@ -283,6 +283,13 @@ class ResilientMemoryStore(MemoryStore):
             lambda: self._fallback.create_project_revision(revision),
         )
 
+    async def update_project_revision(self, revision_id: str, updates: dict[str, Any]) -> ProjectRevision:
+        return await self._call_with_fallback(
+            "update_project_revision",
+            lambda: self._primary.update_project_revision(revision_id, updates),
+            lambda: self._fallback.update_project_revision(revision_id, updates),
+        )
+
     async def list_project_revisions(self, project_id: str) -> list[ProjectRevision]:
         return await self._call_with_fallback(
             "list_project_revisions",

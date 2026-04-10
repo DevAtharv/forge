@@ -146,6 +146,10 @@ class MemoryStore(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    async def update_project_revision(self, revision_id: str, updates: dict[str, Any]) -> ProjectRevision:
+        raise NotImplementedError
+
+    @abstractmethod
     async def list_project_revisions(self, project_id: str) -> list[ProjectRevision]:
         raise NotImplementedError
 
