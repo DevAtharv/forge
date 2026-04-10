@@ -1728,6 +1728,157 @@
       .showcase-copy h2 {
         letter-spacing: -0.04em;
       }
+
+      .sidebar-profile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 20px;
+        background: rgba(243,245,248,0.9);
+      }
+
+      .sidebar-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(41,151,255,0.95), rgba(139,92,246,0.9));
+        box-shadow: inset 0 0 18px rgba(255,255,255,0.5);
+      }
+
+      .sidebar-search {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: rgba(243,245,248,0.95);
+        color: var(--soft);
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .status-bar.compact {
+        padding: 22px 24px;
+      }
+
+      .dashboard-overview {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: start;
+      }
+
+      .dashboard-title {
+        margin: 0;
+        font-size: 36px;
+        line-height: 1.05;
+        letter-spacing: -0.06em;
+        font-weight: 800;
+      }
+
+      .dashboard-subtitle {
+        margin: 8px 0 0;
+        color: var(--muted);
+        line-height: 1.7;
+        max-width: 640px;
+      }
+
+      .overview-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .segment-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: #f3f5f8;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .segment-pill.active {
+        background: #ffffff;
+        color: var(--text);
+        box-shadow: 0 10px 24px rgba(15,23,42,0.06);
+      }
+
+      .overview-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .ghost-circle {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        border: 1px solid rgba(15,23,42,0.05);
+        background: #fff;
+        color: var(--muted);
+      }
+
+      .stack.compact {
+        gap: 18px;
+      }
+
+      .telemetry-card {
+        display: grid;
+        gap: 14px;
+      }
+
+      .telemetry-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+      }
+
+      .soft-divider {
+        height: 1px;
+        background: rgba(15,23,42,0.06);
+      }
+
+      .timeline-list.compact .memory-box,
+      .artifact-list.compact .artifact {
+        padding: 14px 16px;
+      }
+
+      .workspace-grid {
+        align-items: start;
+      }
+
+      .workspace-grid > .stack:first-child .card:first-child {
+        min-height: 0;
+      }
+
+      .workspace-input-wrap {
+        margin-top: 18px;
+      }
+
+      .workspace-input-wrap textarea {
+        min-height: 136px;
+      }
+
+      @media (max-width: 1100px) {
+        .dashboard-overview {
+          grid-template-columns: 1fr;
+        }
+        .overview-actions {
+          justify-content: flex-start;
+        }
+      }
     </style>
   </head>
   <body>
@@ -1763,17 +1914,16 @@
       <main class="shell hero home-hero">
         <div class="hero-grid">
           <div class="hero-copy-wrap">
-            <div class="hero-pill"><span class="pulse-dot"></span><span>Forge Workspace 2.0</span></div>
-            <h1 class="hero-display">Build, Launch, and<br /><span class="accent">Deliver AI Products</span></h1>
+            <div class="hero-pill"><span class="pulse-dot"></span><span>Forge Workspace</span></div>
+            <h1 class="hero-display">A cleaner way to<br /><span class="accent">ship AI products</span></h1>
             <p class="hero-copy">
-              Forge gives your product a proper front door, a polished auth experience,
-              and an operational dashboard for missions, memory, Telegram delivery,
-              GitHub sync, and live deploy handoff.
+              Home, auth, and dashboard are now separated into a quieter product flow.
+              The goal is less noise, clearer structure, and a workspace that feels managed.
             </p>
             <div class="button-row hero-actions left">
-              <a class="primary-button" href="#/auth">Get Started</a>
-              <a class="ghost-button" href="#/auth">Try Auth Flow</a>
-              <a class="ghost-button" href="#/dashboard">Preview Dashboard</a>
+              <a class="primary-button" href="#/auth">Get started</a>
+              <a class="ghost-button" href="#/auth">Open auth</a>
+              <a class="ghost-button" href="#/dashboard">See dashboard</a>
             </div>
             <div class="hero-stat-grid">
               <div class="hero-stat-card">
@@ -1799,7 +1949,7 @@
                 <div class="split">
                   <div>
                     <div class="meta">Current Product Stack</div>
-                    <div style="font-size: 26px; font-weight: 800; letter-spacing: -0.05em; margin-top: 6px;">Forge Launch Workspace</div>
+                    <div style="font-size: 26px; font-weight: 800; letter-spacing: -0.05em; margin-top: 6px;">Forge product workspace</div>
                   </div>
                   <div class="feature-icon"><span class="material-symbols-outlined">rocket_launch</span></div>
                 </div>
@@ -1814,14 +1964,14 @@
                 <div class="split">
                   <div>
                     <div class="meta" style="color: rgba(203,213,225,0.8);">Latest Output</div>
-                    <div style="font-size: 22px; font-weight: 800; letter-spacing: -0.05em; margin-top: 6px;">HeroUI-style product shell generated</div>
+                    <div style="font-size: 22px; font-weight: 800; letter-spacing: -0.05em; margin-top: 6px;">Managed mission flow ready</div>
                   </div>
                   <span class="green-chip">Ready</span>
                 </div>
                 <div class="hero-preview-list">
-                  <div class="hero-preview-item dark"><span>Marketing home refreshed</span><span style="color:#7cb7ff;">done</span></div>
-                  <div class="hero-preview-item dark"><span>Auth flow polished</span><span style="color:#7cb7ff;">live</span></div>
-                  <div class="hero-preview-item dark"><span>Deploy handoff surfaced</span><span style="color:#7cb7ff;">linked</span></div>
+                  <div class="hero-preview-item dark"><span>Landing experience simplified</span><span style="color:#7cb7ff;">done</span></div>
+                  <div class="hero-preview-item dark"><span>Auth flow separated</span><span style="color:#7cb7ff;">live</span></div>
+                  <div class="hero-preview-item dark"><span>Delivery tools organized</span><span style="color:#7cb7ff;">linked</span></div>
                 </div>
               </div>
             </div>
@@ -1995,21 +2145,25 @@
     <section class="dashboard-view hidden" data-view="dashboard">
       <div class="dashboard-shell">
         <aside class="dashboard-sidebar">
-          <div class="sidebar-top">
-            <div class="forge-logo compact" aria-label="Forge Bot logo">
-              <div class="forge-logo-arch"></div>
-              <div class="forge-logo-wordmark">
-                <div class="forge-logo-word">FORGE</div>
-                <div class="forge-logo-bot"><span>BOT</span><div class="forge-logo-dot"></div></div>
+          <div class="sidebar-top" style="display:grid; gap:14px;">
+            <div class="sidebar-profile">
+              <div class="sidebar-avatar"></div>
+              <div style="display:grid; gap:2px;">
+                <strong style="font-size:14px; letter-spacing:-0.02em;">Forge Workspace</strong>
+                <span style="font-size:12px; color:var(--muted);">AI product console</span>
               </div>
             </div>
+            <div class="sidebar-search">
+              <span class="material-symbols-outlined" style="font-size:18px;">search</span>
+              <span>Search workspace</span>
+            </div>
           </div>
-          <button class="new-mission-button" type="button"><span class="material-symbols-outlined" style="font-size: 18px;">add</span><span>New Mission</span></button>
+          <button class="new-mission-button" type="button"><span class="material-symbols-outlined" style="font-size: 18px;">add</span><span>New mission</span></button>
           <nav class="sidebar-links">
-            <a class="sidebar-link route-link" data-route-link="dashboard" href="#/dashboard"><span class="material-symbols-outlined">terminal</span><span>Mission Control</span></a>
-            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">smart_toy</span><span>Agents</span></a>
-            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">send</span><span>Telegram Hub</span></a>
-            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">insights</span><span>Analytics</span></a>
+            <a class="sidebar-link route-link" data-route-link="dashboard" href="#/dashboard"><span class="material-symbols-outlined">dashboard</span><span>Overview</span></a>
+            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">terminal</span><span>Missions</span></a>
+            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">folder</span><span>Artifacts</span></a>
+            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">hub</span><span>Delivery</span></a>
             <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">settings</span><span>Settings</span></a>
           </nav>
           <div class="sidebar-bottom sidebar-links">
@@ -2020,23 +2174,22 @@
         </aside>
 
         <main class="dashboard-main">
-          <header class="status-bar">
-            <div class="status-primary">
-              <div class="hub-icon"><span class="material-symbols-outlined">hub</span></div>
+          <header class="status-bar compact">
+            <div class="dashboard-overview">
               <div>
-                <p class="status-title">Telegram Neural Link</p>
-                <div class="status-headline">
-                  <strong id="telegram-link-status">Sign in to generate a Telegram link code.</strong>
-                  <span class="green-chip" id="telegram-link-code">No active code</span>
+                <h1 class="dashboard-title">Good afternoon</h1>
+                <p class="dashboard-subtitle">A cleaner workspace for missions, approvals, delivery, and outputs. Telegram stays connected, but it no longer dominates the screen.</p>
+                <div class="overview-pills">
+                  <span class="segment-pill active">Overview</span>
+                  <span class="segment-pill">Projects</span>
+                  <span class="segment-pill">Deployments</span>
                 </div>
-                <p class="status-explain" id="telegram-link-expiry">Generate a code, then send /link CODE to the Forge Telegram bot.</p>
-                <p class="muted" id="telegram-link-help" style="margin: 8px 0 0;">Telegram messages will share this workspace after linking.</p>
               </div>
-            </div>
-            <div class="status-metrics">
-              <div class="metric-box"><span class="meta">Missions</span><p id="mission-count-metric" style="font-weight: 700;">0 total</p></div>
-              <div class="metric-box"><span class="meta">Active</span><p id="active-mission-metric" style="font-weight: 700;">0 running</p></div>
-              <button class="ghost-button" id="telegram-link-action" type="button">Generate Link Code</button>
+              <div class="overview-actions">
+                <button class="ghost-circle" type="button"><span class="material-symbols-outlined" style="font-size:18px;">search</span></button>
+                <div class="metric-box"><span class="meta">Missions</span><p id="mission-count-metric" style="font-weight: 700;">0 total</p></div>
+                <div class="metric-box"><span class="meta">Active</span><p id="active-mission-metric" style="font-weight: 700;">0 running</p></div>
+              </div>
             </div>
           </header>
 
@@ -2046,7 +2199,7 @@
                 <div class="panel-head">
                   <div>
                     <div class="panel-kicker">Mission Console</div>
-                    <h2 class="panel-title">Mission Workspace</h2>
+                    <h2 class="panel-title">Draft and run</h2>
                   </div>
                   <div class="mission-chip-group">
                     <span class="tiny-chip" id="mission-status-chip">Public preview mode</span>
@@ -2063,7 +2216,7 @@
                     <button class="ghost-button" id="signout-button" type="button">Sign Out</button>
                   </div>
                 </div>
-                <div style="margin-top: 18px;"><textarea id="workspace-input" placeholder="Define your next mission objective...">Design a production-ready launch page, auth flow, and deployable app structure for my AI product, then prepare the GitHub and Vercel handoff.</textarea></div>
+                <div class="workspace-input-wrap"><textarea id="workspace-input" placeholder="Define your next mission objective...">Design a production-ready launch page, auth flow, and deployable app structure for my AI product, then prepare the GitHub and Vercel handoff.</textarea></div>
                 <div class="mission-toolbar">
                   <div class="mini-icon-row">
                     <button class="icon-button" type="button"><span class="material-symbols-outlined">attach_file</span></button>
@@ -2081,7 +2234,7 @@
 
               <section class="card response-shell">
                 <div class="response-live" id="result-meta">Live Output</div>
-                <h2 class="panel-title" style="margin-top: 0;">Latest Response</h2>
+                <h2 class="panel-title" style="margin-top: 0;">Latest response</h2>
                 <div class="response-box" style="margin-top: 18px;"><p class="response-text" id="result-response">Mission output will render here.</p></div>
                 <div class="memory-box hidden" id="document-wrap" style="margin-top: 18px;"><div class="meta">Structured Document</div><pre id="document-output"></pre></div>
                 <div class="response-actions">
@@ -2092,17 +2245,35 @@
               </section>
             </div>
 
-            <div class="stack">
+            <div class="stack compact">
+              <section class="card telemetry-card">
+                <div class="telemetry-row">
+                  <div class="status-primary" style="gap:12px;">
+                    <div class="hub-icon" style="width:44px; height:44px;"><span class="material-symbols-outlined">hub</span></div>
+                    <div>
+                      <p class="status-title">Delivery link</p>
+                      <div class="status-headline" style="margin-top:4px;">
+                        <strong id="telegram-link-status">Sign in to generate a Telegram link code.</strong>
+                        <span class="green-chip" id="telegram-link-code">No active code</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button class="ghost-button" id="telegram-link-action" type="button">Generate Link Code</button>
+                </div>
+                <div class="soft-divider"></div>
+                <p class="status-explain" id="telegram-link-expiry">Generate a code, then send /link CODE to the Forge Telegram bot.</p>
+                <p class="muted" id="telegram-link-help" style="margin: 0;">Telegram messages will share this workspace after linking.</p>
+              </section>
               <section class="card">
-                <h2 class="panel-title" style="margin-top: 0;">Plan / Router</h2>
+                <h2 class="panel-title" style="margin-top: 0;">Plan</h2>
                 <div class="memory-box" style="margin-top: 18px;"><div class="meta">Current Intent</div><p id="result-intent" class="muted" style="margin: 8px 0 0;">Preview a mission to inspect the route.</p></div>
                 <div class="memory-box" style="margin-top: 14px;"><div class="meta">Context</div><p id="result-context" class="muted" style="margin: 8px 0 0;">No route selected yet.</p></div>
                 <div class="timeline-rail" id="result-stages" style="margin-top: 18px;"></div>
               </section>
 
               <section class="card">
-                <div class="panel-head"><div><div class="panel-kicker">Conversation Memory</div><h2 class="panel-title">Timeline</h2></div><span class="tiny-chip" id="timeline-meta">No stored conversation yet</span></div>
-                <div class="timeline-list" id="timeline-list" style="margin-top: 18px;">
+                <div class="panel-head"><div><div class="panel-kicker">Recent Context</div><h2 class="panel-title">Memory</h2></div><span class="tiny-chip" id="timeline-meta">No stored conversation yet</span></div>
+                <div class="timeline-list compact" id="timeline-list" style="margin-top: 18px;">
                   <div class="memory-box"><p class="meta" style="margin: 0;">Yesterday</p><p class="muted" style="margin: 6px 0 0;">Tokenomics brainstorming for Project X</p></div>
                   <div class="memory-box"><p class="meta" style="margin: 0;">Oct 12</p><p class="muted" style="margin: 6px 0 0;">Debugging Solana Smart Contract</p></div>
                 </div>
@@ -2117,8 +2288,8 @@
               </section>
 
               <section class="card">
-                <div class="panel-head"><div><div class="panel-kicker">Artifact Library</div><h2 class="panel-title">Generated Assets</h2></div><span class="tiny-chip" id="artifact-meta">No artifacts yet</span></div>
-                <div class="artifact-list" id="artifact-list" style="margin-top: 18px;"><div class="empty">Artifacts generated by Forge will appear here.</div></div>
+                <div class="panel-head"><div><div class="panel-kicker">Artifacts</div><h2 class="panel-title">Generated output</h2></div><span class="tiny-chip" id="artifact-meta">No artifacts yet</span></div>
+                <div class="artifact-list compact" id="artifact-list" style="margin-top: 18px;"><div class="empty">Artifacts generated by Forge will appear here.</div></div>
               </section>
 
               <section class="terminal-card">
