@@ -1526,6 +1526,208 @@
           grid-template-columns: 1fr;
         }
       }
+
+      :root {
+        --background: #f7f8fb;
+        --surface: rgba(255, 255, 255, 0.97);
+        --surface-low: #fbfcfe;
+        --surface-mid: #f3f5f8;
+        --surface-high: #eceff3;
+        --outline: rgba(15, 23, 42, 0.06);
+        --outline-strong: rgba(15, 23, 42, 0.1);
+        --text: #1f2937;
+        --muted: #6b7280;
+        --soft: #94a3b8;
+        --primary: #2997ff;
+        --brand: #2997ff;
+        --brand-soft: rgba(41, 151, 255, 0.1);
+        --teal: #22c55e;
+        --shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+      }
+
+      body {
+        background:
+          radial-gradient(circle at left center, rgba(255, 166, 77, 0.18), transparent 22%),
+          radial-gradient(circle at top right, rgba(99, 102, 241, 0.14), transparent 20%),
+          linear-gradient(180deg, #fbfcfe 0%, var(--background) 46%, #f7f8fb 100%);
+      }
+
+      .home-nav,
+      .auth-nav,
+      .dashboard-sidebar,
+      .status-bar,
+      .feature-card,
+      .card,
+      .auth-card,
+      .auth-showcase,
+      .hero-preview,
+      .hero-preview-panel,
+      .hero-stat-card,
+      .memory-box,
+      .response-box,
+      .stage,
+      .artifact,
+      .artifact-tile,
+      .metric-box,
+      .social-button,
+      .ghost-button,
+      .status-pill {
+        background: rgba(255, 255, 255, 0.94);
+        border-color: rgba(15, 23, 42, 0.05);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(12px);
+      }
+
+      .home-nav,
+      .auth-nav {
+        background: rgba(255, 255, 255, 0.9);
+      }
+
+      .nav-cluster {
+        background: rgba(243, 245, 248, 0.95);
+        border-color: rgba(15, 23, 42, 0.03);
+      }
+
+      .nav-cluster .route-link.active,
+      .sidebar-link.active {
+        background: #f3f5f8;
+        box-shadow: none;
+      }
+
+      .primary-button,
+      .new-mission-button,
+      .system-fab {
+        background: #2997ff;
+        box-shadow: 0 12px 28px rgba(41, 151, 255, 0.2);
+      }
+
+      .primary-button:hover,
+      .new-mission-button:hover,
+      .system-fab:hover {
+        box-shadow: 0 16px 30px rgba(41, 151, 255, 0.24);
+      }
+
+      .ghost-button,
+      .social-button,
+      .subtle-button,
+      .icon-button {
+        background: #ffffff;
+        box-shadow: none;
+      }
+
+      .hero {
+        padding-top: 40px;
+        padding-bottom: 88px;
+      }
+
+      .hero-display {
+        font-size: clamp(48px, 6vw, 88px);
+        line-height: 0.95;
+      }
+
+      .hero-copy {
+        font-size: 17px;
+        max-width: 600px;
+      }
+
+      .hero-preview,
+      .auth-showcase {
+        border-radius: 28px;
+      }
+
+      .hero-preview {
+        background:
+          radial-gradient(circle at top right, rgba(99, 102, 241, 0.08), transparent 28%),
+          linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.98) 100%);
+      }
+
+      .hero-preview-panel.dark,
+      .auth-showcase {
+        background: rgba(255,255,255,0.92);
+        color: var(--text);
+      }
+
+      .auth-showcase h2,
+      .auth-showcase p {
+        color: inherit;
+      }
+
+      .auth-showcase-item,
+      .auth-mini-card {
+        background: #f8fafc;
+        border: 1px solid rgba(15, 23, 42, 0.05);
+      }
+
+      .auth-mini-card .hero-chip {
+        background: rgba(41, 151, 255, 0.1);
+        color: var(--brand);
+      }
+
+      .showcase {
+        border-radius: 30px;
+        background:
+          radial-gradient(circle at left center, rgba(255, 166, 77, 0.16), transparent 24%),
+          radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 18%),
+          linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(247,248,251,0.98) 100%);
+        box-shadow: 0 20px 55px rgba(15, 23, 42, 0.08);
+      }
+
+      .showcase-copy h2,
+      .showcase-copy p,
+      .showcase-copy li {
+        color: var(--text);
+      }
+
+      .showcase-copy .accent {
+        color: var(--brand);
+      }
+
+      .showcase-visual {
+        background:
+          radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 22%),
+          linear-gradient(180deg, rgba(249,250,251,0.96) 0%, rgba(241,245,249,0.98) 100%);
+      }
+
+      .showcase-visual::before {
+        border-color: rgba(15, 23, 42, 0.05);
+      }
+
+      .glass-card {
+        background: rgba(255,255,255,0.92);
+        box-shadow: 0 16px 35px rgba(15, 23, 42, 0.08);
+      }
+
+      .dashboard-sidebar {
+        background: rgba(255, 255, 255, 0.88);
+      }
+
+      .status-bar {
+        background: rgba(255,255,255,0.94);
+      }
+
+      .hub-icon {
+        background: #f3f7ff;
+        color: var(--brand);
+      }
+
+      .metric-box,
+      .response-box,
+      .stage,
+      .memory-box,
+      .artifact-tile {
+        background: #fbfcfe;
+      }
+
+      .terminal-card {
+        background: #111827;
+      }
+
+      .hero-stat-card strong,
+      .panel-title,
+      .feature-card h3,
+      .showcase-copy h2 {
+        letter-spacing: -0.04em;
+      }
     </style>
   </head>
   <body>
