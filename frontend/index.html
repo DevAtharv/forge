@@ -150,7 +150,7 @@
         text-transform: uppercase;
         letter-spacing: 0.12em;
       }
-      .nav-cluster { display: flex; align-items: center; gap: 26px; }
+      .nav-cluster { display: flex; align-items: center; gap: 10px; }
       .nav-cluster .route-link { position: relative; padding-bottom: 2px; }
       .nav-cluster .route-link.active::after {
         content: "";
@@ -161,6 +161,15 @@
         height: 2px;
         border-radius: 999px;
         background: currentColor;
+      }
+      .nav-cluster .route-link,
+      .nav-cluster .pill-link {
+        padding: 10px 14px;
+        border-radius: 999px;
+      }
+      .nav-cluster .route-link.active,
+      .nav-cluster .pill-link.active {
+        background: rgba(15, 23, 42, 0.05);
       }
       .top-actions { display: flex; align-items: center; gap: 14px; }
       .status-group { gap: 10px; }
@@ -1838,6 +1847,86 @@
         gap: 14px;
       }
 
+      .telegram-card {
+        display: grid;
+        gap: 18px;
+      }
+
+      .telegram-card-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .telegram-card-copy {
+        display: grid;
+        gap: 6px;
+      }
+
+      .telegram-card-copy .panel-title {
+        margin: 0;
+      }
+
+      .telegram-help-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .recent-chat-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .recent-chat-item {
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: rgba(243,245,248,0.85);
+        border: 1px solid rgba(15,23,42,0.05);
+      }
+
+      .recent-chat-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+
+      .recent-chat-role {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .recent-chat-role::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--brand);
+      }
+
+      .recent-chat-role.assistant::before {
+        background: #8b5cf6;
+      }
+
+      .recent-chat-role.system::before {
+        background: #94a3b8;
+      }
+
+      .recent-chat-body {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+        font-size: 14px;
+      }
+
       .telemetry-row {
         display: flex;
         align-items: flex-start;
@@ -1895,10 +1984,9 @@
             </div>
           </div>
           <div class="nav-cluster">
-            <a class="route-link" data-route-link="home" href="#/home">Product</a>
-            <a class="pill-link" href="#features">Solutions</a>
-            <a class="pill-link" href="#showcase">Pricing</a>
-            <a class="pill-link" href="#footer">Docs</a>
+            <a class="route-link" data-route-link="home" href="#/home">Home</a>
+            <a class="route-link" data-route-link="auth" href="#/auth">Auth</a>
+            <a class="route-link" data-route-link="dashboard" href="#/dashboard">Dashboard</a>
           </div>
           <div class="top-actions">
             <div class="status-group">
@@ -2077,8 +2165,8 @@
             </div>
           </div>
           <div class="nav-cluster">
-            <a class="route-link" data-route-link="home" href="#/home">Product</a>
-            <a class="route-link" data-route-link="auth" href="#/auth">Authenticate</a>
+            <a class="route-link" data-route-link="home" href="#/home">Home</a>
+            <a class="route-link" data-route-link="auth" href="#/auth">Auth</a>
             <a class="route-link" data-route-link="dashboard" href="#/dashboard">Dashboard</a>
           </div>
           <div class="top-actions"><a class="text-button" href="#/home">Support</a><a class="primary-button" href="#/dashboard">Mission Control</a></div>
@@ -2246,37 +2334,53 @@
             </div>
 
             <div class="stack compact">
-              <section class="card telemetry-card">
-                <div class="telemetry-row">
+              <section class="card telegram-card">
+                <div class="telegram-card-head">
+                  <div class="telegram-card-copy">
+                    <div class="panel-kicker">Telegram Workspace</div>
+                    <h2 class="panel-title">Recent chats</h2>
+                    <p class="muted" style="margin: 0;">Keep Telegram connected, but only surface the latest useful conversation context here.</p>
+                  </div>
+                  <button class="ghost-button" id="telegram-link-action" type="button">Generate Link Code</button>
+                </div>
+                <div class="telemetry-row" style="align-items:center;">
                   <div class="status-primary" style="gap:12px;">
-                    <div class="hub-icon" style="width:44px; height:44px;"><span class="material-symbols-outlined">hub</span></div>
+                    <div class="hub-icon" style="width:44px; height:44px;"><span class="material-symbols-outlined">send</span></div>
                     <div>
-                      <p class="status-title">Delivery link</p>
-                      <div class="status-headline" style="margin-top:4px;">
+                      <div class="status-headline" style="margin-top:0;">
                         <strong id="telegram-link-status">Sign in to generate a Telegram link code.</strong>
                         <span class="green-chip" id="telegram-link-code">No active code</span>
                       </div>
                     </div>
                   </div>
-                  <button class="ghost-button" id="telegram-link-action" type="button">Generate Link Code</button>
                 </div>
-                <div class="soft-divider"></div>
-                <p class="status-explain" id="telegram-link-expiry">Generate a code, then send /link CODE to the Forge Telegram bot.</p>
+                <div class="telegram-help-row">
+                  <p class="status-explain" id="telegram-link-expiry" style="margin:0;">Generate a code, then send /link CODE to the Forge Telegram bot.</p>
+                </div>
                 <p class="muted" id="telegram-link-help" style="margin: 0;">Telegram messages will share this workspace after linking.</p>
+                <div class="soft-divider"></div>
+                <div class="panel-head" style="margin-bottom:0;">
+                  <div>
+                    <div class="panel-kicker">Latest Messages</div>
+                    <h3 class="panel-title" style="font-size:20px; margin-top:2px;">Telegram + memory feed</h3>
+                  </div>
+                  <span class="tiny-chip" id="timeline-meta">No stored conversation yet</span>
+                </div>
+                <div class="recent-chat-list" id="timeline-list">
+                  <div class="recent-chat-item">
+                    <div class="recent-chat-head">
+                      <span class="recent-chat-role">Telegram</span>
+                      <span class="meta">Waiting</span>
+                    </div>
+                    <p class="recent-chat-body">Recent linked messages will appear here after your first authenticated Telegram or web conversation.</p>
+                  </div>
+                </div>
               </section>
               <section class="card">
                 <h2 class="panel-title" style="margin-top: 0;">Plan</h2>
                 <div class="memory-box" style="margin-top: 18px;"><div class="meta">Current Intent</div><p id="result-intent" class="muted" style="margin: 8px 0 0;">Preview a mission to inspect the route.</p></div>
                 <div class="memory-box" style="margin-top: 14px;"><div class="meta">Context</div><p id="result-context" class="muted" style="margin: 8px 0 0;">No route selected yet.</p></div>
                 <div class="timeline-rail" id="result-stages" style="margin-top: 18px;"></div>
-              </section>
-
-              <section class="card">
-                <div class="panel-head"><div><div class="panel-kicker">Recent Context</div><h2 class="panel-title">Memory</h2></div><span class="tiny-chip" id="timeline-meta">No stored conversation yet</span></div>
-                <div class="timeline-list compact" id="timeline-list" style="margin-top: 18px;">
-                  <div class="memory-box"><p class="meta" style="margin: 0;">Yesterday</p><p class="muted" style="margin: 6px 0 0;">Tokenomics brainstorming for Project X</p></div>
-                  <div class="memory-box"><p class="meta" style="margin: 0;">Oct 12</p><p class="muted" style="margin: 6px 0 0;">Debugging Solana Smart Contract</p></div>
-                </div>
               </section>
 
               <section class="card">

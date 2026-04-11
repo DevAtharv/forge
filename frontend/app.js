@@ -315,53 +315,57 @@ function renderProfile(profile) {
 function renderHistory(history) {
   els.timelineList.innerHTML = "";
   if (!history || !history.length) {
-    els.timelineList.innerHTML = '<div class="empty">Conversation history will appear here after your first mission.</div>';
+    els.timelineList.innerHTML = '<div class="recent-chat-item"><div class="recent-chat-head"><span class="recent-chat-role">Telegram</span><span class="meta">Waiting</span></div><p class="recent-chat-body">Conversation history will appear here after your first mission.</p></div>';
     els.timelineMeta.textContent = "No stored conversation yet";
     return;
   }
 
-  els.timelineMeta.textContent = `${history.length} stored message${history.length === 1 ? "" : "s"}`;
-  history
-    .slice()
-    .reverse()
-    .forEach((item) => {
-      const card = document.createElement("div");
-      card.className = "timeline-item";
+  const recentHistory = history.slice().reverse().slice(0, 6);
+  els.timelineMeta.textContent = `${recentHistory.length} recent message${recentHistory.length === 1 ? "" : "s"}`;
+  recentHistory.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "recent-chat-item";
 
-      const head = document.createElement("div");
-      head.className = "split";
+    const head = document.createElement("div");
+    head.className = "recent-chat-head";
 
-      const role = document.createElement("span");
-      role.className = `timeline-role ${item.role}`;
-      role.textContent = item.role;
+    const role = document.createElement("span");
+    role.className = `recent-chat-role ${item.role || "user"}`;
+    role.textContent =
+      item.role === "assistant"
+        ? "Forge reply"
+        : item.role === "system"
+          ? "System update"
+          : "User message";
 
-      const meta = document.createElement("span");
-      meta.className = "meta";
-      meta.textContent = formatDate(item.created_at);
+    const meta = document.createElement("span");
+    meta.className = "meta";
+    meta.textContent = formatDate(item.created_at);
 
-      const body = document.createElement("p");
-      body.className = "timeline-body";
-      body.textContent = item.content;
+    const body = document.createElement("p");
+    body.className = "recent-chat-body";
+    body.textContent = item.content;
 
-      head.appendChild(role);
-      head.appendChild(meta);
-      card.appendChild(head);
-      card.appendChild(body);
+    head.appendChild(role);
+    head.appendChild(meta);
+    card.appendChild(head);
+    card.appendChild(body);
 
-      if (item.agents_used && item.agents_used.length) {
-        const badges = document.createElement("div");
-        badges.className = "badges";
-        item.agents_used.forEach((agent) => {
-          const chip = document.createElement("span");
-          chip.className = "chip neutral";
-          chip.textContent = agent;
-          badges.appendChild(chip);
-        });
-        card.appendChild(badges);
-      }
+    if (item.agents_used && item.agents_used.length) {
+      const badges = document.createElement("div");
+      badges.className = "badges";
+      badges.style.marginTop = "10px";
+      item.agents_used.slice(0, 3).forEach((agent) => {
+        const chip = document.createElement("span");
+        chip.className = "chip neutral";
+        chip.textContent = agent;
+        badges.appendChild(chip);
+      });
+      card.appendChild(badges);
+    }
 
-      els.timelineList.appendChild(card);
-    });
+    els.timelineList.appendChild(card);
+  });
 }
 
 function updateDashboardMetrics({ projects = [], missions = [], integrations = [] }) {
