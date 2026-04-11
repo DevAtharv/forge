@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import httpx
@@ -48,6 +48,21 @@ class SupabaseMemoryStore(MemoryStore):
         response = await self._client.post(f"/rpc/{name}", json=payload)
         response.raise_for_status()
         return response.json()
+
+    async def _get_message_job(self, job_id: str) -> MessageJob:
+        response = await self._client.get(
+            "/message_jobs",
+            params={"id": f"eq.{job_id}", "select": "*", "limit": 1},
+        )
+        response.raise_for_status()
+        records = response.json()
+        if not records:
+            raise httpx.HTTPStatusError(
+                "Message job not found.",
+                request=response.request,
+                response=response,
+            )
+        return MessageJob.model_validate(records[0])
 
     async def ensure_user_profile(self, user_id: int, username: str | None = None) -> UserProfile:
         profile = await self.get_user_profile(user_id)
@@ -133,11 +148,28 @@ class SupabaseMemoryStore(MemoryStore):
         response.raise_for_status()
 
     async def complete_message_job(self, job_id: str, *, result_preview: str) -> MessageJob:
-        data = await self._rpc(
-            "complete_message_job",
-            {"p_job_id": job_id, "p_result_preview": result_preview},
-        )
-        return MessageJob.model_validate(data)
+        try:
+            data = await self._rpc(
+                "complete_message_job",
+                {"p_job_id": job_id, "p_result_preview": result_preview},
+            )
+            return MessageJob.model_validate(data)
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code != 400:
+                raise
+            response = await self._client.patch(
+                "/message_jobs",
+                params={"id": f"eq.{job_id}", "select": "*"},
+                json={
+                    "status": "completed",
+                    "result_preview": result_preview,
+                    "locked_at": None,
+                    "locked_by": None,
+                    "error": None,
+                },
+            )
+            response.raise_for_status()
+            return MessageJob.model_validate(response.json()[0])
 
     async def fail_message_job(
         self,
@@ -147,16 +179,44 @@ class SupabaseMemoryStore(MemoryStore):
         max_attempts: int,
         retry_delay_seconds: int,
     ) -> MessageJob:
-        data = await self._rpc(
-            "fail_message_job",
-            {
-                "p_job_id": job_id,
-                "p_error": error,
-                "p_max_attempts": max_attempts,
-                "p_retry_delay_seconds": retry_delay_seconds,
-            },
-        )
-        return MessageJob.model_validate(data)
+        try:
+            data = await self._rpc(
+                "fail_message_job",
+                {
+                    "p_job_id": job_id,
+                    "p_error": error,
+                    "p_max_attempts": max_attempts,
+                    "p_retry_delay_seconds": retry_delay_seconds,
+                },
+            )
+            return MessageJob.model_validate(data)
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code != 400:
+                raise
+            current = await self._get_message_job(job_id)
+            next_attempt = (current.attempts or 0) + 1
+            status = "dead_letter" if next_attempt >= max_attempts else "retrying"
+            available_at = None
+            if status == "retrying":
+                available_at = datetime.now(tz=UTC) + timedelta(seconds=retry_delay_seconds * next_attempt)
+            response = await self._client.patch(
+                "/message_jobs",
+                params={"id": f"eq.{job_id}", "select": "*"},
+                json={
+                    "attempts": next_attempt,
+                    "error": error,
+                    "locked_at": None,
+                    "locked_by": None,
+                    "status": status,
+                    "available_at": (
+                        available_at.isoformat().replace("+00:00", "Z")
+                        if available_at is not None
+                        else None
+                    ),
+                },
+            )
+            response.raise_for_status()
+            return MessageJob.model_validate(response.json()[0])
 
     async def update_user_profile(self, user_id: int, updates: dict[str, Any]) -> UserProfile:
         payload = {"user_id": user_id, **updates}
