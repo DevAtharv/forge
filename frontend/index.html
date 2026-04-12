@@ -2575,73 +2575,593 @@
           justify-content: flex-start;
         }
       }
+
+      .home-dark-stage {
+        background:
+          radial-gradient(circle at top left, rgba(255,255,255,0.05), transparent 20%),
+          linear-gradient(180deg, #06070a 0%, #0b0d11 100%);
+        color: #f8fafc;
+      }
+
+      .home-dark-header {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        padding: 28px 0 10px;
+        backdrop-filter: blur(10px);
+      }
+
+      .home-dark-nav {
+        width: min(980px, calc(100% - 40px));
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 18px 22px;
+        border-radius: 22px;
+        background: rgba(15, 17, 23, 0.92);
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 18px 50px rgba(0,0,0,0.32);
+      }
+
+      .tailark-mark {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: #f8fafc;
+      }
+
+      .tailark-mark-grid {
+        position: relative;
+        width: 22px;
+        height: 22px;
+      }
+
+      .tailark-mark-grid::before,
+      .tailark-mark-grid::after,
+      .tailark-mark-grid span::before,
+      .tailark-mark-grid span::after {
+        content: "";
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+      }
+
+      .tailark-mark-grid::before { top: 0; left: 0; background: #38bdf8; }
+      .tailark-mark-grid::after { top: 0; right: 0; background: #a78bfa; }
+      .tailark-mark-grid span::before { bottom: 0; left: 0; background: #818cf8; }
+      .tailark-mark-grid span::after { bottom: 0; right: 0; background: #34d399; }
+
+      .home-dark-nav .nav-cluster {
+        gap: 24px;
+      }
+
+      .home-dark-nav .route-link,
+      .home-dark-nav .pill-link,
+      .home-dark-nav .text-button {
+        color: rgba(226,232,240,0.7);
+      }
+
+      .home-dark-nav .route-link.active {
+        color: #ffffff;
+        background: transparent;
+      }
+
+      .home-dark-nav .route-link.active::after {
+        bottom: -16px;
+        background: rgba(255,255,255,0.9);
+      }
+
+      .home-dark-nav .primary-button {
+        background: #ffffff;
+        color: #111827;
+        box-shadow: none;
+      }
+
+      .home-dark-nav .text-button {
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.02);
+      }
+
+      .home-dark-nav .status-group {
+        display: none;
+      }
+
+      .home-dark-hero {
+        width: min(1240px, calc(100% - 56px));
+        margin: 0 auto;
+        padding: 90px 0 44px;
+        text-align: center;
+      }
+
+      .dark-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 16px;
+        padding: 10px 12px 10px 18px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.08);
+        color: rgba(255,255,255,0.9);
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .dark-hero-badge .arrow-pill {
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.06);
+      }
+
+      .dark-hero-title {
+        max-width: 1020px;
+        margin: 34px auto 0;
+        color: #f8fafc;
+        font-size: clamp(62px, 8vw, 110px);
+        line-height: 0.94;
+        letter-spacing: -0.08em;
+        font-weight: 300;
+      }
+
+      .dark-hero-copy {
+        max-width: 760px;
+        margin: 28px auto 0;
+        color: rgba(226,232,240,0.76);
+        font-size: 20px;
+        line-height: 1.7;
+      }
+
+      .dark-hero-cta {
+        justify-content: center;
+        margin-top: 36px;
+      }
+
+      .dark-hero-cta .primary-button {
+        background: #ffffff;
+        color: #111827;
+        box-shadow: none;
+      }
+
+      .dark-mockup-shell {
+        position: relative;
+        margin-top: 58px;
+        padding-bottom: 20px;
+      }
+
+      .dark-mockup-nav {
+        width: min(960px, calc(100% - 80px));
+        margin: 0 auto -24px;
+        position: relative;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 18px 22px;
+        border-radius: 20px;
+        background: rgba(15, 17, 23, 0.92);
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 18px 50px rgba(0,0,0,0.28);
+      }
+
+      .dark-mockup-nav .nav-cluster {
+        gap: 18px;
+      }
+
+      .dark-mockup-nav .route-link {
+        color: rgba(226,232,240,0.74);
+        padding: 8px 10px;
+      }
+
+      .dark-mockup-nav .primary-button {
+        background: #ffffff;
+        color: #111827;
+        box-shadow: none;
+      }
+
+      .dark-product-window {
+        position: relative;
+        width: min(1230px, 100%);
+        margin: 0 auto;
+        border-radius: 26px;
+        background: #090b0f;
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 30px 90px rgba(0,0,0,0.32);
+        overflow: hidden;
+      }
+
+      .dark-product-grid {
+        display: grid;
+        grid-template-columns: 255px 360px minmax(0, 1fr);
+        min-height: 520px;
+      }
+
+      .mail-sidebar,
+      .mail-list,
+      .mail-detail {
+        padding: 22px;
+      }
+
+      .mail-sidebar,
+      .mail-list {
+        border-right: 1px solid rgba(255,255,255,0.06);
+      }
+
+      .mail-select {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.06);
+        color: #f8fafc;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .mail-nav-list,
+      .mail-folder-list,
+      .mail-cards {
+        display: grid;
+        gap: 10px;
+      }
+
+      .mail-nav-list {
+        margin-top: 18px;
+      }
+
+      .mail-nav-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 11px 12px;
+        border-radius: 12px;
+        color: rgba(226,232,240,0.74);
+      }
+
+      .mail-nav-item.active {
+        background: rgba(255,255,255,0.08);
+        color: #ffffff;
+      }
+
+      .mail-nav-item span:first-child {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .mail-count {
+        color: rgba(226,232,240,0.6);
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .mail-list-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .mail-tabs {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.04);
+      }
+
+      .mail-tab {
+        padding: 10px 14px;
+        border-radius: 10px;
+        color: rgba(226,232,240,0.72);
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .mail-tab.active {
+        background: rgba(255,255,255,0.08);
+        color: #ffffff;
+      }
+
+      .mail-tool-icons {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: rgba(226,232,240,0.66);
+      }
+
+      .mail-search {
+        margin-top: 18px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.06);
+        color: rgba(226,232,240,0.5);
+        font-size: 14px;
+      }
+
+      .mail-cards {
+        margin-top: 16px;
+      }
+
+      .mail-card {
+        padding: 16px;
+        border-radius: 16px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.06);
+        color: rgba(226,232,240,0.74);
+      }
+
+      .mail-card.active {
+        background: rgba(255,255,255,0.08);
+        color: #ffffff;
+      }
+
+      .mail-card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .mail-card-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: inherit;
+      }
+
+      .mail-card-time {
+        font-size: 12px;
+        color: rgba(226,232,240,0.5);
+      }
+
+      .mail-card-subject {
+        font-size: 14px;
+        font-weight: 600;
+        color: inherit;
+      }
+
+      .mail-card-copy {
+        margin-top: 8px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: rgba(226,232,240,0.58);
+      }
+
+      .mail-tags {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+
+      .mail-tags span {
+        padding: 6px 10px;
+        border-radius: 10px;
+        background: rgba(255,255,255,0.12);
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .mail-detail-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        color: rgba(226,232,240,0.66);
+      }
+
+      .mail-detail-toolbar,
+      .mail-detail-actions {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .mail-thread {
+        margin-top: 22px;
+      }
+
+      .mail-thread-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+      }
+
+      .mail-avatar {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.12);
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .mail-thread-body {
+        margin-top: 20px;
+        color: rgba(226,232,240,0.78);
+        font-size: 15px;
+        line-height: 1.85;
+      }
+
+      @media (max-width: 1100px) {
+        .dark-product-grid {
+          grid-template-columns: 1fr;
+        }
+        .mail-sidebar,
+        .mail-list {
+          border-right: 0;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .dark-mockup-nav {
+          width: calc(100% - 16px);
+        }
+      }
     </style>
   </head>
   <body>
-    <section data-view="home">
-      <header class="home-header">
-        <div class="shell home-nav row">
-          <div class="brand">
-            <div class="forge-logo compact" aria-label="Forge Bot logo">
-              <div class="forge-logo-arch"></div>
-              <div class="forge-logo-wordmark">
-                <div class="forge-logo-word">FORGE</div>
-                <div class="forge-logo-bot"><span>BOT</span><div class="forge-logo-dot"></div></div>
-              </div>
-            </div>
+    <section data-view="home" class="home-dark-stage">
+      <header class="home-dark-header">
+        <div class="home-dark-nav">
+          <div class="tailark-mark">
+            <span class="tailark-mark-grid"><span></span></span>
+            <span>tailark</span>
           </div>
           <div class="nav-cluster">
-            <a class="route-link" data-route-link="home" href="#/home">Home</a>
-            <a class="route-link" data-route-link="auth" href="#/auth">Auth</a>
-            <a class="route-link" data-route-link="dashboard" href="#/dashboard">Dashboard</a>
+            <a class="route-link" data-route-link="home" href="#/home">Features</a>
+            <a class="pill-link" href="#features">Solution</a>
+            <a class="pill-link" href="#showcase">Pricing</a>
+            <a class="pill-link" href="#footer">About</a>
           </div>
           <div class="top-actions">
-            <div class="status-group">
+            <div class="status-group" style="display:none;">
               <div class="status-pill"><span class="status-dot" id="health-dot"></span><span id="health-text">Checking backend</span></div>
               <div class="status-pill"><span class="status-dot" id="auth-dot"></span><span id="auth-text">Checking auth</span></div>
             </div>
-            <a class="text-button" href="#/auth">Log In</a>
-            <a class="primary-button" href="#/auth">Get Started</a>
+            <a class="text-button" href="#/auth">Login</a>
+            <a class="primary-button" href="#/auth">Sign Up</a>
           </div>
         </div>
       </header>
 
-      <main class="shell hero home-hero">
-        <section class="tailark-hero">
-          <a class="hero-badge-link" href="#features">
-            <span>Introducing a cleaner AI workspace flow</span>
-            <span class="arrow-pill"><span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span></span>
-          </a>
-          <h1 class="tailark-title">Modern AI workflow for product teams who want clarity</h1>
-          <p class="tailark-copy">
-            Forge gives you a polished landing page, protected auth, AI-assisted workspace, Telegram delivery, and deployment handoff in one place. Build faster without the usual clutter.
-          </p>
-          <div class="button-row tailark-cta">
-            <a class="primary-button" href="#/auth">Start building</a>
-            <a class="ghost-button" href="#/auth">Request a demo</a>
+      <main class="home-dark-hero">
+        <a class="dark-hero-badge" href="#features">
+          <span>Introducing Support for AI Models</span>
+          <span class="arrow-pill"><span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span></span>
+        </a>
+        <h1 class="dark-hero-title">Modern Solutions for<br />Customer Engagement</h1>
+        <p class="dark-hero-copy">
+          Highly customizable components for building modern websites and applications that look and feel the way you mean it.
+        </p>
+        <div class="button-row dark-hero-cta">
+          <a class="primary-button" href="#/auth">Get Started</a>
+        </div>
+        <div class="dark-mockup-shell">
+          <div class="dark-mockup-nav">
+            <div class="tailark-mark">
+              <span class="tailark-mark-grid"><span></span></span>
+              <span>tailark</span>
+            </div>
+            <div class="nav-cluster">
+              <a class="route-link active" href="#features">Features</a>
+              <a class="route-link" href="#features">Solution</a>
+              <a class="route-link" href="#showcase">Pricing</a>
+              <a class="route-link" href="#footer">About</a>
+            </div>
+            <a class="primary-button" href="#/auth">Get Started</a>
           </div>
-          <div class="hero-screen-wrap">
-            <div class="hero-screen-fade"></div>
-            <div class="hero-screen-card">
-              <img src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=1400&q=80" alt="Forge workspace preview" />
+          <div class="dark-product-window">
+            <div class="dark-product-grid">
+              <aside class="mail-sidebar">
+                <div class="mail-select"><span>Alicia Koch</span><span class="material-symbols-outlined" style="font-size:18px;">expand_more</span></div>
+                <div class="mail-nav-list">
+                  <div class="mail-nav-item active"><span><span class="material-symbols-outlined" style="font-size:18px;">inbox</span>Inbox</span><span class="mail-count">128</span></div>
+                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">draft</span>Drafts</span><span class="mail-count">9</span></div>
+                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">send</span>Sent</span></div>
+                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">delete</span>Junk</span><span class="mail-count">23</span></div>
+                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">delete</span>Trash</span></div>
+                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">archive</span>Archive</span></div>
+                </div>
+                <div class="mail-folder-list" style="margin-top:18px; padding-top:18px; border-top:1px solid rgba(255,255,255,0.06);">
+                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">alternate_email</span>Social</span><span class="mail-count">972</span></div>
+                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">info</span>Updates</span><span class="mail-count">342</span></div>
+                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">forum</span>Forums</span><span class="mail-count">128</span></div>
+                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">shopping_cart</span>Shopping</span><span class="mail-count">8</span></div>
+                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">sell</span>Promotions</span><span class="mail-count">21</span></div>
+                </div>
+              </aside>
+              <section class="mail-list">
+                <div class="mail-list-head">
+                  <h3 style="margin:0; color:#fff; font-size:18px; letter-spacing:-0.04em;">Inbox</h3>
+                  <div class="mail-tabs">
+                    <span class="mail-tab active">All mail</span>
+                    <span class="mail-tab">Unread</span>
+                  </div>
+                </div>
+                <div class="mail-search"><span class="material-symbols-outlined" style="font-size:16px; vertical-align:text-bottom;">search</span> Search</div>
+                <div class="mail-cards">
+                  <div class="mail-card active">
+                    <div class="mail-card-head"><span class="mail-card-title">William Smith</span><span class="mail-card-time">over 1 year ago</span></div>
+                    <div class="mail-card-subject">Meeting Tomorrow</div>
+                    <div class="mail-card-copy">Hi, let's have a meeting tomorrow to discuss the project. I've been reviewing the project details and have some ideas I'd like to share...</div>
+                    <div class="mail-tags"><span>meeting</span><span>work</span><span>important</span></div>
+                  </div>
+                  <div class="mail-card">
+                    <div class="mail-card-head"><span class="mail-card-title">Alice Smith</span><span class="mail-card-time">over 1 year ago</span></div>
+                    <div class="mail-card-subject">Re: Project Update</div>
+                    <div class="mail-card-copy">Thank you for the project update. It looks great! I've gone through the report, and the progress is impressive...</div>
+                    <div class="mail-tags"><span>work</span><span>important</span></div>
+                  </div>
+                  <div class="mail-card">
+                    <div class="mail-card-head"><span class="mail-card-title">Bob Johnson</span><span class="mail-card-time">almost 2 years ago</span></div>
+                    <div class="mail-card-subject">Weekend Plans</div>
+                    <div class="mail-card-copy">Any plans for the weekend? I was thinking of going hiking in the nearby mountains. It's been a while since we had some outdoor fun...</div>
+                    <div class="mail-tags"><span>personal</span></div>
+                  </div>
+                </div>
+              </section>
+              <section class="mail-detail">
+                <div class="mail-detail-top">
+                  <div class="mail-detail-toolbar">
+                    <span class="material-symbols-outlined" style="font-size:18px;">inbox</span>
+                    <span class="material-symbols-outlined" style="font-size:18px;">delete</span>
+                    <span class="material-symbols-outlined" style="font-size:18px;">schedule</span>
+                    <span class="material-symbols-outlined" style="font-size:18px;">more_horiz</span>
+                  </div>
+                  <div class="mail-detail-actions">
+                    <span class="material-symbols-outlined" style="font-size:18px;">reply</span>
+                    <span class="material-symbols-outlined" style="font-size:18px;">reply_all</span>
+                    <span class="material-symbols-outlined" style="font-size:18px;">forward</span>
+                  </div>
+                </div>
+                <div class="mail-thread">
+                  <div class="mail-thread-head">
+                    <div style="display:flex; gap:14px; align-items:flex-start;">
+                      <div class="mail-avatar">WS</div>
+                      <div>
+                        <div style="font-size:18px; font-weight:700; color:#fff;">William Smith</div>
+                        <div style="margin-top:6px; color:rgba(226,232,240,0.62); font-size:14px;">Meeting Tomorrow</div>
+                        <div style="margin-top:4px; color:rgba(226,232,240,0.56); font-size:13px;">Reply-To: williamsmith@example.com</div>
+                      </div>
+                    </div>
+                    <div style="color:rgba(226,232,240,0.56); font-size:13px;">Oct 22, 2023, 9:00:00 AM</div>
+                  </div>
+                  <div class="mail-thread-body">
+                    <p>Hi, let's have a meeting tomorrow to discuss the project. I've been reviewing the project details and have some ideas I'd like to share. It's crucial that we align on our next steps to ensure the project's success.</p>
+                    <p>Please come prepared with any questions or insights you may have. Looking forward to our meeting!</p>
+                    <p>Best regards, William</p>
+                  </div>
+                </div>
+              </section>
             </div>
           </div>
-        </section>
+        </div>
 
-        <section class="logo-cloud">
-          <div class="logo-cloud-wrap">
-            <div class="logo-cloud-grid">
-              <div class="logo-chip"><span class="material-symbols-outlined">memory</span><span>NVIDIA</span></div>
-              <div class="logo-chip"><span class="material-symbols-outlined">token</span><span>OpenAI</span></div>
-              <div class="logo-chip"><span class="material-symbols-outlined">code</span><span>GitHub</span></div>
-              <div class="logo-chip"><span class="material-symbols-outlined">rocket_launch</span><span>Vercel</span></div>
-              <div class="logo-chip"><span class="material-symbols-outlined">data_object</span><span>Supabase</span></div>
-              <div class="logo-chip"><span class="material-symbols-outlined">forum</span><span>Telegram</span></div>
-              <div class="logo-chip"><span class="material-symbols-outlined">inventory_2</span><span>Artifacts</span></div>
-              <div class="logo-chip"><span class="material-symbols-outlined">deployed_code</span><span>Deployments</span></div>
-            </div>
-          </div>
-        </section>
+        <div class="shell" style="display:none;">
 
         <section class="features-grid" id="features">
           <article class="feature-card">
@@ -2768,6 +3288,7 @@
             </div>
           </div>
         </section>
+        </div>
       </main>
 
       <footer class="shell home-footer" id="footer">
