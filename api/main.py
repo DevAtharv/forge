@@ -1,4 +1,6 @@
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 import os, time, socket
 from database import repo as job_repo
 
@@ -17,6 +19,16 @@ async def webhook(req: Request):
     # Persist to durable job queue via repository
     job = job_repo.create_job_from_update(body)
     return {"status": "ok"}
+
+
+@app.get("/dashboard/api/jobs")
+async def dashboard_jobs():
+    # Return a snapshot of recent jobs for the dashboard
+    return job_repo.list_jobs(limit=100)
+
+
+# Serve UI dashboard static files under /dashboard
+app.mount("/dashboard", StaticFiles(directory="ui"), name="dashboard-static")
 
 
 @app.get("/health")

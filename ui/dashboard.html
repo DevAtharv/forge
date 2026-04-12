@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Forge Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f2f2f2; }
+    #refresh { margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Forge Jobs Dashboard</h1>
+  <button id="refresh">Refresh</button>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Update ID</th>
+        <th>User</th>
+        <th>Chat</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th>Updated</th>
+      </tr>
+    </thead>
+    <tbody id="body"></tbody>
+  </table>
+  <script>
+    async function loadJobs(){
+      try {
+        const res = await fetch('/dashboard/api/jobs');
+        const data = await res.json();
+        const tbody = document.getElementById('body');
+        tbody.innerHTML = '';
+        (data || []).forEach(j => {
+          const tr = document.createElement('tr');
+          const created = new Date((j.created_at || 0) * 1000).toLocaleString();
+          const updated = new Date((j.updated_at || 0) * 1000).toLocaleString();
+          tr.innerHTML = `<td>${j.id || ''}</td><td>${j.telegram_update_id||''}</td><td>${j.user_id||''}</td><td>${j.chat_id||''}</td><td>${j.status||''}</td><td>${created}</td><td>${updated}</td>`;
+          tbody.appendChild(tr);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    document.getElementById('refresh').onclick = loadJobs;
+    window.onload = loadJobs;
+  </script>
+</body>
+</html>

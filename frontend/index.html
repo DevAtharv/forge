@@ -3155,6 +3155,205 @@
       .dashboard-view .terminal-card {
         background: linear-gradient(180deg, #090b0f 0%, #111827 100%);
       }
+
+      .dashboard-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.3fr) 360px;
+        gap: 22px;
+        margin-top: 22px;
+        align-items: start;
+      }
+
+      .chat-shell {
+        display: grid;
+        gap: 18px;
+      }
+
+      .chat-card {
+        padding: 22px;
+        border-radius: 28px;
+        background: rgba(15, 17, 23, 0.94);
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 24px 60px rgba(0,0,0,0.28);
+      }
+
+      .chat-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      .chat-title-wrap {
+        display: grid;
+        gap: 6px;
+      }
+
+      .chat-title {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1;
+        letter-spacing: -0.05em;
+      }
+
+      .chat-subtitle {
+        margin: 0;
+        color: rgba(226,232,240,0.62);
+        line-height: 1.7;
+      }
+
+      .chat-meta-pills {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .chat-meta-pills .tiny-chip {
+        background: rgba(255,255,255,0.08);
+      }
+
+      .chat-history {
+        min-height: 560px;
+        max-height: 68vh;
+        overflow: auto;
+        display: grid;
+        gap: 14px;
+        padding-right: 6px;
+      }
+
+      .chat-message {
+        max-width: 86%;
+        padding: 18px 18px 16px;
+        border-radius: 22px;
+        border: 1px solid rgba(255,255,255,0.06);
+        background: rgba(255,255,255,0.04);
+      }
+
+      .chat-message.user {
+        margin-left: auto;
+        background: rgba(37, 99, 235, 0.18);
+      }
+
+      .chat-message.assistant {
+        margin-right: auto;
+      }
+
+      .chat-message.system {
+        margin-right: auto;
+        background: rgba(148,163,184,0.12);
+      }
+
+      .chat-message-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .chat-role {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .chat-role::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #60a5fa;
+      }
+
+      .chat-role.assistant::before {
+        background: #a78bfa;
+      }
+
+      .chat-role.system::before {
+        background: #94a3b8;
+      }
+
+      .chat-time {
+        color: rgba(226,232,240,0.42);
+        font-size: 12px;
+      }
+
+      .chat-body {
+        margin: 0;
+        color: rgba(241,245,249,0.88);
+        line-height: 1.8;
+        white-space: pre-wrap;
+      }
+
+      .chat-artifact-note {
+        margin-top: 12px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.04);
+        color: rgba(226,232,240,0.68);
+        font-size: 13px;
+      }
+
+      .composer-card {
+        display: grid;
+        gap: 16px;
+      }
+
+      .composer-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .dashboard-sidegrid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .side-card {
+        padding: 20px;
+        border-radius: 24px;
+        background: rgba(15, 17, 23, 0.94);
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 24px 60px rgba(0,0,0,0.28);
+      }
+
+      .side-card .panel-title {
+        margin-top: 0;
+      }
+
+      .dashboard-footer-links {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        margin-top: 20px;
+        color: rgba(226,232,240,0.38);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .dashboard-footer-links a {
+        color: inherit;
+      }
+
+      @media (max-width: 1100px) {
+        .dashboard-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .chat-history {
+          min-height: 440px;
+          max-height: none;
+        }
+      }
     </style>
   </head>
   <body>
@@ -3623,21 +3822,22 @@
             </div>
           </header>
 
-          <div class="workspace-grid">
-            <div class="stack">
-              <section class="card">
-                <div class="panel-head">
-                  <div>
-                    <div class="panel-kicker">Mission Console</div>
-                    <h2 class="panel-title">Draft and run</h2>
+          <div class="dashboard-layout">
+            <div class="chat-shell">
+              <section class="chat-card">
+                <div class="chat-header">
+                  <div class="chat-title-wrap">
+                    <div class="panel-kicker">Forge Chat</div>
+                    <h2 class="chat-title">Mission conversation</h2>
+                    <p class="chat-subtitle">Your web messages, Telegram-linked messages, and Forge replies should all be readable here in one proper chat canvas.</p>
                   </div>
-                  <div class="mission-chip-group">
+                  <div class="chat-meta-pills">
                     <span class="tiny-chip" id="mission-status-chip">Public preview mode</span>
                     <span class="tiny-chip" id="project-count-chip">0 projects</span>
                     <span class="tiny-chip" id="integration-count-chip">0 integrations</span>
                   </div>
                 </div>
-                <div class="auth-zone" style="margin-top: 18px;">
+                <div class="auth-zone" style="margin-bottom: 18px;">
                   <div class="user-row">
                     <div>
                       <div id="workspace-user" style="font-size: 18px; font-weight: 700;">Not signed in</div>
@@ -3646,7 +3846,34 @@
                     <button class="ghost-button" id="signout-button" type="button">Sign Out</button>
                   </div>
                 </div>
-                <div class="workspace-input-wrap"><textarea id="workspace-input" placeholder="Define your next mission objective...">Design a production-ready launch page, auth flow, and deployable app structure for my AI product, then prepare the GitHub and Vercel handoff.</textarea></div>
+                <div class="chat-history" id="timeline-list">
+                  <div class="chat-message assistant">
+                    <div class="chat-message-head">
+                      <span class="chat-role assistant">Forge reply</span>
+                      <span class="chat-time">Waiting</span>
+                    </div>
+                    <p class="chat-body">Conversation history will appear here after your first mission.</p>
+                  </div>
+                </div>
+                <div class="response-box" style="margin-top: 18px;">
+                  <div class="panel-kicker" id="result-meta">Latest response</div>
+                  <p class="chat-body" id="result-response" style="margin-top: 10px;">Mission output will render here.</p>
+                  <div class="chat-artifact-note hidden" id="document-wrap">
+                    <div class="meta">Structured document</div>
+                    <pre id="document-output" style="margin: 10px 0 0; white-space: pre-wrap;"></pre>
+                  </div>
+                </div>
+              </section>
+
+              <section class="chat-card composer-card">
+                <div class="composer-top">
+                  <div class="chat-title-wrap">
+                    <div class="panel-kicker">Composer</div>
+                    <h2 class="panel-title" style="margin:0;">Draft and run</h2>
+                  </div>
+                  <p class="muted" id="workspace-feedback" style="margin:0;">Authenticated missions will appear here.</p>
+                </div>
+                <div class="workspace-input-wrap" style="margin-top:0;"><textarea id="workspace-input" placeholder="Define your next mission objective...">Design a production-ready launch page, auth flow, and deployable app structure for my AI product, then prepare the GitHub and Vercel handoff.</textarea></div>
                 <div class="mission-toolbar">
                   <div class="mini-icon-row">
                     <button class="icon-button" type="button"><span class="material-symbols-outlined">attach_file</span></button>
@@ -3659,33 +3886,20 @@
                     <button class="primary-button" id="workspace-run" type="button">Run Mission</button>
                   </div>
                 </div>
-                <p class="muted" id="workspace-feedback" style="margin: 16px 0 0;">Authenticated missions will appear here.</p>
-              </section>
-
-              <section class="card response-shell">
-                <div class="response-live" id="result-meta">Live Output</div>
-                <h2 class="panel-title" style="margin-top: 0;">Latest response</h2>
-                <div class="response-box" style="margin-top: 18px;"><p class="response-text" id="result-response">Mission output will render here.</p></div>
-                <div class="memory-box hidden" id="document-wrap" style="margin-top: 18px;"><div class="meta">Structured Document</div><pre id="document-output"></pre></div>
-                <div class="response-actions">
-                  <button class="subtle-button" type="button">Copy to Clipboard</button>
-                  <button class="subtle-button" type="button">Save to Artifacts</button>
-                  <button class="subtle-button" type="button">Fork Mission</button>
-                </div>
               </section>
             </div>
 
-            <div class="stack compact">
-              <section class="card telegram-card">
+            <div class="dashboard-sidegrid">
+              <section class="side-card">
                 <div class="telegram-card-head">
                   <div class="telegram-card-copy">
-                    <div class="panel-kicker">Telegram Workspace</div>
-                    <h2 class="panel-title">Recent chats</h2>
-                    <p class="muted" style="margin: 0;">Keep Telegram connected, but only surface the latest useful conversation context here.</p>
+                    <div class="panel-kicker">Telegram Link</div>
+                    <h2 class="panel-title">Delivery and sync</h2>
+                    <p class="muted" style="margin: 0;">Link Telegram here, then let the latest messages appear inside the main chat canvas instead of hiding them in a side strip.</p>
                   </div>
                   <button class="ghost-button" id="telegram-link-action" type="button">Generate Link Code</button>
                 </div>
-                <div class="telemetry-row" style="align-items:center;">
+                <div class="telemetry-row" style="align-items:center; margin-top:18px;">
                   <div class="status-primary" style="gap:12px;">
                     <div class="hub-icon" style="width:44px; height:44px;"><span class="material-symbols-outlined">send</span></div>
                     <div>
@@ -3696,46 +3910,30 @@
                     </div>
                   </div>
                 </div>
-                <div class="telegram-help-row">
+                <div class="telegram-help-row" style="margin-top:16px;">
                   <p class="status-explain" id="telegram-link-expiry" style="margin:0;">Generate a code, then send /link CODE to the Forge Telegram bot.</p>
                 </div>
-                <p class="muted" id="telegram-link-help" style="margin: 0;">Telegram messages will share this workspace after linking.</p>
-                <div class="soft-divider"></div>
-                <div class="panel-head" style="margin-bottom:0;">
-                  <div>
-                    <div class="panel-kicker">Latest Messages</div>
-                    <h3 class="panel-title" style="font-size:20px; margin-top:2px;">Telegram + memory feed</h3>
-                  </div>
-                  <span class="tiny-chip" id="timeline-meta">No stored conversation yet</span>
-                </div>
-                <div class="recent-chat-list" id="timeline-list">
-                  <div class="recent-chat-item">
-                    <div class="recent-chat-head">
-                      <span class="recent-chat-role">Telegram</span>
-                      <span class="meta">Waiting</span>
-                    </div>
-                    <p class="recent-chat-body">Recent linked messages will appear here after your first authenticated Telegram or web conversation.</p>
-                  </div>
-                </div>
+                <p class="muted" id="telegram-link-help" style="margin: 12px 0 0;">Telegram messages will share this workspace after linking.</p>
               </section>
-              <section class="card">
-                <h2 class="panel-title" style="margin-top: 0;">Plan</h2>
+
+              <section class="side-card">
+                <h2 class="panel-title">Plan</h2>
                 <div class="memory-box" style="margin-top: 18px;"><div class="meta">Current Intent</div><p id="result-intent" class="muted" style="margin: 8px 0 0;">Preview a mission to inspect the route.</p></div>
                 <div class="memory-box" style="margin-top: 14px;"><div class="meta">Context</div><p id="result-context" class="muted" style="margin: 8px 0 0;">No route selected yet.</p></div>
                 <div class="timeline-rail" id="result-stages" style="margin-top: 18px;"></div>
               </section>
 
-              <section class="card">
+              <section class="side-card">
+                <div class="panel-head"><div><div class="panel-kicker">Artifacts</div><h2 class="panel-title">Generated output</h2></div><span class="tiny-chip" id="artifact-meta">No artifacts yet</span></div>
+                <div class="artifact-list compact" id="artifact-list" style="margin-top: 18px;"><div class="empty">Artifacts generated by Forge will appear here.</div></div>
+              </section>
+
+              <section class="side-card">
                 <div class="panel-head"><div><div class="panel-kicker">Workspace Profile</div><h2 class="panel-title">Memory Snapshot</h2></div><span class="tiny-chip" id="profile-skill">Skill level: intermediate</span></div>
                 <div class="memory-box" style="margin-top: 18px;"><div class="meta">Summary</div><p class="muted" id="profile-summary" style="margin: 8px 0 0;">Sign in to load the workspace profile.</p></div>
                 <div class="memory-box" style="margin-top: 14px;"><div class="meta">Stack</div><div class="badge-row" id="profile-stack-list" style="margin-top: 12px;"></div></div>
                 <div class="memory-box" style="margin-top: 14px;"><div class="meta">Projects</div><div class="badge-row" id="profile-projects-list" style="margin-top: 12px;"></div></div>
                 <div class="memory-box" style="margin-top: 14px;"><div class="meta">Active Context</div><div class="badge-row" id="profile-context-list" style="margin-top: 12px;"></div></div>
-              </section>
-
-              <section class="card">
-                <div class="panel-head"><div><div class="panel-kicker">Artifacts</div><h2 class="panel-title">Generated output</h2></div><span class="tiny-chip" id="artifact-meta">No artifacts yet</span></div>
-                <div class="artifact-list compact" id="artifact-list" style="margin-top: 18px;"><div class="empty">Artifacts generated by Forge will appear here.</div></div>
               </section>
 
               <section class="terminal-card">
@@ -3748,7 +3946,7 @@
             </div>
           </div>
 
-          <div class="footer-links">
+          <div class="dashboard-footer-links">
             <a class="route-link" data-route-link="home" href="#/home">Home</a>
             <a class="route-link" data-route-link="auth" href="#/auth">Auth</a>
             <a class="route-link" data-route-link="dashboard" href="#/dashboard">Dashboard</a>

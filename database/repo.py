@@ -113,3 +113,21 @@ def get_job_by_update_id(update_id: int):
             )
         ).scalar_one_or_none()
         return _to_dict(job)
+
+
+def list_jobs(limit: int | None = None):
+    with SessionLocal() as session:
+        stmt = select(models.MessageJob).order_by(models.MessageJob.created_at.desc())
+        if limit is not None:
+            stmt = stmt.limit(limit)
+        jobs = session.execute(stmt).scalars().all()
+        return [_to_dict(j) for j in jobs]
+
+
+def list_jobs(limit: int | None = None):
+    with SessionLocal() as session:
+        stmt = select(models.MessageJob).order_by(models.MessageJob.created_at.desc())
+        if limit is not None:
+            stmt = stmt.limit(limit)
+        jobs = session.execute(stmt).scalars().all()
+        return [_to_dict(j) for j in jobs]
