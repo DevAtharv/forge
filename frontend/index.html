@@ -284,6 +284,115 @@
         100% { transform: scale(0.8); opacity: 0.75; }
       }
       .hero-actions { justify-content: center; margin-top: 34px; }
+      .tailark-hero {
+        position: relative;
+        padding-top: 36px;
+        text-align: center;
+      }
+      .hero-badge-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        margin: 0 auto;
+        padding: 8px 8px 8px 16px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(15, 23, 42, 0.07);
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .hero-badge-link .arrow-pill {
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background: var(--surface-mid);
+      }
+      .tailark-title {
+        max-width: 980px;
+        margin: 30px auto 0;
+        font-size: clamp(56px, 8vw, 94px);
+        line-height: 0.94;
+        letter-spacing: -0.07em;
+        font-weight: 800;
+      }
+      .tailark-copy {
+        max-width: 720px;
+        margin: 28px auto 0;
+        color: var(--muted);
+        font-size: 20px;
+        line-height: 1.8;
+      }
+      .tailark-cta {
+        justify-content: center;
+        margin-top: 28px;
+      }
+      .hero-screen-wrap {
+        position: relative;
+        margin-top: 46px;
+        padding: 0 8px;
+      }
+      .hero-screen-fade {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        background: linear-gradient(180deg, transparent 35%, var(--background) 100%);
+        pointer-events: none;
+      }
+      .hero-screen-card {
+        position: relative;
+        z-index: 1;
+        margin: 0 auto;
+        max-width: 1080px;
+        padding: 16px;
+        border-radius: 28px;
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        box-shadow: 0 30px 70px rgba(15, 23, 42, 0.12);
+      }
+      .hero-screen-card img {
+        width: 100%;
+        display: block;
+        border-radius: 20px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        aspect-ratio: 15 / 8;
+        object-fit: cover;
+      }
+      .logo-cloud {
+        padding: 40px 0 20px;
+      }
+      .logo-cloud-wrap {
+        position: relative;
+        margin: 0 auto;
+        max-width: 880px;
+      }
+      .logo-cloud-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 22px 40px;
+        align-items: center;
+        justify-items: center;
+        transition: all 0.35s ease;
+      }
+      .logo-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .logo-chip .material-symbols-outlined {
+        font-size: 20px;
+        color: var(--soft);
+      }
+      .secondary-ai-wrap {
+        margin-top: 34px;
+      }
       .ai-hero-shell {
         padding: 26px;
         border-radius: 36px;
@@ -2305,61 +2414,38 @@
       </header>
 
       <main class="shell hero home-hero">
-        <section class="ai-hero-shell">
-          <div class="ai-hero-grid">
-            <div class="ai-hero-copy">
-              <div class="hero-pill"><span class="pulse-dot"></span><span>Launch AI products with clarity</span></div>
-              <h1 class="ai-hero-title">The cleanest way to<br /><span class="accent">ship with Forge</span></h1>
-              <p class="hero-copy">
-                Forge brings product setup, AI-assisted creation, Telegram delivery, and deployment handoff into one polished flow. Start on the landing page, move into auth, and land inside a workspace that feels intentional.
-              </p>
-              <div class="button-row ai-hero-actions">
-                <a class="primary-button" href="#/auth">Start free</a>
-                <a class="ghost-button" href="#/dashboard">View workspace</a>
-              </div>
-              <div class="ai-hero-pills">
-                <span>AI-assisted build flow</span>
-                <span>Protected auth</span>
-                <span>Telegram delivery</span>
-                <span>GitHub + deploy handoff</span>
-              </div>
-              <div class="ai-hero-note">
-                <div class="avatars"><span></span><span></span><span></span></div>
-                <span>Trusted by teams building faster launch flows with AI</span>
-              </div>
+        <section class="tailark-hero">
+          <a class="hero-badge-link" href="#features">
+            <span>Introducing a cleaner AI workspace flow</span>
+            <span class="arrow-pill"><span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span></span>
+          </a>
+          <h1 class="tailark-title">Modern AI workflow for product teams who want clarity</h1>
+          <p class="tailark-copy">
+            Forge gives you a polished landing page, protected auth, AI-assisted workspace, Telegram delivery, and deployment handoff in one place. Build faster without the usual clutter.
+          </p>
+          <div class="button-row tailark-cta">
+            <a class="primary-button" href="#/auth">Start building</a>
+            <a class="ghost-button" href="#/auth">Request a demo</a>
+          </div>
+          <div class="hero-screen-wrap">
+            <div class="hero-screen-fade"></div>
+            <div class="hero-screen-card">
+              <img src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=1400&q=80" alt="Forge workspace preview" />
             </div>
-            <div class="ai-hero-panel">
-              <div class="ai-panel-top">
-                <span class="ai-model-pill"><span class="material-symbols-outlined" style="font-size:18px;">auto_awesome</span>Forge Copilot</span>
-                <div class="ai-toolbar">
-                  <button type="button"><span class="material-symbols-outlined" style="font-size:18px;">content_copy</span></button>
-                  <button type="button"><span class="material-symbols-outlined" style="font-size:18px;">refresh</span></button>
-                  <button type="button"><span class="material-symbols-outlined" style="font-size:18px;">more_horiz</span></button>
-                </div>
-              </div>
-              <div class="ai-chat-feed">
-                <div class="ai-bubble assistant">
-                  <p>I can turn a single prompt into a landing page, auth flow, dashboard structure, GitHub handoff, and a deployment-ready build plan.</p>
-                </div>
-                <div class="ai-bubble user">
-                  <p>Build me a cleaner AI product workspace with better chat, delivery, and deployment flow.</p>
-                </div>
-                <div class="ai-preview-card">
-                  <span class="ai-mini-pill"><span class="material-symbols-outlined" style="font-size:16px;">image</span>Live visual output</span>
-                  <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80" alt="AI workspace preview" />
-                </div>
-              </div>
-              <div class="ai-input-shell">
-                <textarea placeholder="Ask Forge to design, build, organize Telegram delivery, and prepare the project for GitHub and deployment..."></textarea>
-                <div class="ai-input-footer">
-                  <div class="ai-input-tools">
-                    <span><span class="material-symbols-outlined" style="font-size:16px;">attach_file</span>&nbsp;Files</span>
-                    <span><span class="material-symbols-outlined" style="font-size:16px;">travel_explore</span>&nbsp;Research</span>
-                    <span><span class="material-symbols-outlined" style="font-size:16px;">send</span>&nbsp;Telegram</span>
-                  </div>
-                  <span class="ai-send"><span class="material-symbols-outlined" style="font-size:16px;">north_east</span>&nbsp;Run</span>
-                </div>
-              </div>
+          </div>
+        </section>
+
+        <section class="logo-cloud">
+          <div class="logo-cloud-wrap">
+            <div class="logo-cloud-grid">
+              <div class="logo-chip"><span class="material-symbols-outlined">memory</span><span>NVIDIA</span></div>
+              <div class="logo-chip"><span class="material-symbols-outlined">token</span><span>OpenAI</span></div>
+              <div class="logo-chip"><span class="material-symbols-outlined">code</span><span>GitHub</span></div>
+              <div class="logo-chip"><span class="material-symbols-outlined">rocket_launch</span><span>Vercel</span></div>
+              <div class="logo-chip"><span class="material-symbols-outlined">data_object</span><span>Supabase</span></div>
+              <div class="logo-chip"><span class="material-symbols-outlined">forum</span><span>Telegram</span></div>
+              <div class="logo-chip"><span class="material-symbols-outlined">inventory_2</span><span>Artifacts</span></div>
+              <div class="logo-chip"><span class="material-symbols-outlined">deployed_code</span><span>Deployments</span></div>
             </div>
           </div>
         </section>
@@ -2383,6 +2469,63 @@
               <p>Push output to GitHub, Vercel, Telegram, and artifact streams with cleaner delivery feedback and less confusion for the user.</p>
             <div class="feature-meta" id="home-mode-copy">Protected workspace</div>
           </article>
+        </section>
+
+        <section class="secondary-ai-wrap">
+          <section class="ai-hero-shell">
+            <div class="ai-hero-grid">
+              <div class="ai-hero-copy">
+                <div class="hero-pill"><span class="pulse-dot"></span><span>AI-native workspace</span></div>
+                <h1 class="ai-hero-title">Build with a<br /><span class="accent">real AI copilot</span></h1>
+                <p class="hero-copy">
+                  This is the live AI section of Forge. Prompt, preview, refine, and move directly into output, memory, Telegram delivery, and deployment handoff.
+                </p>
+                <div class="button-row ai-hero-actions">
+                  <a class="primary-button" href="#/auth">Start with Forge</a>
+                  <a class="ghost-button" href="#/dashboard">Open dashboard</a>
+                </div>
+                <div class="ai-hero-pills">
+                  <span>Prompt to product</span>
+                  <span>Telegram connected</span>
+                  <span>Recent memory</span>
+                  <span>Deploy handoff</span>
+                </div>
+              </div>
+              <div class="ai-hero-panel">
+                <div class="ai-panel-top">
+                  <span class="ai-model-pill"><span class="material-symbols-outlined" style="font-size:18px;">auto_awesome</span>Forge Copilot</span>
+                  <div class="ai-toolbar">
+                    <button type="button"><span class="material-symbols-outlined" style="font-size:18px;">content_copy</span></button>
+                    <button type="button"><span class="material-symbols-outlined" style="font-size:18px;">refresh</span></button>
+                    <button type="button"><span class="material-symbols-outlined" style="font-size:18px;">more_horiz</span></button>
+                  </div>
+                </div>
+                <div class="ai-chat-feed">
+                  <div class="ai-bubble assistant">
+                    <p>I can turn a single prompt into a landing page, auth flow, dashboard structure, GitHub handoff, and a deployment-ready build plan.</p>
+                  </div>
+                  <div class="ai-bubble user">
+                    <p>Build me a cleaner AI product workspace with better chat, delivery, and deployment flow.</p>
+                  </div>
+                  <div class="ai-preview-card">
+                    <span class="ai-mini-pill"><span class="material-symbols-outlined" style="font-size:16px;">image</span>Live visual output</span>
+                    <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80" alt="AI workspace preview" />
+                  </div>
+                </div>
+                <div class="ai-input-shell">
+                  <textarea placeholder="Ask Forge to design, build, organize Telegram delivery, and prepare the project for GitHub and deployment..."></textarea>
+                  <div class="ai-input-footer">
+                    <div class="ai-input-tools">
+                      <span><span class="material-symbols-outlined" style="font-size:16px;">attach_file</span>&nbsp;Files</span>
+                      <span><span class="material-symbols-outlined" style="font-size:16px;">travel_explore</span>&nbsp;Research</span>
+                      <span><span class="material-symbols-outlined" style="font-size:16px;">send</span>&nbsp;Telegram</span>
+                    </div>
+                    <span class="ai-send"><span class="material-symbols-outlined" style="font-size:16px;">north_east</span>&nbsp;Run</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </section>
 
         <section class="waitlist-section">
