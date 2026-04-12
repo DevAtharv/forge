@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 from typing import Any, Awaitable, Callable, TypeVar
 
+import httpx
+
 from forge.memory.base import MemoryStore
 from forge.schemas import (
     AccountLink,
@@ -36,7 +38,17 @@ class ResilientMemoryStore(MemoryStore):
         try:
             return await primary_call()
         except Exception as exc:
-            logger.warning("Primary memory store failed during %s; using fallback store: %s", action, exc)
+            detail = ""
+            if isinstance(exc, httpx.HTTPStatusError) and exc.response is not None:
+                body = (exc.response.text or "").strip()
+                if body:
+                    detail = f" — supabase: {body[:800]}"
+            logger.warning(
+                "Primary memory store failed during %s; using fallback store: %s%s",
+                action,
+                exc,
+                detail,
+            )
             return await fallback_call()
 
     async def ensure_user_profile(self, user_id: int, username: str | None = None) -> UserProfile:

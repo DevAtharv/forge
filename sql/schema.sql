@@ -389,7 +389,7 @@ begin
       locked_by = null,
       status = case when next_attempt >= p_max_attempts then 'dead_letter' else 'retrying' end,
       available_at = case
-        when next_attempt >= p_max_attempts then null
+        when next_attempt >= p_max_attempts then now()
         else now() + make_interval(secs => p_retry_delay_seconds * next_attempt)
       end
   where id = p_job_id

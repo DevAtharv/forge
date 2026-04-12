@@ -196,9 +196,12 @@ class SupabaseMemoryStore(MemoryStore):
             current = await self._get_message_job(job_id)
             next_attempt = (current.attempts or 0) + 1
             status = "dead_letter" if next_attempt >= max_attempts else "retrying"
-            available_at = None
+            # message_jobs.available_at is NOT NULL — never PATCH null (matches fail_message_job SQL).
             if status == "retrying":
                 available_at = datetime.now(tz=UTC) + timedelta(seconds=retry_delay_seconds * next_attempt)
+                available_at_str = available_at.isoformat().replace("+00:00", "Z")
+            else:
+                available_at_str = datetime.now(tz=UTC).isoformat().replace("+00:00", "Z")
             response = await self._client.patch(
                 "/message_jobs",
                 params={"id": f"eq.{job_id}", "select": "*"},
@@ -208,11 +211,7 @@ class SupabaseMemoryStore(MemoryStore):
                     "locked_at": None,
                     "locked_by": None,
                     "status": status,
-                    "available_at": (
-                        available_at.isoformat().replace("+00:00", "Z")
-                        if available_at is not None
-                        else None
-                    ),
+                    "available_at": available_at_str,
                 },
             )
             response.raise_for_status()
