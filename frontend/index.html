@@ -3021,6 +3021,140 @@
           width: calc(100% - 16px);
         }
       }
+
+      .home-dark-stage .forge-logo-word {
+        color: #e2e8f0;
+        -webkit-text-stroke: 3px #111827;
+      }
+
+      .home-dark-stage .forge-logo-dot {
+        border-color: #111827;
+      }
+
+      .auth-view,
+      .dashboard-view {
+        background:
+          radial-gradient(circle at top left, rgba(59, 130, 246, 0.08), transparent 18%),
+          radial-gradient(circle at top right, rgba(168, 85, 247, 0.08), transparent 16%),
+          linear-gradient(180deg, #06070a 0%, #0b0d11 100%);
+        color: #f8fafc;
+      }
+
+      .auth-view .home-header {
+        backdrop-filter: blur(10px);
+      }
+
+      .auth-view .auth-nav,
+      .dashboard-view .dashboard-sidebar,
+      .dashboard-view .status-bar,
+      .dashboard-view .card,
+      .dashboard-view .terminal-card,
+      .auth-view .auth-card,
+      .auth-view .auth-showcase,
+      .auth-view .auth-support {
+        background: rgba(15, 17, 23, 0.92);
+        border-color: rgba(255,255,255,0.08);
+        box-shadow: 0 22px 60px rgba(0,0,0,0.28);
+        color: #f8fafc;
+      }
+
+      .auth-view .auth-nav {
+        border-radius: 22px;
+      }
+
+      .auth-view .auth-nav .route-link,
+      .auth-view .auth-nav .text-button,
+      .dashboard-view .sidebar-link,
+      .dashboard-view .muted,
+      .dashboard-view .meta,
+      .dashboard-view .panel-kicker,
+      .dashboard-view .tiny-chip,
+      .dashboard-view .terminal-meta,
+      .auth-view .muted,
+      .auth-view .auth-copy {
+        color: rgba(226,232,240,0.68);
+      }
+
+      .auth-view .auth-nav .primary-button,
+      .dashboard-view .primary-button,
+      .dashboard-view .new-mission-button {
+        background: #ffffff;
+        color: #111827;
+        box-shadow: none;
+      }
+
+      .auth-view .ghost-button,
+      .dashboard-view .ghost-button,
+      .dashboard-view .icon-button,
+      .dashboard-view .ghost-circle,
+      .dashboard-view .segment-pill,
+      .auth-view .social-button,
+      .auth-view .input-wrap {
+        background: rgba(255,255,255,0.04);
+        color: #f8fafc;
+        border-color: rgba(255,255,255,0.08);
+      }
+
+      .auth-view .auth-card-top,
+      .auth-view .auth-card-bottom {
+        background: rgba(255,255,255,0.02);
+        border-color: rgba(255,255,255,0.06);
+      }
+
+      .auth-view .input-wrap input,
+      .dashboard-view textarea,
+      .dashboard-view .recent-chat-item,
+      .dashboard-view .memory-box,
+      .dashboard-view .response-box,
+      .dashboard-view .artifact,
+      .dashboard-view .mail-card,
+      .dashboard-view .status-pill,
+      .dashboard-view .metric-box,
+      .dashboard-view .sidebar-profile,
+      .dashboard-view .sidebar-search {
+        background: rgba(255,255,255,0.04);
+        color: #f8fafc;
+        border-color: rgba(255,255,255,0.06);
+      }
+
+      .auth-view .input-wrap input::placeholder,
+      .dashboard-view textarea::placeholder,
+      .dashboard-view .recent-chat-body,
+      .dashboard-view .response-text,
+      .dashboard-view .empty,
+      .dashboard-view .status-explain,
+      .dashboard-view .dashboard-subtitle,
+      .auth-view .auth-feedback,
+      .auth-view .auth-showcase p,
+      .auth-view .auth-note {
+        color: rgba(226,232,240,0.62);
+      }
+
+      .dashboard-view .segment-pill.active,
+      .dashboard-view .status-pill,
+      .dashboard-view .chip,
+      .dashboard-view .tiny-chip,
+      .auth-view .hero-pill {
+        background: rgba(255,255,255,0.08);
+        color: #f8fafc;
+        border-color: rgba(255,255,255,0.08);
+        box-shadow: none;
+      }
+
+      .dashboard-view .dashboard-title,
+      .dashboard-view .panel-title,
+      .dashboard-view #workspace-user,
+      .dashboard-view .recent-chat-role,
+      .dashboard-view .mail-card-title,
+      .dashboard-view .mail-card-subject,
+      .auth-view .auth-showcase h2,
+      .auth-view .auth-card-top {
+        color: #f8fafc;
+      }
+
+      .dashboard-view .terminal-card {
+        background: linear-gradient(180deg, #090b0f 0%, #111827 100%);
+      }
     </style>
   </head>
   <body>
@@ -3029,7 +3163,7 @@
         <div class="home-dark-nav">
           <div class="tailark-mark">
             <span class="tailark-mark-grid"><span></span></span>
-            <span>tailark</span>
+            <span>forge</span>
           </div>
           <div class="nav-cluster">
             <a class="route-link" data-route-link="home" href="#/home">Features</a>
@@ -3053,9 +3187,9 @@
           <span>Introducing Support for AI Models</span>
           <span class="arrow-pill"><span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span></span>
         </a>
-        <h1 class="dark-hero-title">Modern Solutions for<br />Customer Engagement</h1>
+        <h1 class="dark-hero-title">Modern AI workflow for<br />product engagement</h1>
         <p class="dark-hero-copy">
-          Highly customizable components for building modern websites and applications that look and feel the way you mean it.
+          Forge brings product setup, protected auth, AI-assisted workspace, Telegram delivery, and deployment handoff into one refined dark experience.
         </p>
         <div class="button-row dark-hero-cta">
           <a class="primary-button" href="#/auth">Get Started</a>
@@ -3064,7 +3198,7 @@
           <div class="dark-mockup-nav">
             <div class="tailark-mark">
               <span class="tailark-mark-grid"><span></span></span>
-              <span>tailark</span>
+              <span>forge</span>
             </div>
             <div class="nav-cluster">
               <a class="route-link active" href="#features">Features</a>
