@@ -7,8 +7,15 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.11
+      # Public URL of this Render service (no trailing slash). Used for OAuth redirects.
+      - key: FORGE_PUBLIC_BASE_URL
+        sync: false
+      # Site origin for the SPA (e.g. same as FORGE_PUBLIC_BASE_URL or your Vercel UI).
+      - key: FORGE_FRONTEND_BASE_URL
+        sync: false
       - key: TELEGRAM_TOKEN
         sync: false
+      # Must match the secret_token passed to Telegram setWebhook (see scripts/set_telegram_webhook.py).
       - key: WEBHOOK_SECRET
         sync: false
       - key: GROQ_API_KEY

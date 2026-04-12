@@ -381,7 +381,8 @@ class InMemoryStore(MemoryStore):
                 stale_lock = mission.status in {"planning", "building", "reviewing", "previewing", "deploying"} and mission.updated_at and (
                     mission.updated_at < now - timedelta(seconds=lock_timeout_seconds)
                 )
-                if mission.status != "queued" and not stale_lock:
+                fresh_web_queue = mission.status == "queued" and mission.source == "web"
+                if not fresh_web_queue and not stale_lock:
                     continue
                 mission.status = "planning"
                 mission.updated_at = now

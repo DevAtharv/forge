@@ -485,7 +485,10 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
         manifest = detail["manifest"]
         if not isinstance(manifest, dict) or not manifest:
             raise HTTPException(status_code=400, detail="Project has no files.")
-        bundle_name, bundle_bytes = build_project_bundle(str(project.get("slug") or "forge-project"), manifest)
+        bundle_name, bundle_bytes = build_project_bundle(
+            project_slug=str(project.get("slug") or "forge-project"),
+            manifest=manifest,
+        )
         return Response(
             content=bundle_bytes,
             media_type="application/zip",
@@ -521,9 +524,6 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
             prompt=payload.prompt,
             kind=payload.kind,
         )
-        import asyncio
-
-        asyncio.create_task(request.app.state.mission_runner.run_mission(mission.id or ""))
         return {"user": user, "mission": mission.model_dump(mode="json")}
 
     @router.get("/api/app/missions/{mission_id}")
@@ -550,9 +550,6 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
                 plan={"target": "vercel"},
             )
         )
-        import asyncio
-
-        asyncio.create_task(request.app.state.mission_runner.run_mission(mission.id or ""))
         return {"user": user, "mission": mission.model_dump(mode="json")}
 
     @router.post("/api/app/projects/{project_id}/publish/github")
@@ -571,9 +568,6 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
                 plan={"target": "github"},
             )
         )
-        import asyncio
-
-        asyncio.create_task(request.app.state.mission_runner.run_mission(mission.id or ""))
         return {"user": user, "mission": mission.model_dump(mode="json")}
 
     @router.post("/api/app/projects/{project_id}/publish/vercel")
@@ -592,9 +586,6 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
                 plan={"target": "vercel"},
             )
         )
-        import asyncio
-
-        asyncio.create_task(request.app.state.mission_runner.run_mission(mission.id or ""))
         return {"user": user, "mission": mission.model_dump(mode="json")}
 
     @router.post("/api/app/run")
@@ -608,9 +599,6 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
             prompt=payload.prompt,
             kind="build",
         )
-        import asyncio
-
-        asyncio.create_task(request.app.state.mission_runner.run_mission(mission.id or ""))
         refreshed_profile = await request.app.state.store.get_user_profile(workspace_user_id)
         refreshed_history = await request.app.state.store.get_recent_conversations(workspace_user_id, limit=12)
         return {

@@ -521,7 +521,9 @@ begin
     select id
     from missions
     where (
-      status = 'queued'
+      /* Website missions are queued for the worker. Telegram missions run inline in the
+         message processor; claiming queued+telegram here raced with create_task and broke both. */
+      (status = 'queued' and source = 'web')
       or (
         status in ('planning', 'building', 'reviewing', 'previewing', 'deploying')
         and updated_at < now() - make_interval(secs => p_lock_timeout_seconds)

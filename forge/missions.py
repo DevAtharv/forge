@@ -126,7 +126,10 @@ class MissionRunner:
 
         revision = await self._get_latest_revision(project.id or "")
         if revision is None:
-            bundle_name, _bundle_bytes = build_project_bundle(project.slug, project.latest_manifest or {})
+            bundle_name, _bundle_bytes = build_project_bundle(
+                project_slug=project.slug,
+                manifest=project.latest_manifest or {},
+            )
             revision = await self.store.create_project_revision(
                 ProjectRevision(
                     project_id=project.id or "",
@@ -153,7 +156,7 @@ class MissionRunner:
         blueprint = self.builder.choose_blueprint(blueprint_prompt, project_name=project.name if project else None)
         artifacts = self.builder.build_files(blueprint, mission.prompt)
         manifest = _artifacts_to_manifest(artifacts)
-        bundle_name, _bundle_bytes = build_project_bundle(blueprint.slug, manifest)
+        bundle_name, _bundle_bytes = build_project_bundle(project_slug=blueprint.slug, manifest=manifest)
         design_source = self._build_design_source(blueprint)
 
         mission = await self.store.update_mission(
@@ -579,7 +582,7 @@ class MissionRunner:
 
         project_slug = project.slug if project is not None else slugify("forge-project")
         bundle_name = mission.bundle_name or (revision.bundle_name if revision is not None else None)
-        fallback_name, bundle_bytes = build_project_bundle(project_slug, manifest)
+        fallback_name, bundle_bytes = build_project_bundle(project_slug=project_slug, manifest=manifest)
         return DeliveryPayload(text=text, document_name=bundle_name or fallback_name, document_bytes=bundle_bytes)
 
     async def _notify_if_possible(self, mission: MissionRecord) -> None:

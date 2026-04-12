@@ -99,7 +99,7 @@ def test_root_serves_ui_and_demo_plan_endpoint_works(settings, store) -> None:
     demo_response = client.post("/demo/plan", json={"prompt": "Build me a full CRUD API with postgres"})
 
     assert root_response.status_code == 200
-    assert "Your AI dev team on Telegram" in root_response.text
+    assert "Forge AI" in root_response.text
     assert demo_response.status_code == 200
     assert demo_response.json()["plan"]["stages"][0]["name"] == "plan"
 
