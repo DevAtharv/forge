@@ -1082,7 +1082,10 @@
         padding-top: 18px;
         border-top: 1px solid rgba(196, 199, 200, 0.42);
       }
-      .dashboard-main { padding: 32px; }
+      .dashboard-main {
+        padding: 32px;
+        min-width: 0;
+      }
       .status-bar {
         display: grid;
         grid-template-columns: minmax(0, 1.2fr) auto;
@@ -1342,7 +1345,7 @@
       }
       @media (max-width: 780px) {
         .shell { width: calc(100% - 24px); }
-        .home-nav, .auth-nav, .header-row, .nav-row, .button-row, .top-actions, .status-group, .footer-bottom, .footer-links, .dashboard-topbar, .panel-head, .split, .user-row, .auth-support-top {
+        .home-nav, .auth-nav, .header-row, .nav-row, .button-row, .top-actions, .status-group, .footer-bottom, .footer-links, .dashboard-topbar, .panel-head, .split, .user-row, .auth-support-top, .chat-header, .composer-top, .telegram-card-head {
           flex-direction: column;
           align-items: stretch;
         }
@@ -1398,6 +1401,11 @@
         }
         .sidebar-links {
           grid-template-columns: 1fr;
+        }
+        .dashboard-footer-links {
+          flex-wrap: wrap;
+          justify-content: center;
+          text-align: center;
         }
         .system-fab { right: 18px; bottom: 18px; }
       }
@@ -3156,17 +3164,24 @@
         background: linear-gradient(180deg, #090b0f 0%, #111827 100%);
       }
 
+      .dashboard-view .status-bar.compact {
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
       .dashboard-layout {
         display: grid;
-        grid-template-columns: minmax(0, 1.3fr) 360px;
+        grid-template-columns: minmax(0, 1.3fr) minmax(260px, 360px);
         gap: 22px;
         margin-top: 22px;
         align-items: start;
+        min-width: 0;
       }
 
       .chat-shell {
         display: grid;
         gap: 18px;
+        min-width: 0;
       }
 
       .chat-card {
