@@ -105,6 +105,110 @@ function renderRoute() {
   routeLinks.forEach((link) => {
     link.classList.toggle("active", link.dataset.routeLink === route);
   });
+
+  closeMobileChrome();
+}
+
+function closeMobileChrome() {
+  document.getElementById("home-drawer")?.classList.remove("is-open");
+  document.getElementById("home-drawer-overlay")?.classList.remove("is-open");
+  document.getElementById("auth-drawer")?.classList.remove("is-open");
+  document.getElementById("auth-drawer-overlay")?.classList.remove("is-open");
+  document.getElementById("dashboard-sidebar")?.classList.remove("mobile-open");
+  document.getElementById("dashboard-sidebar-overlay")?.classList.remove("is-open");
+  document.body.classList.remove("nav-open");
+  document.getElementById("home-nav-toggle")?.setAttribute("aria-expanded", "false");
+  document.getElementById("auth-nav-toggle")?.setAttribute("aria-expanded", "false");
+  document.getElementById("dashboard-nav-toggle")?.setAttribute("aria-expanded", "false");
+}
+
+function setupMobileChrome() {
+  const homeToggle = document.getElementById("home-nav-toggle");
+  const homeDrawer = document.getElementById("home-drawer");
+  const homeOverlay = document.getElementById("home-drawer-overlay");
+  const authToggle = document.getElementById("auth-nav-toggle");
+  const authDrawer = document.getElementById("auth-drawer");
+  const authOverlay = document.getElementById("auth-drawer-overlay");
+  const dashToggle = document.getElementById("dashboard-nav-toggle");
+  const dashAside = document.getElementById("dashboard-sidebar");
+  const dashOverlay = document.getElementById("dashboard-sidebar-overlay");
+
+  function closeHome() {
+    homeDrawer?.classList.remove("is-open");
+    homeOverlay?.classList.remove("is-open");
+    document.body.classList.remove("nav-open");
+    homeToggle?.setAttribute("aria-expanded", "false");
+  }
+  function openHome() {
+    homeDrawer?.classList.add("is-open");
+    homeOverlay?.classList.add("is-open");
+    document.body.classList.add("nav-open");
+    homeToggle?.setAttribute("aria-expanded", "true");
+  }
+  homeToggle?.addEventListener("click", () => {
+    if (homeDrawer?.classList.contains("is-open")) {
+      closeHome();
+    } else {
+      openHome();
+    }
+  });
+  homeOverlay?.addEventListener("click", closeHome);
+  homeDrawer?.querySelectorAll("a").forEach((a) => a.addEventListener("click", closeHome));
+
+  function closeAuthDraw() {
+    authDrawer?.classList.remove("is-open");
+    authOverlay?.classList.remove("is-open");
+    document.body.classList.remove("nav-open");
+    authToggle?.setAttribute("aria-expanded", "false");
+  }
+  function openAuthDraw() {
+    authDrawer?.classList.add("is-open");
+    authOverlay?.classList.add("is-open");
+    document.body.classList.add("nav-open");
+    authToggle?.setAttribute("aria-expanded", "true");
+  }
+  authToggle?.addEventListener("click", () => {
+    if (authDrawer?.classList.contains("is-open")) {
+      closeAuthDraw();
+    } else {
+      openAuthDraw();
+    }
+  });
+  authOverlay?.addEventListener("click", closeAuthDraw);
+  authDrawer?.querySelectorAll("a").forEach((a) => a.addEventListener("click", closeAuthDraw));
+
+  function closeDash() {
+    dashAside?.classList.remove("mobile-open");
+    dashOverlay?.classList.remove("is-open");
+    dashToggle?.setAttribute("aria-expanded", "false");
+  }
+  function openDash() {
+    dashAside?.classList.add("mobile-open");
+    dashOverlay?.classList.add("is-open");
+    dashToggle?.setAttribute("aria-expanded", "true");
+  }
+  dashToggle?.addEventListener("click", () => {
+    if (dashAside?.classList.contains("mobile-open")) {
+      closeDash();
+    } else {
+      openDash();
+    }
+  });
+  dashOverlay?.addEventListener("click", closeDash);
+
+  document.querySelectorAll(".dashboard-sidebar .sidebar-link").forEach((link) => {
+    link.addEventListener("click", () => {
+      if (window.matchMedia("(max-width: 1023px)").matches) {
+        closeDash();
+      }
+    });
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeMobileChrome();
+    }
+  });
 }
 
 function consumeIntegrationStatus() {
@@ -678,6 +782,10 @@ async function loadDashboard() {
   if (!(state.session && state.session.access_token)) {
     renderProfile(null);
     renderHistory([]);
+    document.getElementById("project-count-chip")?.textContent = "0 projects";
+    document.getElementById("integration-count-chip")?.textContent = "0 integrations";
+    document.getElementById("mission-count-metric")?.textContent = "0 total";
+    document.getElementById("active-mission-metric")?.textContent = "0 running";
     return;
   }
 
@@ -690,7 +798,15 @@ async function loadDashboard() {
     renderTelegramLink(payload.telegram_link);
     const projects = payload.projects || [];
     const missions = payload.missions || [];
-    els.resultMeta.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"} • ${(payload.integrations || []).length} integration${(payload.integrations || []).length === 1 ? "" : "s"}`;
+    const integrations = payload.integrations || [];
+    const activeMissions = missions.filter(
+      (m) => m.status && !["completed", "failed"].includes(String(m.status)),
+    ).length;
+    document.getElementById("project-count-chip")?.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"}`;
+    document.getElementById("integration-count-chip")?.textContent = `${integrations.length} integration${integrations.length === 1 ? "" : "s"}`;
+    document.getElementById("mission-count-metric")?.textContent = `${missions.length} total`;
+    document.getElementById("active-mission-metric")?.textContent = `${activeMissions} running`;
+    els.resultMeta.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"} • ${integrations.length} integration${integrations.length === 1 ? "" : "s"}`;
 
     const latestMission = missions
       .slice()
@@ -917,6 +1033,7 @@ els.signoutButton.addEventListener("click", signOut);
 window.addEventListener("hashchange", renderRoute);
 
 setAuthMode("signin");
+setupMobileChrome();
 renderAuthState();
 renderTelegramLink(null);
 renderTerminal([], null);

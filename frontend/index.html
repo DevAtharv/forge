@@ -7,3650 +7,263 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <style>
-      :root {
-        color-scheme: light;
-        --background: #fcf8f8;
-        --surface: #ffffff;
-        --surface-low: #f6f3f2;
-        --surface-mid: #f1edec;
-        --surface-high: #ebe7e7;
-        --outline: #e5e2e1;
-        --outline-strong: #c4c7c8;
-        --text: #1c1b1b;
-        --muted: #5f6364;
-        --soft: #747878;
-        --primary: #5d5f5f;
-        --brand: #0066ff;
-        --brand-soft: rgba(0, 102, 255, 0.1);
-        --teal: #16a34a;
-        --gold: #b7791f;
-        --danger: #ba1a1a;
-        --terminal: #111827;
-        --shadow: 0 22px 50px rgba(15, 23, 42, 0.08);
-      }
-
-      * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        font-family: "Inter", sans-serif;
-        color: var(--text);
-        background:
-          radial-gradient(circle at top left, rgba(255, 255, 255, 0.95), transparent 26%),
-          radial-gradient(circle at right 30%, rgba(246, 236, 233, 0.85), transparent 22%),
-          linear-gradient(180deg, #fdfafa 0%, var(--background) 100%);
-      }
-      a { color: inherit; text-decoration: none; }
-      button, input, textarea { font: inherit; }
-      .hidden { display: none !important; }
-      .material-symbols-outlined {
-        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
-      }
-      .shell { width: min(1200px, calc(100% - 48px)); margin: 0 auto; }
-      .row, .header-row, .nav-row, .button-row, .status-group, .panel-head, .split, .stage-head, .artifact-head, .user-row, .auth-switch, .badge-row, .badges, .footer-links, .dashboard-topbar, .status-metrics {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-      .route-link, .pill-link {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--muted);
-        transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
-      }
-      .route-link.active { color: var(--text); }
-      .home-header {
-        position: sticky;
-        top: 0;
-        z-index: 40;
-        padding: 22px 0;
-        backdrop-filter: blur(14px);
-      }
-      .home-nav, .auth-nav {
-        justify-content: space-between;
-        padding: 14px 18px;
-        border-radius: 20px;
-        border: 1px solid rgba(196, 199, 200, 0.35);
-        background: rgba(255, 255, 255, 0.74);
-        box-shadow: 0 10px 30px rgba(28, 27, 27, 0.04);
-      }
-      .brand { display: flex; align-items: center; gap: 14px; }
-      .forge-logo {
-        position: relative;
-        display: inline-flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 2px;
-      }
-      .forge-logo.compact {
-        transform: scale(0.82);
-        transform-origin: left center;
-      }
-      .forge-logo-arch {
-        width: 72px;
-        height: 28px;
-        border-top-left-radius: 999px;
-        border-top-right-radius: 999px;
-        border: 8px solid #ff7138;
-        border-bottom: 0;
-        margin-bottom: -2px;
-      }
-      .forge-logo-wordmark {
-        display: flex;
-        align-items: flex-end;
-        gap: 2px;
-        line-height: 1;
-      }
-      .forge-logo-word {
-        font-size: 42px;
-        font-weight: 800;
-        letter-spacing: -0.08em;
-        color: #d8dde5;
-        -webkit-text-stroke: 3px #233245;
-        text-shadow: 0 2px 0 rgba(255,255,255,0.65);
-      }
-      .forge-logo-bot {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 2px;
-        margin-left: 3px;
-        color: #ff7138;
-        font-size: 13px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-      }
-      .forge-logo-bot span {
-        writing-mode: vertical-rl;
-        text-orientation: mixed;
-        line-height: 0.95;
-      }
-      .forge-logo-dot {
-        width: 13px;
-        height: 13px;
-        border-radius: 999px;
-        background: #fff;
-        border: 3px solid #233245;
-        box-sizing: border-box;
-      }
-      .brand-copy { display: grid; gap: 2px; }
-      .brand-copy strong { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
-      .brand-copy span {
-        font-size: 11px;
-        color: var(--soft);
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-      }
-      .nav-cluster { display: flex; align-items: center; gap: 10px; }
-      .nav-cluster .route-link { position: relative; padding-bottom: 2px; }
-      .nav-cluster .route-link.active::after {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: -10px;
-        height: 2px;
-        border-radius: 999px;
-        background: currentColor;
-      }
-      .nav-cluster .route-link,
-      .nav-cluster .pill-link {
-        padding: 10px 14px;
-        border-radius: 999px;
-      }
-      .nav-cluster .route-link.active,
-      .nav-cluster .pill-link.active {
-        background: rgba(15, 23, 42, 0.05);
-      }
-      .top-actions { display: flex; align-items: center; gap: 14px; }
-      .status-group { gap: 10px; }
-      .status-pill, .chip, .tiny-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        border-radius: 999px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-      .status-pill {
-        padding: 8px 10px;
-        background: rgba(255, 255, 255, 0.92);
-        border: 1px solid rgba(196, 199, 200, 0.45);
-        color: var(--muted);
-      }
-      .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        background: #cbd5e1;
-      }
-      .text-button, .ghost-button, .primary-button, .icon-button {
-        border: 0;
-        cursor: pointer;
-        transition: all 160ms ease;
-      }
-      .text-button { background: transparent; color: var(--muted); font-size: 14px; font-weight: 500; }
-      .ghost-button, .primary-button {
-        padding: 12px 18px;
-        border-radius: 14px;
-        font-size: 14px;
-        font-weight: 600;
-      }
-      .ghost-button { background: #fff; color: var(--text); border: 1px solid rgba(196, 199, 200, 0.55); }
-      .primary-button {
-        background: var(--primary);
-        color: #fff;
-        box-shadow: 0 14px 30px rgba(93, 95, 95, 0.22);
-      }
-      .text-button:hover, .ghost-button:hover, .pill-link:hover { color: var(--text); }
-      .ghost-button:hover { background: var(--surface-low); }
-      .approval-button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-top: 14px;
-        text-decoration: none;
-      }
-      .primary-button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 18px 32px rgba(93, 95, 95, 0.28);
-      }
-      .ghost-button.active {
-        background: var(--surface);
-        color: var(--text);
-        box-shadow: inset 0 0 0 1px rgba(196, 199, 200, 0.7);
-      }
-      .ghost-button:disabled, .primary-button:disabled, .text-button:disabled {
-        cursor: not-allowed;
-        opacity: 0.55;
-      }
-      .eyebrow, .panel-kicker, .meta, .timeline-role, .label {
-        color: var(--soft);
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-      }
-      .hero { padding: 56px 0 120px; }
-      .hero-display {
-        font-family: "Instrument Serif", serif;
-        font-size: clamp(62px, 9vw, 136px);
-        line-height: 0.9;
-        letter-spacing: -0.06em;
-        margin: 0 0 28px;
-      }
-      .hero-display .accent { color: var(--brand); font-style: italic; }
-      .hero-copy {
-        max-width: 760px;
-        margin: 0 auto;
-        color: var(--muted);
-        font-size: 20px;
-        line-height: 1.75;
-      }
-      .home-hero { text-align: center; }
-      .hero-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 30px;
-        padding: 10px 14px;
-        border-radius: 999px;
-        background: var(--surface-high);
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 600;
-      }
-      .pulse-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        background: var(--brand);
-        animation: pulse 1.8s infinite;
-      }
-      @keyframes pulse {
-        0% { transform: scale(0.8); opacity: 0.75; }
-        70% { transform: scale(1.25); opacity: 0.2; }
-        100% { transform: scale(0.8); opacity: 0.75; }
-      }
-      .hero-actions { justify-content: center; margin-top: 34px; }
-      .tailark-hero {
-        position: relative;
-        padding-top: 36px;
-        text-align: center;
-      }
-      .hero-badge-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 14px;
-        margin: 0 auto;
-        padding: 8px 8px 8px 16px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.92);
-        border: 1px solid rgba(15, 23, 42, 0.07);
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-        color: var(--text);
-        font-size: 14px;
-        font-weight: 500;
-      }
-      .hero-badge-link .arrow-pill {
-        width: 30px;
-        height: 30px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 999px;
-        background: var(--surface-mid);
-      }
-      .tailark-title {
-        max-width: 980px;
-        margin: 30px auto 0;
-        font-size: clamp(56px, 8vw, 94px);
-        line-height: 0.94;
-        letter-spacing: -0.07em;
-        font-weight: 800;
-      }
-      .tailark-copy {
-        max-width: 720px;
-        margin: 28px auto 0;
-        color: var(--muted);
-        font-size: 20px;
-        line-height: 1.8;
-      }
-      .tailark-cta {
-        justify-content: center;
-        margin-top: 28px;
-      }
-      .hero-screen-wrap {
-        position: relative;
-        margin-top: 46px;
-        padding: 0 8px;
-      }
-      .hero-screen-fade {
-        position: absolute;
-        inset: 0;
-        z-index: 2;
-        background: linear-gradient(180deg, transparent 35%, var(--background) 100%);
-        pointer-events: none;
-      }
-      .hero-screen-card {
-        position: relative;
-        z-index: 1;
-        margin: 0 auto;
-        max-width: 1080px;
-        padding: 16px;
-        border-radius: 28px;
-        background: rgba(255,255,255,0.92);
-        border: 1px solid rgba(15, 23, 42, 0.08);
-        box-shadow: 0 30px 70px rgba(15, 23, 42, 0.12);
-      }
-      .hero-screen-card img {
-        width: 100%;
-        display: block;
-        border-radius: 20px;
-        border: 1px solid rgba(15, 23, 42, 0.08);
-        aspect-ratio: 15 / 8;
-        object-fit: cover;
-      }
-      .logo-cloud {
-        padding: 40px 0 20px;
-      }
-      .logo-cloud-wrap {
-        position: relative;
-        margin: 0 auto;
-        max-width: 880px;
-      }
-      .logo-cloud-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 22px 40px;
-        align-items: center;
-        justify-items: center;
-        transition: all 0.35s ease;
-      }
-      .logo-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        color: var(--muted);
-        font-size: 15px;
-        font-weight: 600;
-      }
-      .logo-chip .material-symbols-outlined {
-        font-size: 20px;
-        color: var(--soft);
-      }
-      .secondary-ai-wrap {
-        margin-top: 34px;
-      }
-      .ai-hero-shell {
-        padding: 26px;
-        border-radius: 36px;
-        background:
-          radial-gradient(circle at top left, rgba(191, 219, 254, 0.5), transparent 24%),
-          radial-gradient(circle at right top, rgba(224, 231, 255, 0.7), transparent 28%),
-          linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(248,250,252,0.94) 100%);
-        border: 1px solid rgba(15, 23, 42, 0.06);
-        box-shadow: 0 30px 70px rgba(2, 6, 23, 0.08);
-      }
-      .ai-hero-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-        gap: 28px;
-        align-items: stretch;
-      }
-      .ai-hero-copy {
-        padding: 34px 18px 18px 8px;
-        text-align: left;
-      }
-      .ai-hero-copy .hero-pill {
-        background: rgba(255, 255, 255, 0.9);
-        color: var(--muted);
-        border: 1px solid rgba(15, 23, 42, 0.05);
-      }
-      .ai-hero-title {
-        margin: 0;
-        color: #0f172a;
-        font-size: clamp(54px, 7vw, 88px);
-        line-height: 0.96;
-        letter-spacing: -0.07em;
-        font-weight: 800;
-      }
-      .ai-hero-title .accent {
-        color: var(--brand);
-      }
-      .ai-hero-copy .hero-copy {
-        max-width: 560px;
-        margin: 24px 0 0;
-        color: var(--muted);
-      }
-      .ai-hero-actions {
-        justify-content: flex-start;
-        margin-top: 28px;
-      }
-      .ai-hero-actions .ghost-button {
-        background: rgba(255, 255, 255, 0.9);
-        border-color: rgba(15, 23, 42, 0.08);
-        color: var(--text);
-      }
-      .ai-hero-actions .primary-button {
-        background: #111827;
-        color: #ffffff;
-        box-shadow: 0 18px 34px rgba(15, 23, 42, 0.16);
-      }
-      .ai-hero-actions .primary-button:hover {
-        box-shadow: 0 18px 34px rgba(15, 23, 42, 0.16);
-      }
-      .ai-hero-pills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 28px;
-      }
-      .ai-hero-pills span {
-        padding: 10px 14px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.86);
-        border: 1px solid rgba(15, 23, 42, 0.05);
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 600;
-      }
-      .ai-hero-panel {
-        display: grid;
-        gap: 16px;
-        padding: 18px;
-        border-radius: 28px;
-        background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
-        border: 1px solid rgba(15, 23, 42, 0.12);
-        backdrop-filter: blur(18px);
-      }
-      .ai-panel-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-      }
-      .ai-model-pill,
-      .ai-mini-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 14px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.08);
-        color: #f8fafc;
-        font-size: 13px;
-        font-weight: 600;
-      }
-      .ai-toolbar {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .ai-toolbar button {
-        width: 34px;
-        height: 34px;
-        border: 0;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.08);
-        color: rgba(226, 232, 240, 0.86);
-      }
-      .ai-hero-note {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-top: 22px;
-        color: var(--soft);
-        font-size: 13px;
-        font-weight: 600;
-      }
-      .ai-hero-note .avatars {
-        display: flex;
-        align-items: center;
-      }
-      .ai-hero-note .avatars span {
-        width: 26px;
-        height: 26px;
-        margin-right: -8px;
-        border-radius: 999px;
-        border: 2px solid #fff;
-        background: linear-gradient(135deg, #93c5fd, #c4b5fd);
-      }
-      .ai-chat-feed {
-        display: grid;
-        gap: 14px;
-        min-height: 340px;
-        padding: 12px 8px;
-      }
-      .ai-bubble {
-        max-width: 86%;
-        padding: 16px 18px;
-        border-radius: 22px;
-      }
-      .ai-bubble.assistant {
-        background: rgba(255, 255, 255, 0.08);
-        color: #f8fafc;
-        border-top-left-radius: 10px;
-      }
-      .ai-bubble.user {
-        margin-left: auto;
-        background: rgba(96, 165, 250, 0.18);
-        color: #dbeafe;
-        border-top-right-radius: 10px;
-      }
-      .ai-bubble p {
-        margin: 0;
-        line-height: 1.7;
-        font-size: 14px;
-      }
-      .ai-preview-card {
-        margin-top: 14px;
-        padding: 16px;
-        border-radius: 22px;
-        background: rgba(255, 255, 255, 0.88);
-        color: #111827;
-      }
-      .ai-preview-card img {
-        width: 100%;
-        aspect-ratio: 4 / 3;
-        object-fit: cover;
-        border-radius: 18px;
-        display: block;
-        margin-top: 12px;
-      }
-      .ai-input-shell {
-        display: grid;
-        gap: 12px;
-        padding: 16px;
-        border-radius: 24px;
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-      .ai-input-shell textarea {
-        width: 100%;
-        min-height: 84px;
-        resize: none;
-        border: 0;
-        outline: 0;
-        background: transparent;
-        color: #f8fafc;
-        font-size: 15px;
-        line-height: 1.7;
-      }
-      .ai-input-shell textarea::placeholder {
-        color: rgba(226, 232, 240, 0.42);
-      }
-      .ai-input-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-      .ai-input-tools {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .ai-input-tools span,
-      .ai-send {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 10px 14px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.08);
-        color: #e2e8f0;
-        font-size: 13px;
-        font-weight: 600;
-      }
-      .ai-send {
-        background: #ffffff;
-        color: #111827;
-      }
-      .features-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 24px;
-        margin-top: 72px;
-      }
-      .feature-card, .card, .metric-card, .timeline-item, .stage, .artifact, .memory-box, .response-box, .empty, .empty-state, .auth-card, .status-bar, .auth-zone {
-        background: var(--surface);
-        border: 1px solid rgba(196, 199, 200, 0.45);
-        border-radius: 24px;
-        box-shadow: var(--shadow);
-      }
-      .feature-card, .card, .auth-card, .status-bar { padding: 32px; }
-      .metric-card, .timeline-item, .stage, .artifact, .memory-box, .response-box, .empty, .empty-state, .auth-zone { padding: 18px; }
-      .feature-icon {
-        width: 50px;
-        height: 50px;
-        display: grid;
-        place-items: center;
-        border-radius: 18px;
-        background: #fff;
-        box-shadow: 0 8px 24px rgba(28, 27, 27, 0.06);
-        color: var(--brand);
-      }
-      .feature-card h3, .showcase-copy h2, .auth-card h1, .section-title {
-        margin: 14px 0 10px;
-        font-size: 28px;
-        font-weight: 700;
-        letter-spacing: -0.04em;
-      }
-      .feature-card p, .panel-copy, .muted, .auth-copy, .timeline-body, .response-text, .empty, .empty-state {
-        color: var(--muted);
-        line-height: 1.75;
-      }
-      .feature-meta {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 24px;
-        color: var(--brand);
-        font-size: 13px;
-        font-weight: 700;
-      }
-      .feature-meta::before {
-        content: "";
-        width: 4px;
-        height: 4px;
-        border-radius: 999px;
-        background: currentColor;
-      }
-      .showcase {
-        margin-top: 36px;
-        overflow: hidden;
-        background: #0f172a;
-        border-radius: 48px;
-      }
-      .showcase-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-        align-items: stretch;
-      }
-      .showcase-copy { padding: 72px; }
-      .showcase-copy h2 {
-        font-size: clamp(40px, 4vw, 60px);
-        color: #fff;
-        line-height: 1.05;
-      }
-      .showcase-copy .accent { color: var(--brand); }
-      .showcase-copy p, .showcase-copy li {
-        color: rgba(226, 232, 240, 0.82);
-        line-height: 1.8;
-      }
-      .showcase-copy ul {
-        list-style: none;
-        padding: 0;
-        margin: 0 0 34px;
-        display: grid;
-        gap: 12px;
-      }
-      .showcase-copy li { display: flex; align-items: center; gap: 10px; }
-      .showcase-visual {
-        position: relative;
-        min-height: 520px;
-        overflow: hidden;
-        background:
-          linear-gradient(135deg, rgba(0, 102, 255, 0.16), rgba(15, 23, 42, 0.2)),
-          radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent 20%),
-          linear-gradient(180deg, #111827 0%, #1f2937 100%);
-      }
-      .showcase-phone {
-        position: absolute;
-        inset: 0;
-        display: grid;
-        place-items: center;
-      }
-      .waitlist-section {
-        margin-top: 36px;
-        padding: 46px 48px;
-        border-radius: 40px;
-        background:
-          radial-gradient(circle at top left, rgba(96, 165, 250, 0.14), transparent 24%),
-          radial-gradient(circle at bottom right, rgba(167, 139, 250, 0.16), transparent 26%),
-          #ffffff;
-        border: 1px solid rgba(15, 23, 42, 0.06);
-        box-shadow: 0 30px 70px rgba(15, 23, 42, 0.08);
-        text-align: center;
-      }
-      .waitlist-shell {
-        width: min(760px, 100%);
-        margin: 0 auto;
-        display: grid;
-        gap: 22px;
-      }
-      .waitlist-shell h2 {
-        margin: 0;
-        font-size: clamp(38px, 5vw, 64px);
-        line-height: 0.98;
-        letter-spacing: -0.06em;
-        font-weight: 800;
-      }
-      .waitlist-shell p {
-        margin: 0;
-        color: var(--muted);
-        font-size: 17px;
-        line-height: 1.8;
-      }
-      .waitlist-form {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 12px;
-        padding: 12px;
-        border-radius: 22px;
-        background: #f8fafc;
-        border: 1px solid rgba(15, 23, 42, 0.06);
-      }
-      .waitlist-form input {
-        width: 100%;
-        padding: 16px 18px;
-        border: 0;
-        outline: 0;
-        border-radius: 16px;
-        background: #ffffff;
-        color: var(--text);
-        font-size: 15px;
-      }
-      .waitlist-form button {
-        padding: 16px 20px;
-        border: 0;
-        border-radius: 16px;
-        background: #111827;
-        color: #ffffff;
-        font-size: 14px;
-        font-weight: 700;
-      }
-      .waitlist-badges {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-      .waitlist-badges span {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 14px;
-        border-radius: 999px;
-        background: rgba(15, 23, 42, 0.04);
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 700;
-      }
-      .glass-card {
-        width: 290px;
-        padding: 24px;
-        border-radius: 24px;
-        background: rgba(255, 255, 255, 0.68);
-        backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.22);
-        box-shadow: 0 26px 48px rgba(15, 23, 42, 0.28);
-      }
-      .glass-row { display: flex; align-items: center; gap: 12px; }
-      .glass-avatar {
-        width: 40px;
-        height: 40px;
-        display: grid;
-        place-items: center;
-        border-radius: 999px;
-        background: rgba(0, 102, 255, 0.14);
-        color: var(--brand);
-      }
-      .progress {
-        width: 100%;
-        height: 8px;
-        margin-top: 16px;
-        border-radius: 999px;
-        overflow: hidden;
-        background: rgba(148, 163, 184, 0.3);
-      }
-      .progress > span {
-        display: block;
-        width: 67%;
-        height: 100%;
-        border-radius: inherit;
-        background: var(--brand);
-      }
-      .home-footer { padding: 84px 0 60px; }
-      .footer-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-        gap: 48px;
-        align-items: start;
-      }
-      .footer-columns {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 32px;
-      }
-      .footer-columns h4 {
-        margin: 0 0 18px;
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.14em;
-        color: var(--soft);
-      }
-      .footer-columns ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: grid;
-        gap: 12px;
-        color: var(--muted);
-      }
-      .footer-bottom {
-        margin-top: 52px;
-        padding-top: 24px;
-        border-top: 1px solid rgba(196, 199, 200, 0.25);
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        color: var(--muted);
-        font-size: 14px;
-      }
-      .auth-view { position: relative; min-height: 100vh; overflow: hidden; }
-      .auth-glow, .auth-glow-secondary {
-        position: absolute;
-        width: 360px;
-        height: 360px;
-        border-radius: 999px;
-        filter: blur(120px);
-        z-index: 0;
-      }
-      .auth-glow { top: 18%; left: -140px; background: rgba(246, 236, 233, 0.9); }
-      .auth-glow-secondary { right: -140px; bottom: 14%; background: rgba(238, 238, 238, 0.92); }
-      .auth-stage {
-        position: relative;
-        z-index: 1;
-        min-height: calc(100vh - 110px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 56px 0 80px;
-      }
-      .auth-card { width: min(100%, 520px); overflow: hidden; }
-      .auth-card-top, .auth-card-bottom {
-        padding: 24px 32px;
-        border-bottom: 1px solid rgba(196, 199, 200, 0.42);
-        background: var(--surface-low);
-      }
-      .auth-card-bottom {
-        border-top: 1px solid rgba(196, 199, 200, 0.42);
-        border-bottom: 0;
-        background: var(--surface-mid);
-      }
-      .auth-content { padding: 32px; }
-      .auth-switch {
-        padding: 4px;
-        border-radius: 16px;
-        background: var(--surface-high);
-      }
-      .auth-switch .ghost-button {
-        flex: 1;
-        border: 0;
-        background: transparent;
-        box-shadow: none;
-      }
-      .auth-switch .ghost-button.active {
-        background: var(--surface);
-        box-shadow: var(--shadow);
-      }
-      .auth-form {
-        display: grid;
-        gap: 18px;
-        margin-top: 26px;
-      }
-      label {
-        display: grid;
-        gap: 8px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--soft);
-      }
-      .input-wrap { position: relative; }
-      .input-wrap .material-symbols-outlined {
-        position: absolute;
-        left: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--soft);
-        font-size: 20px;
-      }
-      input, textarea {
-        width: 100%;
-        padding: 15px 16px 15px 48px;
-        border: 1px solid rgba(196, 199, 200, 0.55);
-        border-radius: 16px;
-        background: var(--background);
-        color: var(--text);
-        outline: none;
-        transition: border-color 160ms ease, box-shadow 160ms ease;
-      }
-      textarea {
-        min-height: 164px;
-        resize: none;
-        padding-left: 18px;
-      }
-      input:focus, textarea:focus {
-        border-color: rgba(93, 95, 95, 0.55);
-        box-shadow: 0 0 0 4px rgba(93, 95, 95, 0.08);
-      }
-      .auth-feedback {
-        display: block;
-        margin-top: 14px;
-        color: var(--muted);
-        line-height: 1.6;
-      }
-      .social-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px;
-        margin-top: 26px;
-      }
-      .social-button {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        padding: 14px;
-        border: 1px solid rgba(196, 199, 200, 0.55);
-        border-radius: 16px;
-        background: #fff;
-        color: var(--muted);
-        font-weight: 600;
-      }
-      .social-button img, .social-button svg { width: 20px; height: 20px; }
-      .divider { position: relative; margin: 28px 0; text-align: center; }
-      .divider::before {
-        content: "";
-        position: absolute;
-        top: 50%;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: rgba(196, 199, 200, 0.55);
-      }
-      .divider span {
-        position: relative;
-        display: inline-block;
-        padding: 0 16px;
-        background: var(--surface);
-        color: var(--soft);
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-      }
-      .warn { color: #8a5a00; border-color: rgba(183, 121, 31, 0.36); background: rgba(255, 245, 214, 0.88); }
-      .auth-support { width: min(100%, 520px); margin-top: 22px; }
-      .auth-support-top {
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        align-items: center;
-        color: var(--soft);
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-      }
-      .auth-support-links { display: flex; gap: 16px; }
-      .auth-note {
-        margin: 24px auto 0;
-        max-width: 320px;
-        text-align: center;
-        color: rgba(116, 120, 120, 0.72);
-        font-size: 11px;
-        line-height: 1.7;
-      }
-      .dashboard-view { min-height: 100vh; }
-      .dashboard-shell {
-        display: grid;
-        grid-template-columns: 264px minmax(0, 1fr);
-        min-height: 100vh;
-      }
-      .dashboard-sidebar {
-        position: sticky;
-        top: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        height: 100vh;
-        padding: 18px;
-        border-right: 1px solid rgba(196, 199, 200, 0.42);
-        background: rgba(248, 250, 252, 0.82);
-        backdrop-filter: blur(18px);
-      }
-      .sidebar-top {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 8px 10px;
-      }
-      .new-mission-button {
-        width: 100%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 14px 16px;
-        border-radius: 16px;
-        background: var(--primary);
-        color: #fff;
-        font-weight: 700;
-        box-shadow: 0 16px 28px rgba(93, 95, 95, 0.2);
-      }
-      .sidebar-links { display: grid; gap: 6px; }
-      .sidebar-link {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 14px;
-        border-radius: 16px;
-        color: var(--muted);
-        font-weight: 600;
-        transition: all 160ms ease;
-      }
-      .sidebar-link:hover {
-        background: rgba(229, 226, 225, 0.5);
-        color: var(--text);
-        transform: translateX(4px);
-      }
-      .sidebar-link.active {
-        background: #fff;
-        color: var(--text);
-        box-shadow: 0 8px 18px rgba(28, 27, 27, 0.06);
-      }
-      .sidebar-bottom {
-        margin-top: auto;
-        padding-top: 18px;
-        border-top: 1px solid rgba(196, 199, 200, 0.42);
-      }
-      .dashboard-main {
-        padding: 32px;
-        min-width: 0;
-      }
-      .status-bar {
-        display: grid;
-        grid-template-columns: minmax(0, 1.2fr) auto;
-        gap: 20px;
-        align-items: center;
-      }
-      .status-primary { display: flex; gap: 16px; align-items: flex-start; }
-      .hub-icon {
-        position: relative;
-        width: 52px;
-        height: 52px;
-        display: grid;
-        place-items: center;
-        border-radius: 999px;
-        background: rgba(14, 165, 233, 0.1);
-        color: #0284c7;
-      }
-      .hub-icon::after {
-        content: "";
-        position: absolute;
-        right: 0;
-        bottom: 1px;
-        width: 14px;
-        height: 14px;
-        border: 2px solid #fff;
-        border-radius: 999px;
-        background: var(--teal);
-      }
-      .status-title {
-        margin: 0;
-        font-size: 13px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: #94a3b8;
-      }
-      .status-headline {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-        margin-top: 6px;
-      }
-      .status-headline strong {
-        line-height: 1.25;
-      }
-      .status-headline strong {
-        font-size: 24px;
-        font-weight: 800;
-        letter-spacing: -0.04em;
-      }
-      .green-chip {
-        display: inline-flex;
-        align-items: center;
-        padding: 5px 10px;
-        border-radius: 999px;
-        background: rgba(34, 197, 94, 0.14);
-        color: var(--teal);
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-      .status-explain { margin: 10px 0 0; color: var(--muted); line-height: 1.7; }
-      .status-metrics { justify-content: flex-end; flex-wrap: wrap; }
-      .metric-box { min-width: 92px; text-align: right; }
-      .metric-box p { margin: 0; }
-      .metric-box .meta { display: block; margin-bottom: 6px; }
-      .workspace-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-        gap: 24px;
-        margin-top: 24px;
-      }
-      .stack { display: grid; gap: 24px; }
-      .panel-head, .split, .stage-head, .artifact-head, .user-row { justify-content: space-between; }
-      .panel-head { align-items: flex-start; }
-      .panel-title {
-        margin: 6px 0 0;
-        font-size: 20px;
-        font-weight: 700;
-        letter-spacing: -0.03em;
-      }
-      .mission-chip-group { display: flex; gap: 8px; flex-wrap: wrap; }
-      .tiny-chip { padding: 7px 10px; background: var(--surface-mid); color: var(--muted); }
-      .chip { padding: 7px 10px; background: var(--brand-soft); color: var(--brand); }
-      .chip.neutral { background: var(--surface-mid); color: var(--muted); }
-      .mission-toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 16px;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-      .mini-icon-row { display: flex; gap: 8px; }
-      .icon-button {
-        width: 40px;
-        height: 40px;
-        display: grid;
-        place-items: center;
-        border-radius: 12px;
-        background: transparent;
-        color: var(--muted);
-      }
-      .icon-button:hover { background: var(--surface-low); color: var(--text); }
-      .response-shell { position: relative; overflow: hidden; }
-      .response-live {
-        position: absolute;
-        top: 18px;
-        right: 18px;
-        padding: 7px 10px;
-        border-radius: 999px;
-        background: rgba(238, 238, 238, 0.96);
-        color: var(--primary);
-        font-size: 10px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-      .response-box { border-left: 4px solid var(--primary); background: var(--surface-low); }
-      .response-actions {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 12px;
-        margin-top: 22px;
-      }
-      .subtle-button {
-        padding: 12px;
-        border-radius: 12px;
-        border: 0;
-        background: var(--surface-low);
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 700;
-        cursor: pointer;
-      }
-      .subtle-button:hover { background: var(--surface-high); color: var(--text); }
-      .timeline-rail { display: grid; gap: 18px; }
-      .timeline-step {
-        position: relative;
-        padding-left: 24px;
-        border-left: 2px solid var(--surface-high);
-      }
-      .timeline-step::before {
-        content: "";
-        position: absolute;
-        left: -9px;
-        top: 2px;
-        width: 14px;
-        height: 14px;
-        border: 4px solid #fff;
-        border-radius: 999px;
-        background: var(--surface-high);
-      }
-      .timeline-step.current::before { background: var(--primary); }
-      .timeline-step p { margin: 4px 0 0; }
-      .timeline-list { display: grid; gap: 12px; }
-      .timeline-item { border-radius: 18px; }
-      .timeline-role { color: var(--primary); }
-      .timeline-role.user { color: var(--brand); }
-      .artifact-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-      }
-      .artifact-tile {
-        aspect-ratio: 1;
-        border: 1px dashed rgba(196, 199, 200, 0.85);
-        border-radius: 18px;
-        background: var(--surface-low);
-        display: grid;
-        place-items: center;
-        padding: 12px;
-        text-align: center;
-        color: var(--soft);
-      }
-      .artifact-list { display: grid; gap: 12px; }
-      .artifact-head strong,
-      .artifact strong {
-        overflow-wrap: anywhere;
-      }
-      .artifact, .stage, .memory-box, .auth-zone { border-radius: 18px; }
-      .stage { background: var(--surface-low); }
-      .badges { flex-wrap: wrap; margin-top: 10px; }
-      .badge-row { flex-wrap: wrap; }
-      pre {
-        margin: 12px 0 0;
-        padding: 16px;
-        border-radius: 16px;
-        overflow: auto;
-        background: var(--terminal);
-        color: #e5e7eb;
-        white-space: pre-wrap;
-        word-break: break-word;
-        font-size: 12px;
-        line-height: 1.65;
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      }
-      .terminal-card {
-        background: var(--terminal);
-        border-radius: 24px;
-        padding: 20px;
-        color: #e5e7eb;
-        box-shadow: 0 24px 44px rgba(15, 23, 42, 0.22);
-      }
-      .terminal-top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-      .terminal-dot { width: 8px; height: 8px; border-radius: 999px; }
-      .terminal-dot.red { background: #ef4444; }
-      .terminal-dot.yellow { background: #f59e0b; }
-      .terminal-dot.green { background: #22c55e; }
-      .terminal-label {
-        margin-left: 10px;
-        color: rgba(148, 163, 184, 0.72);
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-      }
-      .terminal-meta {
-        color: rgba(148, 163, 184, 0.7);
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-      }
-      .system-fab {
-        position: fixed;
-        right: 32px;
-        bottom: 32px;
-        width: 56px;
-        height: 56px;
-        display: grid;
-        place-items: center;
-        border: 0;
-        border-radius: 999px;
-        background: var(--primary);
-        color: #fff;
-        box-shadow: 0 20px 40px rgba(93, 95, 95, 0.24);
-        cursor: pointer;
-      }
-      .footer-links {
-        justify-content: space-between;
-        flex-wrap: wrap;
-        margin-top: 24px;
-        color: var(--soft);
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-      }
-      @media (max-width: 1100px) {
-        .features-grid, .showcase-layout, .footer-grid, .workspace-grid, .status-bar { grid-template-columns: 1fr; }
-        .status-metrics { justify-content: flex-start; }
-        .dashboard-shell { grid-template-columns: 1fr; }
-        .dashboard-sidebar { position: relative; height: auto; }
-        .response-actions { grid-template-columns: 1fr; }
-      }
-      @media (max-width: 780px) {
-        .shell { width: calc(100% - 24px); }
-        .home-nav, .auth-nav, .header-row, .nav-row, .button-row, .top-actions, .status-group, .footer-bottom, .footer-links, .dashboard-topbar, .panel-head, .split, .user-row, .auth-support-top, .chat-header, .composer-top, .telegram-card-head {
-          flex-direction: column;
-          align-items: stretch;
-        }
-        .nav-cluster, .auth-support-links { flex-wrap: wrap; }
-        .nav-cluster {
-          gap: 14px;
-          justify-content: center;
-        }
-        .status-pill {
-          justify-content: center;
-        }
-        .top-actions {
-          width: 100%;
-        }
-        .top-actions .text-button,
-        .top-actions .primary-button,
-        .top-actions .ghost-button {
-          width: 100%;
-          text-align: center;
-        }
-        .hero { padding-top: 32px; }
-        .hero-display { font-size: 58px; }
-        .hero-copy { font-size: 18px; }
-        .features-grid, .footer-columns, .artifact-grid, .social-grid { grid-template-columns: 1fr; }
-        .dashboard-main { padding: 20px 12px 90px; }
-        .status-headline strong { font-size: 20px; }
-        .status-primary {
-          flex-direction: column;
-        }
-        .status-metrics {
-          display: grid;
-          grid-template-columns: 1fr;
-          width: 100%;
-        }
-        .metric-box {
-          text-align: left;
-        }
-        .mission-toolbar,
-        .button-row,
-        .mini-icon-row {
-          width: 100%;
-        }
-        .button-row {
-          flex-direction: column;
-          align-items: stretch;
-        }
-        .button-row .ghost-button,
-        .button-row .primary-button {
-          width: 100%;
-        }
-        .response-actions {
-          grid-template-columns: 1fr;
-        }
-        .sidebar-links {
-          grid-template-columns: 1fr;
-        }
-        .dashboard-footer-links {
-          flex-wrap: wrap;
-          justify-content: center;
-          text-align: center;
-        }
-        .system-fab { right: 18px; bottom: 18px; }
-      }
-
-      :root {
-        --background: #f4f7fb;
-        --surface: rgba(255, 255, 255, 0.94);
-        --surface-low: #f9fbff;
-        --surface-mid: #eef4fb;
-        --surface-high: #e6eef8;
-        --outline: rgba(15, 23, 42, 0.08);
-        --outline-strong: rgba(15, 23, 42, 0.14);
-        --text: #11181c;
-        --muted: #52606d;
-        --soft: #7a8897;
-        --primary: #006fee;
-        --brand: #006fee;
-        --brand-soft: rgba(0, 111, 238, 0.12);
-        --teal: #17c964;
-        --gold: #f5a524;
-        --danger: #f31260;
-        --terminal: #0b1120;
-        --shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
-      }
-
-      body {
-        background:
-          radial-gradient(circle at top left, rgba(124, 58, 237, 0.08), transparent 28%),
-          radial-gradient(circle at top right, rgba(0, 111, 238, 0.12), transparent 24%),
-          linear-gradient(180deg, #f8fbff 0%, var(--background) 36%, #f6f8fc 100%);
-      }
-
-      .home-nav,
-      .auth-nav {
-        border: 1px solid var(--outline);
-        background: rgba(255, 255, 255, 0.76);
-        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
-        border-radius: 22px;
-      }
-
-      .nav-cluster {
-        gap: 8px;
-        padding: 6px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.72);
-        border: 1px solid rgba(15, 23, 42, 0.04);
-      }
-
-      .nav-cluster .route-link,
-      .nav-cluster .pill-link {
-        padding: 10px 14px;
-        border-radius: 999px;
-      }
-
-      .nav-cluster .route-link.active {
-        background: rgba(17, 24, 28, 0.06);
-      }
-
-      .nav-cluster .route-link.active::after {
-        display: none;
-      }
-
-      .status-pill,
-      .metric-box,
-      .ghost-button,
-      .social-button,
-      .icon-button,
-      .subtle-button,
-      .tiny-chip,
-      .memory-box,
-      .artifact,
-      .stage,
-      .artifact-tile {
-        border: 1px solid rgba(15, 23, 42, 0.06);
-      }
-
-      .text-button,
-      .route-link,
-      .pill-link {
-        font-weight: 600;
-      }
-
-      .primary-button,
-      .new-mission-button,
-      .system-fab {
-        background: linear-gradient(135deg, #006fee 0%, #7c3aed 100%);
-        box-shadow: 0 18px 32px rgba(0, 111, 238, 0.22);
-      }
-
-      .ghost-button {
-        background: rgba(255, 255, 255, 0.86);
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
-      }
-
-      .ghost-button:hover,
-      .social-button:hover,
-      .subtle-button:hover,
-      .icon-button:hover,
-      .sidebar-link:hover {
-        background: #ffffff;
-        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-      }
-
-      .feature-card,
-      .card,
-      .auth-card,
-      .status-bar,
-      .auth-zone,
-      .response-box,
-      .empty,
-      .empty-state {
-        border-color: rgba(15, 23, 42, 0.06);
-        background: var(--surface);
-        box-shadow: var(--shadow);
-        backdrop-filter: blur(14px);
-      }
-
-      .hero-pill {
-        background: rgba(255, 255, 255, 0.82);
-        border: 1px solid rgba(15, 23, 42, 0.06);
-        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.04);
-      }
-
-      .hero-display {
-        font-family: "Inter", sans-serif;
-        font-size: clamp(58px, 8vw, 116px);
-        font-weight: 800;
-        letter-spacing: -0.08em;
-      }
-
-      .hero-display .accent {
-        background: linear-gradient(135deg, #006fee 0%, #7c3aed 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        font-style: normal;
-      }
-
-      .hero-copy {
-        max-width: 780px;
-        font-size: 19px;
-      }
-
-      .features-grid {
-        gap: 22px;
-      }
-
-      .feature-card {
-        border-radius: 26px;
-      }
-
-      .feature-icon {
-        width: 54px;
-        height: 54px;
-        background: linear-gradient(180deg, #ffffff 0%, #f3f7fe 100%);
-        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-      }
-
-      .feature-card h3,
-      .showcase-copy h2,
-      .panel-title {
-        font-weight: 800;
-        letter-spacing: -0.05em;
-      }
-
-      .showcase {
-        border-radius: 36px;
-        border: 1px solid rgba(15, 23, 42, 0.06);
-        background:
-          radial-gradient(circle at top right, rgba(0,111,238,0.28), transparent 22%),
-          linear-gradient(135deg, #081120 0%, #111b32 48%, #142547 100%);
-        box-shadow: 0 24px 80px rgba(15, 23, 42, 0.18);
-      }
-
-      .showcase-copy {
-        padding: 64px;
-      }
-
-      .showcase-visual::before {
-        content: "";
-        position: absolute;
-        inset: 18px;
-        border-radius: 28px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      .glass-card {
-        width: 320px;
-        background: rgba(255, 255, 255, 0.82);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 24px 52px rgba(15, 23, 42, 0.32);
-      }
-
-      .progress > span {
-        background: linear-gradient(90deg, #006fee, #7c3aed);
-      }
-
-      .auth-glow {
-        background: rgba(0, 111, 238, 0.15);
-      }
-
-      .auth-glow-secondary {
-        background: rgba(124, 58, 237, 0.14);
-      }
-
-      .auth-card {
-        width: min(100%, 540px);
-      }
-
-      .auth-card-top,
-      .auth-card-bottom {
-        background: linear-gradient(180deg, rgba(248,250,255,0.96) 0%, rgba(243,247,253,0.92) 100%);
-        border-color: rgba(15, 23, 42, 0.06);
-      }
-
-      .auth-switch {
-        background: var(--surface-mid);
-        border: 1px solid rgba(15, 23, 42, 0.05);
-        border-radius: 18px;
-      }
-
-      .auth-switch .ghost-button.active {
-        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.07);
-      }
-
-      input,
-      textarea {
-        background: rgba(248, 250, 255, 0.96);
-        border-color: rgba(15, 23, 42, 0.08);
-      }
-
-      input:focus,
-      textarea:focus {
-        border-color: rgba(0, 111, 238, 0.3);
-        box-shadow: 0 0 0 4px rgba(0, 111, 238, 0.08);
-        background: #fff;
-      }
-
-      .dashboard-shell {
-        grid-template-columns: 280px minmax(0, 1fr);
-      }
-
-      .dashboard-sidebar {
-        background: linear-gradient(180deg, rgba(255,255,255,0.86) 0%, rgba(244,247,251,0.86) 100%);
-        border-right: 1px solid rgba(15, 23, 42, 0.06);
-      }
-
-      .sidebar-link {
-        border-radius: 18px;
-        font-weight: 700;
-      }
-
-      .sidebar-link.active {
-        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
-      }
-
-      .dashboard-main {
-        padding: 28px 28px 84px;
-      }
-
-      .status-bar {
-        grid-template-columns: minmax(0, 1.1fr) auto;
-      }
-
-      .hub-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 18px;
-        background: linear-gradient(180deg, rgba(0,111,238,0.12) 0%, rgba(124,58,237,0.08) 100%);
-        color: var(--brand);
-      }
-
-      .status-title {
-        color: #87a0b6;
-        font-size: 12px;
-        font-weight: 800;
-      }
-
-      .status-headline strong {
-        font-weight: 800;
-        letter-spacing: -0.05em;
-      }
-
-      .green-chip {
-        background: rgba(23, 201, 100, 0.14);
-        color: #058c4c;
-      }
-
-      .metric-box {
-        min-width: 100px;
-        padding: 12px 14px;
-        border-radius: 18px;
-        background: rgba(255,255,255,0.82);
-        text-align: left;
-      }
-
-      .response-live {
-        background: linear-gradient(135deg, rgba(0,111,238,0.12), rgba(124,58,237,0.12));
-        color: var(--primary);
-        font-weight: 800;
-      }
-
-      .response-box,
-      .stage,
-      .memory-box,
-      .artifact-tile {
-        background: linear-gradient(180deg, rgba(248,250,255,0.96) 0%, rgba(241,245,251,0.96) 100%);
-      }
-
-      .terminal-card {
-        background: linear-gradient(180deg, #08111f 0%, #0d1728 100%);
-      }
-
-      @media (max-width: 1100px) {
-        .dashboard-shell { grid-template-columns: 1fr; }
-      }
-
-      @media (max-width: 780px) {
-        .hero-display { font-size: 52px; }
-        .showcase-copy { padding: 36px 24px; }
-        .dashboard-main { padding: 18px 12px 90px; }
-        .nav-cluster { width: 100%; justify-content: center; }
-      }
-
-      .hero-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
-        gap: 28px;
-        align-items: center;
-        text-align: left;
-      }
-
-      .hero-copy-wrap {
-        display: grid;
-        gap: 18px;
-      }
-
-      .hero-copy-wrap .hero-copy {
-        margin: 0;
-        max-width: 640px;
-      }
-
-      .hero-actions.left {
-        justify-content: flex-start;
-        margin-top: 8px;
-      }
-
-      .hero-stat-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 14px;
-        margin-top: 18px;
-      }
-
-      .hero-stat-card {
-        padding: 16px 18px;
-        border-radius: 20px;
-        background: rgba(255,255,255,0.82);
-        border: 1px solid rgba(15, 23, 42, 0.06);
-        box-shadow: var(--shadow-soft);
-      }
-
-      .hero-stat-card strong {
-        display: block;
-        font-size: 24px;
-        font-weight: 800;
-        letter-spacing: -0.05em;
-      }
-
-      .hero-preview {
-        position: relative;
-        padding: 18px;
-        border-radius: 32px;
-        background:
-          radial-gradient(circle at top right, rgba(124,58,237,0.2), transparent 30%),
-          radial-gradient(circle at bottom left, rgba(0,111,238,0.16), transparent 26%),
-          linear-gradient(180deg, rgba(255,255,255,0.88) 0%, rgba(246,249,255,0.96) 100%);
-        border: 1px solid rgba(15,23,42,0.06);
-        box-shadow: 0 28px 70px rgba(15, 23, 42, 0.12);
-      }
-
-      .hero-preview::before {
-        content: "";
-        position: absolute;
-        inset: 14px;
-        border-radius: 24px;
-        border: 1px solid rgba(255,255,255,0.7);
-        pointer-events: none;
-      }
-
-      .hero-preview-stack {
-        position: relative;
-        display: grid;
-        gap: 14px;
-      }
-
-      .hero-preview-panel {
-        padding: 18px;
-        border-radius: 22px;
-        background: rgba(255,255,255,0.78);
-        border: 1px solid rgba(15,23,42,0.06);
-        box-shadow: 0 14px 32px rgba(15,23,42,0.08);
-      }
-
-      .hero-preview-panel.dark {
-        background: linear-gradient(180deg, #0c1423 0%, #101a2e 100%);
-        color: #e5edf7;
-      }
-
-      .hero-chip-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 12px;
-      }
-
-      .hero-chip {
-        padding: 8px 10px;
-        border-radius: 999px;
-        background: rgba(0,111,238,0.1);
-        color: var(--brand);
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      .hero-preview-list {
-        display: grid;
-        gap: 10px;
-        margin-top: 14px;
-      }
-
-      .hero-preview-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 12px 14px;
-        border-radius: 16px;
-        background: rgba(255,255,255,0.72);
-      }
-
-      .hero-preview-item.dark {
-        background: rgba(255,255,255,0.06);
-      }
-
-      .auth-layout {
-        display: grid;
-        grid-template-columns: minmax(340px, 0.88fr) minmax(0, 1.12fr);
-        gap: 28px;
-        align-items: stretch;
-      }
-
-      .auth-showcase {
-        padding: 30px;
-        border-radius: 32px;
-        background:
-          radial-gradient(circle at top left, rgba(96, 165, 250, 0.18), transparent 28%),
-          radial-gradient(circle at bottom right, rgba(168, 85, 247, 0.18), transparent 26%),
-          linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(248,250,252,0.96) 100%);
-        color: var(--text);
-        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
-        border: 1px solid rgba(15, 23, 42, 0.06);
-        overflow: hidden;
-        position: relative;
-      }
-
-      .auth-showcase-head {
-        display: grid;
-        gap: 14px;
-        max-width: 420px;
-      }
-
-      .auth-showcase h2 {
-        margin: 0;
-        font-size: 38px;
-        font-weight: 800;
-        letter-spacing: -0.06em;
-        line-height: 1.02;
-      }
-
-      .auth-showcase p {
-        margin: 0;
-        color: var(--muted);
-        line-height: 1.8;
-      }
-
-      .auth-showcase-cta {
-        margin-top: 8px;
-      }
-
-      .auth-visual-card {
-        margin-top: 28px;
-        padding: 20px 20px 18px;
-        border-radius: 22px;
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-      }
-
-      .auth-visual-chrome {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding-bottom: 16px;
-        margin-bottom: 16px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      .auth-visual-chrome span:first-child,
-      .auth-visual-chrome span:nth-child(2),
-      .auth-visual-chrome span:nth-child(3) {
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        flex-shrink: 0;
-      }
-
-      .auth-visual-chrome span:nth-child(1) { background: #f87171; }
-      .auth-visual-chrome span:nth-child(2) { background: #fbbf24; }
-      .auth-visual-chrome span:nth-child(3) { background: #4ade80; }
-
-      .auth-visual-title {
-        margin-left: auto;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: rgba(226, 232, 240, 0.45);
-      }
-
-      .auth-visual-rows {
-        display: grid;
-        gap: 14px;
-      }
-
-      .auth-visual-row {
-        display: flex;
-        align-items: flex-start;
-        gap: 14px;
-        padding: 12px 14px;
-        border-radius: 16px;
-        background: rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-      }
-
-      .auth-visual-row .material-symbols-outlined {
-        font-size: 22px;
-        color: #7dd3fc;
-        margin-top: 2px;
-      }
-
-      .auth-visual-row strong {
-        display: block;
-        font-size: 14px;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        color: #f8fafc;
-      }
-
-      .auth-visual-row p {
-        margin: 4px 0 0;
-        font-size: 13px;
-        line-height: 1.5;
-        color: rgba(226, 232, 240, 0.55);
-      }
-
-      .auth-form-stack {
-        display: flex;
-        flex-direction: column;
-        gap: 22px;
-        width: 100%;
-        min-width: 0;
-        max-width: 480px;
-        margin-inline: auto;
-      }
-
-      .auth-view .auth-stage {
-        align-items: flex-start;
-        padding: 28px 0 56px;
-      }
-
-      .dashboard-sidebar {
-        background:
-          radial-gradient(circle at top, rgba(124,58,237,0.08), transparent 26%),
-          linear-gradient(180deg, rgba(255,255,255,0.88) 0%, rgba(244,247,251,0.88) 100%);
-      }
-
-      .status-bar {
-        background:
-          radial-gradient(circle at top right, rgba(0,111,238,0.08), transparent 24%),
-          linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(247,250,255,0.94) 100%);
-      }
-
-      .card {
-        position: relative;
-        overflow: hidden;
-      }
-
-      .card::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(255,255,255,0.18), transparent 20%);
-        pointer-events: none;
-      }
-
-      @media (max-width: 1100px) {
-        .hero-grid,
-        .auth-layout {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      @media (max-width: 780px) {
-        .hero-actions.left {
-          justify-content: stretch;
-        }
-        .hero-stat-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      :root {
-        --background: #f7f8fb;
-        --surface: rgba(255, 255, 255, 0.97);
-        --surface-low: #fbfcfe;
-        --surface-mid: #f3f5f8;
-        --surface-high: #eceff3;
-        --outline: rgba(15, 23, 42, 0.06);
-        --outline-strong: rgba(15, 23, 42, 0.1);
-        --text: #1f2937;
-        --muted: #6b7280;
-        --soft: #94a3b8;
-        --primary: #2997ff;
-        --brand: #2997ff;
-        --brand-soft: rgba(41, 151, 255, 0.1);
-        --teal: #22c55e;
-        --shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
-      }
-
-      body {
-        background:
-          radial-gradient(circle at left center, rgba(255, 166, 77, 0.18), transparent 22%),
-          radial-gradient(circle at top right, rgba(99, 102, 241, 0.14), transparent 20%),
-          linear-gradient(180deg, #fbfcfe 0%, var(--background) 46%, #f7f8fb 100%);
-      }
-
-      .home-nav,
-      .auth-nav,
-      .dashboard-sidebar,
-      .status-bar,
-      .feature-card,
-      .card,
-      .auth-card,
-      .auth-showcase,
-      .hero-preview,
-      .hero-preview-panel,
-      .hero-stat-card,
-      .memory-box,
-      .response-box,
-      .stage,
-      .artifact,
-      .artifact-tile,
-      .metric-box,
-      .social-button,
-      .ghost-button,
-      .status-pill {
-        background: rgba(255, 255, 255, 0.94);
-        border-color: rgba(15, 23, 42, 0.05);
-        box-shadow: var(--shadow);
-        backdrop-filter: blur(12px);
-      }
-
-      .home-nav,
-      .auth-nav {
-        background: rgba(255, 255, 255, 0.9);
-      }
-
-      .nav-cluster {
-        background: rgba(243, 245, 248, 0.95);
-        border-color: rgba(15, 23, 42, 0.03);
-      }
-
-      .nav-cluster .route-link.active,
-      .sidebar-link.active {
-        background: #f3f5f8;
-        box-shadow: none;
-      }
-
-      .primary-button,
-      .new-mission-button,
-      .system-fab {
-        background: #2997ff;
-        box-shadow: 0 12px 28px rgba(41, 151, 255, 0.2);
-      }
-
-      .primary-button:hover,
-      .new-mission-button:hover,
-      .system-fab:hover {
-        box-shadow: 0 16px 30px rgba(41, 151, 255, 0.24);
-      }
-
-      .ghost-button,
-      .social-button,
-      .subtle-button,
-      .icon-button {
-        background: #ffffff;
-        box-shadow: none;
-      }
-
-      .hero {
-        padding-top: 40px;
-        padding-bottom: 88px;
-      }
-
-      .hero-display {
-        font-size: clamp(48px, 6vw, 88px);
-        line-height: 0.95;
-      }
-
-      .hero-copy {
-        font-size: 17px;
-        max-width: 600px;
-      }
-
-      .hero-preview,
-      .auth-showcase {
-        border-radius: 28px;
-      }
-
-      .hero-preview {
-        background:
-          radial-gradient(circle at top right, rgba(99, 102, 241, 0.08), transparent 28%),
-          linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.98) 100%);
-      }
-
-      .hero-preview-panel.dark,
-      .auth-showcase {
-        background: rgba(255,255,255,0.92);
-        color: var(--text);
-      }
-
-      .auth-showcase h2,
-      .auth-showcase p {
-        color: inherit;
-      }
-
-      .auth-showcase-item,
-      .auth-mini-card {
-        background: #f8fafc;
-        border: 1px solid rgba(15, 23, 42, 0.05);
-      }
-
-      .auth-mini-card .hero-chip {
-        background: rgba(41, 151, 255, 0.1);
-        color: var(--brand);
-      }
-
-      .showcase {
-        border-radius: 30px;
-        background:
-          radial-gradient(circle at left center, rgba(255, 166, 77, 0.16), transparent 24%),
-          radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 18%),
-          linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(247,248,251,0.98) 100%);
-        box-shadow: 0 20px 55px rgba(15, 23, 42, 0.08);
-      }
-
-      .showcase-copy h2,
-      .showcase-copy p,
-      .showcase-copy li {
-        color: var(--text);
-      }
-
-      .showcase-copy .accent {
-        color: var(--brand);
-      }
-
-      .showcase-visual {
-        background:
-          radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 22%),
-          linear-gradient(180deg, rgba(249,250,251,0.96) 0%, rgba(241,245,249,0.98) 100%);
-      }
-
-      .showcase-visual::before {
-        border-color: rgba(15, 23, 42, 0.05);
-      }
-
-      .glass-card {
-        background: rgba(255,255,255,0.92);
-        box-shadow: 0 16px 35px rgba(15, 23, 42, 0.08);
-      }
-
-      .dashboard-sidebar {
-        background: rgba(255, 255, 255, 0.88);
-      }
-
-      .status-bar {
-        background: rgba(255,255,255,0.94);
-      }
-
-      .hub-icon {
-        background: #f3f7ff;
-        color: var(--brand);
-      }
-
-      .metric-box,
-      .response-box,
-      .stage,
-      .memory-box,
-      .artifact-tile {
-        background: #fbfcfe;
-      }
-
-      .terminal-card {
-        background: #111827;
-      }
-
-      .hero-stat-card strong,
-      .panel-title,
-      .feature-card h3,
-      .showcase-copy h2 {
-        letter-spacing: -0.04em;
-      }
-
-      .sidebar-profile {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px;
-        border-radius: 20px;
-        background: rgba(243,245,248,0.9);
-      }
-
-      .sidebar-avatar {
-        width: 38px;
-        height: 38px;
-        border-radius: 999px;
-        background: linear-gradient(135deg, rgba(41,151,255,0.95), rgba(139,92,246,0.9));
-        box-shadow: inset 0 0 18px rgba(255,255,255,0.5);
-      }
-
-      .sidebar-search {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 14px;
-        border-radius: 16px;
-        background: rgba(243,245,248,0.95);
-        color: var(--soft);
-        font-size: 14px;
-        font-weight: 600;
-      }
-
-      .status-bar.compact {
-        padding: 22px 24px;
-      }
-
-      .dashboard-overview {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 18px;
-        align-items: start;
-      }
-
-      .dashboard-title {
-        margin: 0;
-        font-size: 36px;
-        line-height: 1.05;
-        letter-spacing: -0.06em;
-        font-weight: 800;
-      }
-
-      .dashboard-subtitle {
-        margin: 8px 0 0;
-        color: var(--muted);
-        line-height: 1.7;
-        max-width: 640px;
-      }
-
-      .overview-pills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 16px;
-      }
-
-      .segment-pill {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 10px 14px;
-        border-radius: 999px;
-        background: #f3f5f8;
-        color: var(--muted);
-        font-size: 13px;
-        font-weight: 700;
-      }
-
-      .segment-pill.active {
-        background: #ffffff;
-        color: var(--text);
-        box-shadow: 0 10px 24px rgba(15,23,42,0.06);
-      }
-
-      .overview-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-      }
-
-      .ghost-circle {
-        width: 40px;
-        height: 40px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 999px;
-        border: 1px solid rgba(15,23,42,0.05);
-        background: #fff;
-        color: var(--muted);
-      }
-
-      .stack.compact {
-        gap: 18px;
-      }
-
-      .telemetry-card {
-        display: grid;
-        gap: 14px;
-      }
-
-      .telegram-card {
-        display: grid;
-        gap: 18px;
-      }
-
-      .telegram-card-head {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 16px;
-      }
-
-      .telegram-card-copy {
-        display: grid;
-        gap: 6px;
-      }
-
-      .telegram-card-copy .panel-title {
-        margin: 0;
-      }
-
-      .telegram-help-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-      }
-
-      .recent-chat-list {
-        display: grid;
-        gap: 12px;
-      }
-
-      .recent-chat-item {
-        padding: 14px 16px;
-        border-radius: 18px;
-        background: rgba(243,245,248,0.85);
-        border: 1px solid rgba(15,23,42,0.05);
-      }
-
-      .recent-chat-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 8px;
-      }
-
-      .recent-chat-role {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--text);
-      }
-
-      .recent-chat-role::before {
-        content: "";
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        background: var(--brand);
-      }
-
-      .recent-chat-role.assistant::before {
-        background: #8b5cf6;
-      }
-
-      .recent-chat-role.system::before {
-        background: #94a3b8;
-      }
-
-      .recent-chat-body {
-        margin: 0;
-        color: var(--muted);
-        line-height: 1.6;
-        font-size: 14px;
-      }
-
-      .telemetry-row {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 14px;
-      }
-
-      .soft-divider {
-        height: 1px;
-        background: rgba(15,23,42,0.06);
-      }
-
-      .timeline-list.compact .memory-box,
-      .artifact-list.compact .artifact {
-        padding: 14px 16px;
-      }
-
-      .workspace-grid {
-        align-items: start;
-      }
-
-      .workspace-grid > .stack:first-child .card:first-child {
-        min-height: 0;
-      }
-
-      .workspace-input-wrap {
-        margin-top: 18px;
-      }
-
-      .workspace-input-wrap textarea {
-        min-height: 136px;
-      }
-
-      @media (max-width: 1100px) {
-        .ai-hero-grid {
-          grid-template-columns: 1fr;
-        }
-        .dashboard-overview {
-          grid-template-columns: 1fr;
-        }
-        .overview-actions {
-          justify-content: flex-start;
-        }
-      }
-
-      .home-dark-stage {
-        background:
-          radial-gradient(circle at top left, rgba(255,255,255,0.05), transparent 20%),
-          linear-gradient(180deg, #06070a 0%, #0b0d11 100%);
-        color: #f8fafc;
-      }
-
-      .home-dark-header {
-        position: sticky;
-        top: 0;
-        z-index: 40;
-        padding: 28px 0 10px;
-        backdrop-filter: blur(10px);
-      }
-
-      .home-dark-nav {
-        width: min(980px, calc(100% - 40px));
-        margin: 0 auto;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 18px;
-        padding: 18px 22px;
-        border-radius: 22px;
-        background: rgba(15, 17, 23, 0.92);
-        border: 1px solid rgba(255,255,255,0.08);
-        box-shadow: 0 18px 50px rgba(0,0,0,0.32);
-      }
-
-      .tailark-mark {
-        display: inline-flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 18px;
-        font-weight: 700;
-        letter-spacing: -0.03em;
-        color: #f8fafc;
-      }
-
-      .tailark-mark-grid {
-        position: relative;
-        width: 22px;
-        height: 22px;
-      }
-
-      .tailark-mark-grid::before,
-      .tailark-mark-grid::after,
-      .tailark-mark-grid span::before,
-      .tailark-mark-grid span::after {
-        content: "";
-        position: absolute;
-        width: 8px;
-        height: 8px;
-        border-radius: 2px;
-      }
-
-      .tailark-mark-grid::before { top: 0; left: 0; background: #38bdf8; }
-      .tailark-mark-grid::after { top: 0; right: 0; background: #a78bfa; }
-      .tailark-mark-grid span::before { bottom: 0; left: 0; background: #818cf8; }
-      .tailark-mark-grid span::after { bottom: 0; right: 0; background: #34d399; }
-
-      .home-dark-nav .nav-cluster {
-        gap: 24px;
-      }
-
-      .home-dark-nav .route-link,
-      .home-dark-nav .pill-link,
-      .home-dark-nav .text-button {
-        color: rgba(226,232,240,0.7);
-      }
-
-      .home-dark-nav .route-link.active {
-        color: #ffffff;
-        background: transparent;
-      }
-
-      .home-dark-nav .route-link.active::after {
-        bottom: -16px;
-        background: rgba(255,255,255,0.9);
-      }
-
-      .home-dark-nav .primary-button {
-        background: #ffffff;
-        color: #111827;
-        box-shadow: none;
-      }
-
-      .home-dark-nav .text-button {
-        padding: 12px 16px;
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.08);
-        background: rgba(255,255,255,0.02);
-      }
-
-      .home-dark-nav .status-group {
-        display: none;
-      }
-
-      .home-dark-hero {
-        width: min(1240px, calc(100% - 56px));
-        margin: 0 auto;
-        padding: 90px 0 44px;
-        text-align: center;
-      }
-
-      .dark-hero-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 16px;
-        padding: 10px 12px 10px 18px;
-        border-radius: 999px;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.08);
-        color: rgba(255,255,255,0.9);
-        font-size: 14px;
-        font-weight: 600;
-      }
-
-      .dark-hero-badge .arrow-pill {
-        width: 30px;
-        height: 30px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 999px;
-        background: rgba(255,255,255,0.06);
-      }
-
-      .dark-hero-title {
-        max-width: 1020px;
-        margin: 34px auto 0;
-        color: #f8fafc;
-        font-size: clamp(62px, 8vw, 110px);
-        line-height: 0.94;
-        letter-spacing: -0.08em;
-        font-weight: 300;
-      }
-
-      .dark-hero-copy {
-        max-width: 760px;
-        margin: 28px auto 0;
-        color: rgba(226,232,240,0.76);
-        font-size: 20px;
-        line-height: 1.7;
-      }
-
-      .dark-hero-cta {
-        justify-content: center;
-        margin-top: 36px;
-      }
-
-      .dark-hero-cta .primary-button {
-        background: #ffffff;
-        color: #111827;
-        box-shadow: none;
-      }
-
-      .dark-mockup-shell {
-        position: relative;
-        margin-top: 58px;
-        padding-bottom: 20px;
-      }
-
-      .dark-mockup-nav {
-        width: min(960px, calc(100% - 80px));
-        margin: 0 auto -24px;
-        position: relative;
-        z-index: 3;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 18px;
-        padding: 18px 22px;
-        border-radius: 20px;
-        background: rgba(15, 17, 23, 0.92);
-        border: 1px solid rgba(255,255,255,0.08);
-        box-shadow: 0 18px 50px rgba(0,0,0,0.28);
-      }
-
-      .dark-mockup-nav .nav-cluster {
-        gap: 18px;
-      }
-
-      .dark-mockup-nav .route-link {
-        color: rgba(226,232,240,0.74);
-        padding: 8px 10px;
-      }
-
-      .dark-mockup-nav .primary-button {
-        background: #ffffff;
-        color: #111827;
-        box-shadow: none;
-      }
-
-      .dark-product-window {
-        position: relative;
-        width: min(1230px, 100%);
-        margin: 0 auto;
-        border-radius: 26px;
-        background: #090b0f;
-        border: 1px solid rgba(255,255,255,0.08);
-        box-shadow: 0 30px 90px rgba(0,0,0,0.32);
-        overflow: hidden;
-      }
-
-      .dark-product-grid {
-        display: grid;
-        grid-template-columns: 255px 360px minmax(0, 1fr);
-        min-height: 520px;
-      }
-
-      .mail-sidebar,
-      .mail-list,
-      .mail-detail {
-        padding: 22px;
-      }
-
-      .mail-sidebar,
-      .mail-list {
-        border-right: 1px solid rgba(255,255,255,0.06);
-      }
-
-      .mail-select {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 12px 14px;
-        border-radius: 12px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.06);
-        color: #f8fafc;
-        font-size: 14px;
-        font-weight: 600;
-      }
-
-      .mail-nav-list,
-      .mail-folder-list,
-      .mail-cards {
-        display: grid;
-        gap: 10px;
-      }
-
-      .mail-nav-list {
-        margin-top: 18px;
-      }
-
-      .mail-nav-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        padding: 11px 12px;
-        border-radius: 12px;
-        color: rgba(226,232,240,0.74);
-      }
-
-      .mail-nav-item.active {
-        background: rgba(255,255,255,0.08);
-        color: #ffffff;
-      }
-
-      .mail-nav-item span:first-child {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .mail-count {
-        color: rgba(226,232,240,0.6);
-        font-size: 13px;
-        font-weight: 600;
-      }
-
-      .mail-list-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-      }
-
-      .mail-tabs {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px;
-        border-radius: 12px;
-        background: rgba(255,255,255,0.04);
-      }
-
-      .mail-tab {
-        padding: 10px 14px;
-        border-radius: 10px;
-        color: rgba(226,232,240,0.72);
-        font-size: 13px;
-        font-weight: 600;
-      }
-
-      .mail-tab.active {
-        background: rgba(255,255,255,0.08);
-        color: #ffffff;
-      }
-
-      .mail-tool-icons {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        color: rgba(226,232,240,0.66);
-      }
-
-      .mail-search {
-        margin-top: 18px;
-        padding: 12px 14px;
-        border-radius: 12px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.06);
-        color: rgba(226,232,240,0.5);
-        font-size: 14px;
-      }
-
-      .mail-cards {
-        margin-top: 16px;
-      }
-
-      .mail-card {
-        padding: 16px;
-        border-radius: 16px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.06);
-        color: rgba(226,232,240,0.74);
-      }
-
-      .mail-card.active {
-        background: rgba(255,255,255,0.08);
-        color: #ffffff;
-      }
-
-      .mail-card-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 10px;
-      }
-
-      .mail-card-title {
-        font-size: 14px;
-        font-weight: 700;
-        color: inherit;
-      }
-
-      .mail-card-time {
-        font-size: 12px;
-        color: rgba(226,232,240,0.5);
-      }
-
-      .mail-card-subject {
-        font-size: 14px;
-        font-weight: 600;
-        color: inherit;
-      }
-
-      .mail-card-copy {
-        margin-top: 8px;
-        font-size: 13px;
-        line-height: 1.6;
-        color: rgba(226,232,240,0.58);
-      }
-
-      .mail-tags {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 12px;
-      }
-
-      .mail-tags span {
-        padding: 6px 10px;
-        border-radius: 10px;
-        background: rgba(255,255,255,0.12);
-        color: #ffffff;
-        font-size: 11px;
-        font-weight: 700;
-      }
-
-      .mail-detail-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        color: rgba(226,232,240,0.66);
-      }
-
-      .mail-detail-toolbar,
-      .mail-detail-actions {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-      }
-
-      .mail-thread {
-        margin-top: 22px;
-      }
-
-      .mail-thread-head {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 16px;
-        padding-bottom: 18px;
-        border-bottom: 1px solid rgba(255,255,255,0.06);
-      }
-
-      .mail-avatar {
-        width: 42px;
-        height: 42px;
-        display: grid;
-        place-items: center;
-        border-radius: 999px;
-        background: rgba(255,255,255,0.12);
-        color: #ffffff;
-        font-size: 14px;
-        font-weight: 700;
-      }
-
-      .mail-thread-body {
-        margin-top: 20px;
-        color: rgba(226,232,240,0.78);
-        font-size: 15px;
-        line-height: 1.85;
-      }
-
-      @media (max-width: 1100px) {
-        .dark-product-grid {
-          grid-template-columns: 1fr;
-        }
-        .mail-sidebar,
-        .mail-list {
-          border-right: 0;
-          border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-        .dark-mockup-nav {
-          width: calc(100% - 16px);
-        }
-      }
-
-      .home-dark-stage .forge-logo-word {
-        color: #e2e8f0;
-        -webkit-text-stroke: 3px #111827;
-      }
-
-      .home-dark-stage .forge-logo-dot {
-        border-color: #111827;
-      }
-
-      .auth-view,
-      .dashboard-view {
-        background:
-          radial-gradient(circle at top left, rgba(59, 130, 246, 0.08), transparent 18%),
-          radial-gradient(circle at top right, rgba(168, 85, 247, 0.08), transparent 16%),
-          linear-gradient(180deg, #06070a 0%, #0b0d11 100%);
-        color: #f8fafc;
-      }
-
-      .auth-view .home-dark-header {
-        backdrop-filter: blur(10px);
-      }
-
-      .auth-view .auth-glow {
-        background: rgba(59, 130, 246, 0.22);
-      }
-
-      .auth-view .auth-glow-secondary {
-        background: rgba(168, 85, 247, 0.2);
-      }
-
-      .auth-card-heading {
-        font-size: 20px;
-        font-weight: 700;
-        letter-spacing: -0.03em;
-        color: inherit;
-      }
-
-      .auth-card-sub {
-        margin-top: 4px;
-        font-size: 13px;
-      }
-
-      .auth-card-mark {
-        width: 44px;
-        height: 44px;
-        display: grid;
-        place-items: center;
-        border-radius: 14px;
-        background: rgba(125, 211, 252, 0.12);
-        color: #7dd3fc;
-        box-shadow: none;
-        border: 1px solid rgba(125, 211, 252, 0.25);
-      }
-
-      .auth-inline-link {
-        font-weight: 700;
-        color: #7dd3fc;
-        text-decoration: underline;
-        text-underline-offset: 3px;
-      }
-
-      .auth-inline-link:hover {
-        color: #bae6fd;
-      }
-
-      .auth-view .auth-feedback {
-        display: block;
-        margin-top: 16px;
-        padding: 12px 14px;
-        border-radius: 14px;
-        background: rgba(251, 191, 36, 0.1);
-        border: 1px solid rgba(251, 191, 36, 0.22);
-        color: rgba(254, 243, 199, 0.92);
-        font-size: 13px;
-        line-height: 1.55;
-      }
-
-      .auth-view .auth-card {
-        border-radius: 24px;
-        overflow: hidden;
-        width: 100%;
-        max-width: none;
-      }
-
-      .auth-view .auth-nav,
-      .auth-view .home-dark-nav,
-      .dashboard-view .dashboard-sidebar,
-      .dashboard-view .status-bar,
-      .dashboard-view .card,
-      .dashboard-view .terminal-card,
-      .auth-view .auth-card,
-      .auth-view .auth-showcase,
-      .auth-view .auth-support {
-        background: rgba(15, 17, 23, 0.92);
-        border-color: rgba(255,255,255,0.08);
-        box-shadow: 0 22px 60px rgba(0,0,0,0.28);
-        color: #f8fafc;
-      }
-
-      .auth-view .auth-nav,
-      .auth-view .home-dark-nav {
-        border-radius: 22px;
-      }
-
-      .auth-view .auth-nav .route-link,
-      .auth-view .auth-nav .text-button,
-      .auth-view .home-dark-nav .route-link,
-      .auth-view .home-dark-nav .text-button,
-      .auth-view .home-dark-nav .tailark-mark,
-      .dashboard-view .sidebar-link,
-      .dashboard-view .muted,
-      .dashboard-view .meta,
-      .dashboard-view .panel-kicker,
-      .dashboard-view .tiny-chip,
-      .dashboard-view .terminal-meta,
-      .auth-view .muted,
-      .auth-view .auth-copy {
-        color: rgba(226,232,240,0.68);
-      }
-
-      .auth-view .auth-nav .primary-button,
-      .auth-view .home-dark-nav .primary-button,
-      .dashboard-view .primary-button,
-      .dashboard-view .new-mission-button {
-        background: #ffffff;
-        color: #111827;
-        box-shadow: none;
-      }
-
-      .auth-view .ghost-button,
-      .dashboard-view .ghost-button,
-      .dashboard-view .icon-button,
-      .dashboard-view .ghost-circle,
-      .dashboard-view .segment-pill,
-      .auth-view .social-button,
-      .auth-view .input-wrap {
-        background: rgba(255,255,255,0.04);
-        color: #f8fafc;
-        border-color: rgba(255,255,255,0.08);
-      }
-
-      .auth-view .auth-card-top,
-      .auth-view .auth-card-bottom {
-        background: rgba(255,255,255,0.02);
-        border-color: rgba(255,255,255,0.06);
-      }
-
-      .auth-view .input-wrap input:focus {
-        border-color: rgba(125, 211, 252, 0.55);
-        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
-      }
-
-      .auth-view .input-wrap input,
-      .dashboard-view textarea,
-      .dashboard-view .recent-chat-item,
-      .dashboard-view .memory-box,
-      .dashboard-view .response-box,
-      .dashboard-view .artifact,
-      .dashboard-view .mail-card,
-      .dashboard-view .status-pill,
-      .dashboard-view .metric-box,
-      .dashboard-view .sidebar-profile,
-      .dashboard-view .sidebar-search {
-        background: rgba(255,255,255,0.04);
-        color: #f8fafc;
-        border-color: rgba(255,255,255,0.06);
-      }
-
-      .auth-view .input-wrap input::placeholder,
-      .dashboard-view textarea::placeholder,
-      .dashboard-view .recent-chat-body,
-      .dashboard-view .response-text,
-      .dashboard-view .empty,
-      .dashboard-view .status-explain,
-      .dashboard-view .dashboard-subtitle,
-      .auth-view .auth-showcase-head p,
-      .auth-view .auth-note {
-        color: rgba(226,232,240,0.62);
-      }
-
-      .dashboard-view .segment-pill.active,
-      .dashboard-view .status-pill,
-      .dashboard-view .chip,
-      .dashboard-view .tiny-chip,
-      .auth-view .hero-pill {
-        background: rgba(255,255,255,0.08);
-        color: #f8fafc;
-        border-color: rgba(255,255,255,0.08);
-        box-shadow: none;
-      }
-
-      .dashboard-view .dashboard-title,
-      .dashboard-view .panel-title,
-      .dashboard-view #workspace-user,
-      .dashboard-view .recent-chat-role,
-      .dashboard-view .mail-card-title,
-      .dashboard-view .mail-card-subject,
-      .auth-view .auth-showcase h2,
-      .auth-view .auth-card-top {
-        color: #f8fafc;
-      }
-
-      .dashboard-view .terminal-card {
-        background: linear-gradient(180deg, #090b0f 0%, #111827 100%);
-      }
-
-      .dashboard-view .status-bar.compact {
-        border-radius: 24px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      .dashboard-view .auth-zone {
-        padding: 16px 18px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        background: rgba(255, 255, 255, 0.03);
-      }
-
-      .dashboard-view .auth-zone .user-row {
-        gap: 16px;
-      }
-
-      .dashboard-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1.3fr) minmax(260px, 360px);
-        gap: 22px;
-        margin-top: 22px;
-        align-items: start;
-        min-width: 0;
-      }
-
-      .chat-shell {
-        display: grid;
-        gap: 18px;
-        min-width: 0;
-      }
-
-      .chat-card {
-        padding: 22px;
-        border-radius: 28px;
-        background: rgba(15, 17, 23, 0.94);
-        border: 1px solid rgba(255,255,255,0.08);
-        box-shadow: 0 24px 60px rgba(0,0,0,0.28);
-      }
-
-      .chat-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 18px;
-      }
-
-      .chat-title-wrap {
-        display: grid;
-        gap: 6px;
-      }
-
-      .chat-title {
-        margin: 0;
-        font-size: 28px;
-        line-height: 1;
-        letter-spacing: -0.05em;
-      }
-
-      .chat-subtitle {
-        margin: 0;
-        color: rgba(226,232,240,0.62);
-        line-height: 1.7;
-      }
-
-      .chat-meta-pills {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      .chat-meta-pills .tiny-chip {
-        background: rgba(255,255,255,0.08);
-      }
-
-      .chat-history {
-        min-height: 560px;
-        max-height: 68vh;
-        overflow: auto;
-        display: grid;
-        gap: 14px;
-        padding-right: 6px;
-      }
-
-      .chat-message {
-        max-width: 86%;
-        padding: 18px 18px 16px;
-        border-radius: 22px;
-        border: 1px solid rgba(255,255,255,0.06);
-        background: rgba(255,255,255,0.04);
-      }
-
-      .chat-message.user {
-        margin-left: auto;
-        background: rgba(37, 99, 235, 0.18);
-      }
-
-      .chat-message.assistant {
-        margin-right: auto;
-      }
-
-      .chat-message.system {
-        margin-right: auto;
-        background: rgba(148,163,184,0.12);
-      }
-
-      .chat-message-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 10px;
-      }
-
-      .chat-role {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      .chat-role::before {
-        content: "";
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        background: #60a5fa;
-      }
-
-      .chat-role.assistant::before {
-        background: #a78bfa;
-      }
-
-      .chat-role.system::before {
-        background: #94a3b8;
-      }
-
-      .chat-time {
-        color: rgba(226,232,240,0.42);
-        font-size: 12px;
-      }
-
-      .chat-body {
-        margin: 0;
-        color: rgba(241,245,249,0.88);
-        line-height: 1.8;
-        white-space: pre-wrap;
-      }
-
-      .chat-artifact-note {
-        margin-top: 12px;
-        padding: 12px 14px;
-        border-radius: 14px;
-        background: rgba(255,255,255,0.04);
-        color: rgba(226,232,240,0.68);
-        font-size: 13px;
-      }
-
-      .composer-card {
-        display: grid;
-        gap: 16px;
-      }
-
-      .composer-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-      }
-
-      .dashboard-sidegrid {
-        display: grid;
-        gap: 18px;
-      }
-
-      .side-card {
-        padding: 20px;
-        border-radius: 24px;
-        background: rgba(15, 17, 23, 0.94);
-        border: 1px solid rgba(255,255,255,0.08);
-        box-shadow: 0 24px 60px rgba(0,0,0,0.28);
-      }
-
-      .side-card .panel-title {
-        margin-top: 0;
-      }
-
-      .dashboard-footer-links {
-        display: flex;
-        justify-content: space-between;
-        gap: 18px;
-        margin-top: 20px;
-        color: rgba(226,232,240,0.38);
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-      }
-
-      .dashboard-footer-links a {
-        color: inherit;
-      }
-
-      @media (max-width: 1100px) {
-        .dashboard-layout {
-          grid-template-columns: 1fr;
-        }
-
-        .chat-history {
-          min-height: 440px;
-          max-height: none;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="/ui/styles.css" />
   </head>
   <body>
-    <section data-view="home" class="home-dark-stage">
-      <header class="home-dark-header">
-        <div class="home-dark-nav">
-          <div class="tailark-mark">
-            <span class="tailark-mark-grid"><span></span></span>
+    <!-- Home -->
+    <section data-view="home" class="view view-home">
+      <header class="site-header">
+        <div class="site-header__inner shell">
+          <a class="site-logo route-link" data-route-link="home" href="#/home" aria-label="Forge home">
+            <span class="site-logo__grid"><span></span></span>
             <span>forge</span>
+          </a>
+          <button type="button" class="icon-btn" id="home-nav-toggle" aria-label="Open menu" aria-expanded="false">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+          <nav class="site-nav" aria-label="Primary">
+            <a class="route-link pill-link" href="#features">Features</a>
+            <a class="route-link pill-link" href="#ai">Copilot</a>
+            <a class="route-link pill-link" href="#showcase">Integrations</a>
+            <a class="route-link pill-link" href="#footer">About</a>
+          </nav>
+          <div class="site-header__actions">
+            <a class="text-button route-link" data-route-link="auth" href="#/auth">Log in</a>
+            <a class="primary-button route-link" data-route-link="auth" href="#/auth">Sign up</a>
           </div>
-          <div class="nav-cluster">
-            <a class="route-link" data-route-link="home" href="#/home">Features</a>
-            <a class="pill-link" href="#features">Solution</a>
-            <a class="pill-link" href="#showcase">Pricing</a>
-            <a class="pill-link" href="#footer">About</a>
-          </div>
-          <div class="top-actions">
-            <div class="status-group" style="display:none;">
-              <div class="status-pill"><span class="status-dot" id="health-dot"></span><span id="health-text">Checking backend</span></div>
-              <div class="status-pill"><span class="status-dot" id="auth-dot"></span><span id="auth-text">Checking auth</span></div>
-            </div>
-            <a class="text-button" href="#/auth">Login</a>
-            <a class="primary-button" href="#/auth">Sign Up</a>
+        </div>
+        <div id="home-drawer-overlay" class="drawer-overlay" aria-hidden="true"></div>
+        <div id="home-drawer" class="drawer" role="dialog" aria-label="Menu" aria-hidden="true">
+          <a class="route-link pill-link" href="#features">Features</a>
+          <a class="route-link pill-link" href="#ai">Copilot</a>
+          <a class="route-link pill-link" href="#showcase">Integrations</a>
+          <a class="route-link pill-link" href="#footer">About</a>
+          <div class="drawer__actions">
+            <a class="ghost-button route-link" data-route-link="auth" href="#/auth">Log in</a>
+            <a class="primary-button route-link" data-route-link="auth" href="#/auth">Sign up</a>
           </div>
         </div>
       </header>
 
-      <main class="home-dark-hero">
-        <a class="dark-hero-badge" href="#features">
-          <span>Introducing Support for AI Models</span>
-          <span class="arrow-pill"><span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span></span>
-        </a>
-        <h1 class="dark-hero-title">Modern AI workflow for <br />product engagement</h1>
-        <p class="dark-hero-copy">
-          Forge brings product setup, protected auth, AI-assisted workspace, Telegram delivery, and deployment handoff into one refined dark experience.
-        </p>
-        <div class="button-row dark-hero-cta">
-          <a class="primary-button" href="#/auth">Get Started</a>
-        </div>
-        <div class="dark-mockup-shell">
-          <div class="dark-mockup-nav">
-            <div class="tailark-mark">
-              <span class="tailark-mark-grid"><span></span></span>
-              <span>forge</span>
-            </div>
-            <div class="nav-cluster">
-              <a class="route-link active" href="#features">Features</a>
-              <a class="route-link" href="#features">Solution</a>
-              <a class="route-link" href="#showcase">Pricing</a>
-              <a class="route-link" href="#footer">About</a>
-            </div>
-            <a class="primary-button" href="#/auth">Get Started</a>
+      <main>
+        <section class="hero shell">
+          <a class="hero__badge" href="#features">
+            <span>AI-native workspace</span>
+            <span class="material-symbols-outlined" style="font-size: 18px">arrow_forward</span>
+          </a>
+          <h1 class="hero__title">Modern AI workflow for <br /><span class="accent">product engagement</span></h1>
+          <p class="hero__lead">
+            Forge connects sign-in, missions, Telegram delivery, memory, and deployment handoff in one calm, dark interface.
+          </p>
+          <div class="hero__cta">
+            <a class="primary-button route-link" data-route-link="auth" href="#/auth">Get started</a>
+            <a class="ghost-button route-link" data-route-link="dashboard" href="#/dashboard">Open workspace</a>
           </div>
-          <div class="dark-product-window">
-            <div class="dark-product-grid">
-              <aside class="mail-sidebar">
-                <div class="mail-select"><span>Alicia Koch</span><span class="material-symbols-outlined" style="font-size:18px;">expand_more</span></div>
-                <div class="mail-nav-list">
-                  <div class="mail-nav-item active"><span><span class="material-symbols-outlined" style="font-size:18px;">inbox</span>Inbox</span><span class="mail-count">128</span></div>
-                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">draft</span>Drafts</span><span class="mail-count">9</span></div>
-                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">send</span>Sent</span></div>
-                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">delete</span>Junk</span><span class="mail-count">23</span></div>
-                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">delete</span>Trash</span></div>
-                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">archive</span>Archive</span></div>
-                </div>
-                <div class="mail-folder-list" style="margin-top:18px; padding-top:18px; border-top:1px solid rgba(255,255,255,0.06);">
-                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">alternate_email</span>Social</span><span class="mail-count">972</span></div>
-                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">info</span>Updates</span><span class="mail-count">342</span></div>
-                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">forum</span>Forums</span><span class="mail-count">128</span></div>
-                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">shopping_cart</span>Shopping</span><span class="mail-count">8</span></div>
-                  <div class="mail-nav-item"><span><span class="material-symbols-outlined" style="font-size:18px;">sell</span>Promotions</span><span class="mail-count">21</span></div>
-                </div>
-              </aside>
-              <section class="mail-list">
-                <div class="mail-list-head">
-                  <h3 style="margin:0; color:#fff; font-size:18px; letter-spacing:-0.04em;">Inbox</h3>
-                  <div class="mail-tabs">
-                    <span class="mail-tab active">All mail</span>
-                    <span class="mail-tab">Unread</span>
-                  </div>
-                </div>
-                <div class="mail-search"><span class="material-symbols-outlined" style="font-size:16px; vertical-align:text-bottom;">search</span> Search</div>
-                <div class="mail-cards">
-                  <div class="mail-card active">
-                    <div class="mail-card-head"><span class="mail-card-title">William Smith</span><span class="mail-card-time">over 1 year ago</span></div>
-                    <div class="mail-card-subject">Meeting Tomorrow</div>
-                    <div class="mail-card-copy">Hi, let's have a meeting tomorrow to discuss the project. I've been reviewing the project details and have some ideas I'd like to share...</div>
-                    <div class="mail-tags"><span>meeting</span><span>work</span><span>important</span></div>
-                  </div>
-                  <div class="mail-card">
-                    <div class="mail-card-head"><span class="mail-card-title">Alice Smith</span><span class="mail-card-time">over 1 year ago</span></div>
-                    <div class="mail-card-subject">Re: Project Update</div>
-                    <div class="mail-card-copy">Thank you for the project update. It looks great! I've gone through the report, and the progress is impressive...</div>
-                    <div class="mail-tags"><span>work</span><span>important</span></div>
-                  </div>
-                  <div class="mail-card">
-                    <div class="mail-card-head"><span class="mail-card-title">Bob Johnson</span><span class="mail-card-time">almost 2 years ago</span></div>
-                    <div class="mail-card-subject">Weekend Plans</div>
-                    <div class="mail-card-copy">Any plans for the weekend? I was thinking of going hiking in the nearby mountains. It's been a while since we had some outdoor fun...</div>
-                    <div class="mail-tags"><span>personal</span></div>
-                  </div>
-                </div>
-              </section>
-              <section class="mail-detail">
-                <div class="mail-detail-top">
-                  <div class="mail-detail-toolbar">
-                    <span class="material-symbols-outlined" style="font-size:18px;">inbox</span>
-                    <span class="material-symbols-outlined" style="font-size:18px;">delete</span>
-                    <span class="material-symbols-outlined" style="font-size:18px;">schedule</span>
-                    <span class="material-symbols-outlined" style="font-size:18px;">more_horiz</span>
-                  </div>
-                  <div class="mail-detail-actions">
-                    <span class="material-symbols-outlined" style="font-size:18px;">reply</span>
-                    <span class="material-symbols-outlined" style="font-size:18px;">reply_all</span>
-                    <span class="material-symbols-outlined" style="font-size:18px;">forward</span>
-                  </div>
-                </div>
-                <div class="mail-thread">
-                  <div class="mail-thread-head">
-                    <div style="display:flex; gap:14px; align-items:flex-start;">
-                      <div class="mail-avatar">WS</div>
-                      <div>
-                        <div style="font-size:18px; font-weight:700; color:#fff;">William Smith</div>
-                        <div style="margin-top:6px; color:rgba(226,232,240,0.62); font-size:14px;">Meeting Tomorrow</div>
-                        <div style="margin-top:4px; color:rgba(226,232,240,0.56); font-size:13px;">Reply-To: williamsmith@example.com</div>
-                      </div>
-                    </div>
-                    <div style="color:rgba(226,232,240,0.56); font-size:13px;">Oct 22, 2023, 9:00:00 AM</div>
-                  </div>
-                  <div class="mail-thread-body">
-                    <p>Hi, let's have a meeting tomorrow to discuss the project. I've been reviewing the project details and have some ideas I'd like to share. It's crucial that we align on our next steps to ensure the project's success.</p>
-                    <p>Please come prepared with any questions or insights you may have. Looking forward to our meeting!</p>
-                    <p>Best regards, William</p>
-                  </div>
-                </div>
-              </section>
-            </div>
-          </div>
-        </div>
-
-        <div class="shell" style="display:none;">
-
-        <section class="features-grid" id="features">
-          <article class="feature-card">
-            <div class="feature-icon"><span class="material-symbols-outlined">cable</span></div>
-            <h3>Connect</h3>
-              <p>Connect mission context, user memory, Telegram delivery, and external integrations without breaking the product experience.</p>
-            <div class="feature-meta">102 integrations active</div>
-          </article>
-          <article class="feature-card">
-            <div class="feature-icon" style="background: rgba(0, 102, 255, 0.08);"><span class="material-symbols-outlined" style="color: var(--brand);">schema</span></div>
-            <h3>Orchestrate</h3>
-              <p>Turn a prompt into a structured mission with visible planning, approval states, execution stages, and clear output ownership.</p>
-            <div class="feature-meta">99.9% logic reliability</div>
-          </article>
-          <article class="feature-card">
-            <div class="feature-icon"><span class="material-symbols-outlined">rocket_launch</span></div>
-            <h3>Deploy</h3>
-              <p>Push output to GitHub, Vercel, Telegram, and artifact streams with cleaner delivery feedback and less confusion for the user.</p>
-            <div class="feature-meta" id="home-mode-copy">Protected workspace</div>
-          </article>
         </section>
 
-        <section class="secondary-ai-wrap">
-          <section class="ai-hero-shell">
-            <div class="ai-hero-grid">
-              <div class="ai-hero-copy">
-                <div class="hero-pill"><span class="pulse-dot"></span><span>AI-native workspace</span></div>
-                <h1 class="ai-hero-title">Build with a <br /><span class="accent">real AI copilot</span></h1>
-                <p class="hero-copy">
-                  This is the live AI section of Forge. Prompt, preview, refine, and move directly into output, memory, Telegram delivery, and deployment handoff.
-                </p>
-                <div class="button-row ai-hero-actions">
-                  <a class="primary-button" href="#/auth">Start with Forge</a>
-                  <a class="ghost-button" href="#/dashboard">Open dashboard</a>
-                </div>
-                <div class="ai-hero-pills">
-                  <span>Prompt to product</span>
-                  <span>Telegram connected</span>
-                  <span>Recent memory</span>
-                  <span>Deploy handoff</span>
-                </div>
+        <section class="features shell" id="features">
+          <div class="features__grid">
+            <article class="feature-card">
+              <div class="feature-card__icon"><span class="material-symbols-outlined">cable</span></div>
+              <h3>Connect</h3>
+              <p>Mission context, memory, Telegram, and integrations without breaking the product flow.</p>
+              <div class="feature-card__meta">Integrations-ready</div>
+            </article>
+            <article class="feature-card">
+              <div class="feature-card__icon" style="background: var(--violet-dim); color: var(--violet)">
+                <span class="material-symbols-outlined">schema</span>
               </div>
-              <div class="ai-hero-panel">
-                <div class="ai-panel-top">
-                  <span class="ai-model-pill"><span class="material-symbols-outlined" style="font-size:18px;">auto_awesome</span>Forge Copilot</span>
-                  <div class="ai-toolbar">
-                    <button type="button"><span class="material-symbols-outlined" style="font-size:18px;">content_copy</span></button>
-                    <button type="button"><span class="material-symbols-outlined" style="font-size:18px;">refresh</span></button>
-                    <button type="button"><span class="material-symbols-outlined" style="font-size:18px;">more_horiz</span></button>
-                  </div>
-                </div>
-                <div class="ai-chat-feed">
-                  <div class="ai-bubble assistant">
-                    <p>I can turn a single prompt into a landing page, auth flow, dashboard structure, GitHub handoff, and a deployment-ready build plan.</p>
-                  </div>
-                  <div class="ai-bubble user">
-                    <p>Build me a cleaner AI product workspace with better chat, delivery, and deployment flow.</p>
-                  </div>
-                  <div class="ai-preview-card">
-                    <span class="ai-mini-pill"><span class="material-symbols-outlined" style="font-size:16px;">image</span>Live visual output</span>
-                    <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80" alt="AI workspace preview" />
-                  </div>
-                </div>
-                <div class="ai-input-shell">
-                  <textarea placeholder="Ask Forge to design, build, organize Telegram delivery, and prepare the project for GitHub and deployment..."></textarea>
-                  <div class="ai-input-footer">
-                    <div class="ai-input-tools">
-                      <span><span class="material-symbols-outlined" style="font-size:16px;">attach_file</span>&nbsp;Files</span>
-                      <span><span class="material-symbols-outlined" style="font-size:16px;">travel_explore</span>&nbsp;Research</span>
-                      <span><span class="material-symbols-outlined" style="font-size:16px;">send</span>&nbsp;Telegram</span>
-                    </div>
-                    <span class="ai-send"><span class="material-symbols-outlined" style="font-size:16px;">north_east</span>&nbsp;Run</span>
-                  </div>
-                </div>
+              <h3>Orchestrate</h3>
+              <p>Structured missions with planning, stages, approvals, and clear ownership of outputs.</p>
+              <div class="feature-card__meta">Pipeline visibility</div>
+            </article>
+            <article class="feature-card">
+              <div class="feature-card__icon"><span class="material-symbols-outlined">rocket_launch</span></div>
+              <h3>Deploy</h3>
+              <p>GitHub, Vercel, and Telegram feedback with less guesswork after each run.</p>
+              <div class="feature-card__meta" id="home-mode-copy">Protected workspace</div>
+            </article>
+          </div>
+        </section>
+
+        <section class="ai-band" id="ai">
+          <div class="shell ai-band__grid">
+            <div>
+              <div class="hero-pill" style="margin-bottom: 14px"><span class="pulse-dot"></span> Live copilot</div>
+              <h2 class="hero__title" style="font-size: clamp(1.75rem, 4vw, 2.5rem); text-align: left">
+                Build with a <br /><span class="accent">real AI copilot</span>
+              </h2>
+              <p class="hero__lead" style="text-align: left; margin-left: 0">
+                Prompt, preview pipeline stages, then move into artifacts, memory, Telegram, and deploy handoff.
+              </p>
+              <div class="hero__cta" style="justify-content: flex-start">
+                <a class="primary-button route-link" data-route-link="auth" href="#/auth">Start with Forge</a>
+                <a class="ghost-button route-link" data-route-link="dashboard" href="#/dashboard">Workspace</a>
               </div>
             </div>
-          </section>
-        </section>
-
-        <section class="waitlist-section">
-          <div class="waitlist-shell">
-            <div class="hero-pill" style="margin: 0 auto;">Early access</div>
-            <h2>Join the next wave of <br />AI product builders</h2>
-            <p>Get notified when the cleaner Forge workspace, AI chat flow, and deployment experience are fully ready. This fits right after the AI hero as the product CTA before deeper feature exploration.</p>
-            <form class="waitlist-form">
-              <input type="email" placeholder="Enter your email for early access" />
-              <button type="button">Join waitlist</button>
-            </form>
-            <div class="waitlist-badges">
-              <span><span class="material-symbols-outlined" style="font-size:16px;">bolt</span>Fast access</span>
-              <span><span class="material-symbols-outlined" style="font-size:16px;">send</span>Telegram-ready</span>
-              <span><span class="material-symbols-outlined" style="font-size:16px;">rocket_launch</span>Deploy-friendly</span>
+            <div class="ai-panel">
+              <div class="ai-panel__top">
+                <span class="tiny-chip"><span class="material-symbols-outlined" style="font-size: 16px">auto_awesome</span> Forge Copilot</span>
+                <span class="material-symbols-outlined" style="color: var(--text-soft); font-size: 20px">more_horiz</span>
+              </div>
+              <div class="ai-panel__feed">
+                <div class="ai-bubble assistant">
+                  <p style="margin: 0">I can turn one prompt into a landing page, auth, dashboard structure, GitHub handoff, and a deploy plan.</p>
+                </div>
+                <div class="ai-bubble user">
+                  <p style="margin: 0">Build a cleaner AI workspace with chat, delivery, and deployment flow.</p>
+                </div>
+              </div>
+              <textarea readonly rows="3" placeholder="Ask Forge to design, build, and ship..." style="resize: none"></textarea>
             </div>
           </div>
         </section>
 
-        <section class="showcase" id="showcase">
-          <div class="showcase-layout">
-            <div class="showcase-copy">
-              <div class="hero-pill" style="margin-bottom: 24px; background: rgba(0,102,255,0.16); color: var(--brand);">Featured Integration</div>
-              <h2>Forge your agents into <span class="accent">Telegram Hub.</span></h2>
-              <p>Turn any Forge mission into a Telegram-native experience with approval-safe flows, live updates, and shared memory between chat and web.</p>
-              <ul>
-                <li><span class="material-symbols-outlined" style="color: var(--brand);">check_circle</span>Native Telegram API bridging</li>
-                <li><span class="material-symbols-outlined" style="color: var(--brand);">check_circle</span>Asynchronous mission updates</li>
-                <li><span class="material-symbols-outlined" style="color: var(--brand);">check_circle</span>Multi-agent collaboration via group chat</li>
+        <section class="waitlist shell">
+          <div class="hero-pill" style="margin: 0 auto 14px">Early access</div>
+          <h2>Join the next wave of <br />AI product builders</h2>
+          <p>Get notified when the Forge workspace, chat flow, and deployment experience are fully ready.</p>
+          <form class="waitlist-form" onsubmit="return false">
+            <input type="email" placeholder="you@company.com" autocomplete="email" />
+            <button type="button">Join waitlist</button>
+          </form>
+        </section>
+
+        <section class="showcase shell" id="showcase">
+          <div class="showcase__layout">
+            <div>
+              <div class="hero-pill" style="margin-bottom: 16px; border-color: rgba(56, 189, 248, 0.35); color: var(--accent)">Featured</div>
+              <h2 class="hero__title" style="font-size: clamp(1.5rem, 4vw, 2.25rem); text-align: left">
+                Forge your agents into <span class="accent">Telegram Hub</span>
+              </h2>
+              <p class="hero__lead" style="text-align: left; margin-left: 0">
+                Approval-safe flows, async mission updates, and shared memory between Telegram and the web workspace.
+              </p>
+              <ul style="margin: 18px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; color: var(--text-muted)">
+                <li style="display: flex; gap: 10px; align-items: center">
+                  <span class="material-symbols-outlined" style="color: var(--accent); font-size: 20px">check_circle</span>
+                  Native Telegram bridging
+                </li>
+                <li style="display: flex; gap: 10px; align-items: center">
+                  <span class="material-symbols-outlined" style="color: var(--accent); font-size: 20px">check_circle</span>
+                  Async mission updates
+                </li>
+                <li style="display: flex; gap: 10px; align-items: center">
+                  <span class="material-symbols-outlined" style="color: var(--accent); font-size: 20px">check_circle</span>
+                  Group chat collaboration
+                </li>
               </ul>
-              <a class="primary-button" href="#/auth">Connect Telegram</a>
+              <div class="hero__cta" style="justify-content: flex-start; margin-top: 22px">
+                <a class="primary-button route-link" data-route-link="auth" href="#/auth">Connect Telegram</a>
+              </div>
             </div>
-            <div class="showcase-visual">
-              <div class="showcase-phone">
-                <div class="glass-card">
-                  <div class="glass-row">
-                    <div class="glass-avatar"><span class="material-symbols-outlined">smart_toy</span></div>
-                    <div>
-                      <div style="font-size: 12px; font-weight: 700; color: #0f172a;">Forge Agent #042</div>
-                      <div style="font-size: 11px; color: #64748b;">Mission: Analysis</div>
-                    </div>
+            <div class="auth-visual-card" style="margin-top: 0">
+              <div class="auth-visual-chrome">
+                <span></span><span></span><span></span>
+                <span class="auth-visual-title">forge agent</span>
+              </div>
+              <div class="auth-visual-rows">
+                <div class="auth-visual-row">
+                  <span class="material-symbols-outlined">smart_toy</span>
+                  <div>
+                    <strong>Forge Agent</strong>
+                    <p>Mission: Analysis · Processing live updates to your workspace.</p>
                   </div>
-                  <div class="progress"><span></span></div>
-                  <div class="split" style="margin-top: 10px;"><span style="font-size: 11px; color: #64748b;">Processing...</span><span style="font-size: 11px; font-weight: 700; color: var(--brand);">67%</span></div>
                 </div>
               </div>
             </div>
           </div>
         </section>
-        </div>
       </main>
 
-      <footer class="shell home-footer" id="footer">
-        <div class="footer-grid">
+      <footer class="site-footer" id="footer">
+        <div class="shell site-footer__grid">
           <div>
-            <div class="forge-logo" aria-label="Forge Bot logo" style="margin-bottom: 18px;">
-              <div class="forge-logo-arch"></div>
-              <div class="forge-logo-wordmark">
-                <div class="forge-logo-word">FORGE</div>
-                <div class="forge-logo-bot"><span>BOT</span><div class="forge-logo-dot"></div></div>
-              </div>
+            <div class="site-logo" style="margin-bottom: 12px">
+              <span class="site-logo__grid"><span></span></span>
+              <span>forge</span>
             </div>
-            <p class="muted" style="max-width: 320px;">Forge gives AI products a cleaner path from sign-in to mission execution, project output, and deployment delivery.</p>
+            <p class="muted" style="margin: 0; max-width: 280px; font-size: 14px">
+              A cleaner path from sign-in to mission execution, artifacts, and deployment delivery.
+            </p>
+            <div class="status-micro" style="margin-top: 16px">
+              <span><span class="status-dot" id="health-dot"></span><span id="health-text">Checking backend</span></span>
+              <span><span class="status-dot" id="auth-dot"></span><span id="auth-text">Checking auth</span></span>
+            </div>
           </div>
-          <div class="footer-columns">
-            <div>
-              <h4>Product</h4>
-              <ul><li><a href="#features">Features</a></li><li><a href="#showcase">Integrations</a></li><li><a href="#/dashboard">Workspace</a></li></ul>
-            </div>
-            <div>
-              <h4>Company</h4>
-              <ul><li><a href="#/home">About</a></li><li><a href="#/home">Blog</a></li><li><a href="#/home">Careers</a></li></ul>
-            </div>
-            <div>
-              <h4>Legal</h4>
-              <ul><li><a href="#/home">Privacy</a></li><li><a href="#/home">Terms</a></li><li><a href="#/home">Security</a></li></ul>
-            </div>
+          <div>
+            <h4>Product</h4>
+            <ul>
+              <li><a href="#features">Features</a></li>
+              <li><a href="#showcase">Integrations</a></li>
+              <li><a class="route-link" data-route-link="dashboard" href="#/dashboard">Workspace</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Company</h4>
+            <ul>
+              <li><a href="#footer">About</a></li>
+              <li><a href="#footer">Blog</a></li>
+              <li><a href="#footer">Careers</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Legal</h4>
+            <ul>
+              <li><a href="#footer">Privacy</a></li>
+              <li><a href="#footer">Terms</a></li>
+              <li><a href="#footer">Security</a></li>
+            </ul>
           </div>
         </div>
-        <div class="footer-bottom"><div>© 2026 Forge AI Technologies. All rights reserved.</div><div class="nav-row"><a href="#/home">Twitter</a><a href="#/home">LinkedIn</a><a href="#/home">GitHub</a></div></div>
+        <div class="shell site-footer__bottom">
+          <span>© 2026 Forge AI Technologies</span>
+          <div class="row" style="gap: 16px">
+            <a href="#footer">Twitter</a>
+            <a href="#footer">LinkedIn</a>
+            <a href="#footer">GitHub</a>
+          </div>
+        </div>
       </footer>
     </section>
 
-    <section class="auth-view hidden" data-view="auth">
-      <div class="auth-glow"></div>
-      <div class="auth-glow-secondary"></div>
-      <header class="home-dark-header">
-        <div class="home-dark-nav">
-          <a class="tailark-mark route-link" data-route-link="home" href="#/home" aria-label="Forge home">
-            <span class="tailark-mark-grid"><span></span></span>
+    <!-- Auth -->
+    <section class="auth-view view hidden" data-view="auth">
+      <div class="auth-glow" aria-hidden="true"></div>
+      <div class="auth-glow-secondary" aria-hidden="true"></div>
+      <header class="site-header">
+        <div class="site-header__inner shell">
+          <a class="site-logo route-link" data-route-link="home" href="#/home" aria-label="Forge home">
+            <span class="site-logo__grid"><span></span></span>
             <span>forge</span>
           </a>
-          <div class="nav-cluster">
+          <button type="button" class="icon-btn" id="auth-nav-toggle" aria-label="Open menu">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+          <nav class="site-nav">
             <a class="route-link" data-route-link="home" href="#/home">Home</a>
             <a class="route-link" data-route-link="auth" href="#/auth">Auth</a>
-            <a class="route-link" data-route-link="dashboard" href="#/dashboard">Dashboard</a>
-          </div>
-          <div class="top-actions">
+            <a class="route-link" data-route-link="dashboard" href="#/dashboard">Workspace</a>
+          </nav>
+          <div class="site-header__actions">
             <a class="text-button" href="#/home">Support</a>
-            <a class="primary-button" href="#/dashboard">Workspace</a>
+            <a class="primary-button route-link" data-route-link="dashboard" href="#/dashboard">Open app</a>
+          </div>
+        </div>
+        <div id="auth-drawer-overlay" class="drawer-overlay"></div>
+        <div id="auth-drawer" class="drawer" role="dialog" aria-label="Menu">
+          <a class="route-link" data-route-link="home" href="#/home">Home</a>
+          <a class="route-link" data-route-link="auth" href="#/auth">Auth</a>
+          <a class="route-link" data-route-link="dashboard" href="#/dashboard">Workspace</a>
+          <div class="drawer__actions">
+            <a class="primary-button route-link" data-route-link="dashboard" href="#/dashboard">Open app</a>
           </div>
         </div>
       </header>
@@ -3658,12 +271,9 @@
       <main class="shell auth-stage">
         <div class="auth-layout">
           <section class="auth-showcase">
-            <div class="auth-showcase-head">
-              <div class="hero-pill" style="margin-bottom: 0;">Secure access</div>
-              <h2>Sign in to your <br />Forge workspace</h2>
-              <p>Use the same account for missions, Telegram delivery, saved memory, and deployment handoff. No separate “admin” experience.</p>
-            </div>
-
+            <div class="hero-pill">Secure access</div>
+            <h2>Sign in to your <br />Forge workspace</h2>
+            <p>One account for missions, Telegram delivery, saved memory, and deployment handoff.</p>
             <div class="auth-visual-card" aria-hidden="true">
               <div class="auth-visual-chrome">
                 <span></span><span></span><span></span>
@@ -3681,77 +291,116 @@
                   <span class="material-symbols-outlined">hub</span>
                   <div>
                     <strong>Delivery</strong>
-                    <p>Web and Telegram stay in sync for the same workspace.</p>
+                    <p>Web and Telegram stay in sync.</p>
                   </div>
                 </div>
                 <div class="auth-visual-row">
                   <span class="material-symbols-outlined">rocket_launch</span>
                   <div>
                     <strong>Deploy</strong>
-                    <p>Artifacts and handoff notes ready for GitHub and Vercel.</p>
+                    <p>Handoff-ready artifacts for GitHub and Vercel.</p>
                   </div>
                 </div>
               </div>
             </div>
           </section>
-        <div class="auth-form-stack">
-          <section class="auth-card" id="auth-panel">
-            <div class="auth-card-top split">
-              <div class="row" style="gap: 14px;">
-                <div class="brand-mark auth-card-mark"><span class="material-symbols-outlined">shield</span></div>
-                <div>
-                  <div class="auth-card-heading">Welcome back</div>
-                  <div class="muted auth-card-sub">Enter your credentials to continue</div>
+
+          <div class="auth-form-stack">
+            <section class="auth-card" id="auth-panel">
+              <div class="auth-card-top">
+                <div class="row" style="gap: 14px">
+                  <div class="auth-card-mark"><span class="material-symbols-outlined">shield</span></div>
+                  <div>
+                    <div class="auth-card-heading">Welcome back</div>
+                    <div class="auth-card-sub muted">Enter your credentials to continue</div>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="auth-content">
-              <div class="auth-switch">
-                <button class="ghost-button active" id="mode-signin" type="button">Sign In</button>
-                <button class="ghost-button" id="mode-signup" type="button">Create Account</button>
+              <div class="auth-content">
+                <div class="auth-switch">
+                  <button class="ghost-button active" id="mode-signin" type="button">Sign in</button>
+                  <button class="ghost-button" id="mode-signup" type="button">Create account</button>
+                </div>
+                <form class="auth-form" id="auth-form">
+                  <label>
+                    Email
+                    <div class="input-wrap">
+                      <span class="material-symbols-outlined">mail</span>
+                      <input id="auth-email" type="email" placeholder="you@company.com" autocomplete="email" required />
+                    </div>
+                  </label>
+                  <label>
+                    Password
+                    <div class="input-wrap">
+                      <span class="material-symbols-outlined">key</span>
+                      <input id="auth-password" type="password" placeholder="••••••••" minlength="8" required />
+                    </div>
+                  </label>
+                  <button class="primary-button" id="auth-submit" type="submit">Sign in</button>
+                </form>
+                <span class="auth-feedback" id="auth-feedback">Waiting for Supabase auth configuration.</span>
+                <div class="empty-state hidden" id="auth-warning" style="margin-top: 14px"></div>
+                <div class="divider"><span>Or continue with</span></div>
+                <div class="social-grid">
+                  <button class="social-button" type="button">
+                    <img alt="" width="20" height="20" src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" /><span>Google</span>
+                  </button>
+                  <button class="social-button" type="button">
+                    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                      <path
+                        fill="currentColor"
+                        d="M12 0C5.373 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.041-1.412-4.041-1.412-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22v3.293c0 .319.192.694.805.576C20.562 21.799 24 17.302 24 12c0-6.627-5.373-12-12-12z"
+                      />
+                    </svg>
+                    <span>GitHub</span>
+                  </button>
+                </div>
               </div>
-              <form class="auth-form" id="auth-form">
-                <label>Email Address<div class="input-wrap"><span class="material-symbols-outlined">mail</span><input id="auth-email" type="email" placeholder="commander@forge.ai" required /></div></label>
-                <label>Password<div class="input-wrap"><span class="material-symbols-outlined">key</span><input id="auth-password" type="password" placeholder="••••••••••••" minlength="8" required /></div></label>
-                <button class="primary-button" id="auth-submit" type="submit">Sign In</button>
-              </form>
-              <span class="auth-feedback" id="auth-feedback">Waiting for Supabase auth configuration.</span>
-              <div class="empty-state hidden" id="auth-warning" style="margin-top: 18px;"></div>
-              <div class="divider"><span>Or continue with</span></div>
-              <div class="social-grid">
-                <button class="social-button" type="button"><img alt="Google logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYRd3eqcGQz9RbDahzZTUIe1pRa8x5m1ELr5dIVm5N9vWPQRQy3-1Jp1VcTtyrlH-05eXlUdzZo6fjinmDviqSZhofMXs3sqnPbBeTWWEjgTT64mxbQwXHs9rtUiSHxidDwk7OXGbBTDylsDjS0pqOPfJa70p_EoaxxWbVkJgoKzQgLmJymkHBPyKMgIPqpTtMlaBEfh2AWNs40KYW26P90IOMB603ZZyWGhiB3mpGd0gQP7ejkQLUy9k3StjdKmZF5poutjIIljA" /><span>Google</span></button>
-                <button class="social-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 0C5.373 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.041-1.412-4.041-1.412-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22v3.293c0 .319.192.694.805.576C20.562 21.799 24 17.302 24 12c0-6.627-5.373-12-12-12z"></path></svg><span>GitHub</span></button>
+              <div class="auth-card-bottom">
+                <p class="muted auth-legal" style="margin: 0; text-align: center; font-size: 12px">
+                  By continuing, you agree to our <a class="auth-inline-link" href="#/home">Terms</a> and
+                  <a class="auth-inline-link" href="#/home">Privacy Policy</a>.
+                </p>
               </div>
+            </section>
+            <div class="auth-support">
+              <div class="auth-support-top">
+                <a class="route-link" data-route-link="home" href="#/home">Home</a>
+                <div class="row" style="gap: 14px">
+                  <a href="#footer">Support</a><a href="#footer">Status</a><a href="#footer">API</a>
+                </div>
+              </div>
+              <p class="auth-note">Sign in to unlock the dashboard, shared memory, delivery tools, and mission history.</p>
             </div>
-            <div class="auth-card-bottom"><p class="muted auth-legal" style="margin: 0; text-align: center; font-size: 12px;">By continuing, you agree to our <a class="auth-inline-link" href="#/home">Terms of Service</a> and <a class="auth-inline-link" href="#/home">Privacy Policy</a>.</p></div>
-          </section>
-          <div class="auth-support">
-            <div class="auth-support-top"><a href="#/home">Home</a><div class="auth-support-links"><a href="#/home">Support</a><a href="#/home">Status</a><a href="#/home">API</a></div></div>
-            <p class="auth-note">Designed like a product, not an admin form. Sign in to unlock the dashboard, shared memory, delivery tools, and mission history.</p>
           </div>
-        </div>
         </div>
       </main>
     </section>
-    <section class="dashboard-view hidden" data-view="dashboard">
+
+    <!-- Dashboard -->
+    <section class="dashboard-view view hidden" data-view="dashboard">
+      <div id="dashboard-sidebar-overlay" class="drawer-overlay" aria-hidden="true"></div>
       <div class="dashboard-shell">
-        <aside class="dashboard-sidebar">
-          <div class="sidebar-top" style="display:grid; gap:14px;">
-            <div class="sidebar-profile">
-              <div class="sidebar-avatar"></div>
-              <div style="display:grid; gap:2px;">
-                <strong style="font-size:14px; letter-spacing:-0.02em;">Forge Workspace</strong>
-                <span style="font-size:12px; color:var(--muted);">AI product console</span>
-              </div>
-            </div>
-            <div class="sidebar-search">
-              <span class="material-symbols-outlined" style="font-size:18px;">search</span>
-              <span>Search workspace</span>
+        <aside class="dashboard-sidebar" id="dashboard-sidebar" aria-label="Workspace navigation">
+          <div class="sidebar-profile">
+            <div class="sidebar-avatar" aria-hidden="true"></div>
+            <div>
+              <strong style="font-size: 14px; letter-spacing: -0.02em">Forge Workspace</strong>
+              <div class="muted" style="font-size: 12px">AI product console</div>
             </div>
           </div>
-          <button class="new-mission-button" type="button"><span class="material-symbols-outlined" style="font-size: 18px;">add</span><span>New mission</span></button>
+          <div class="sidebar-search">
+            <span class="material-symbols-outlined" style="font-size: 18px">search</span>
+            <span>Search workspace</span>
+          </div>
+          <button class="new-mission-button" type="button">
+            <span class="material-symbols-outlined" style="font-size: 18px">add</span>
+            <span>New mission</span>
+          </button>
           <nav class="sidebar-links">
-            <a class="sidebar-link route-link" data-route-link="dashboard" href="#/dashboard"><span class="material-symbols-outlined">dashboard</span><span>Overview</span></a>
+            <a class="sidebar-link route-link" data-route-link="dashboard" href="#/dashboard"
+              ><span class="material-symbols-outlined">dashboard</span><span>Overview</span></a
+            >
             <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">terminal</span><span>Missions</span></a>
             <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">folder</span><span>Artifacts</span></a>
             <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">hub</span><span>Delivery</span></a>
@@ -3759,17 +408,25 @@
           </nav>
           <div class="sidebar-bottom sidebar-links">
             <a class="sidebar-link route-link" data-route-link="home" href="#/home"><span class="material-symbols-outlined">home</span><span>Home</span></a>
-            <a class="sidebar-link route-link" data-route-link="auth" href="#/auth"><span class="material-symbols-outlined">shield_lock</span><span>Auth</span></a>
+            <a class="sidebar-link route-link" data-route-link="auth" href="#/auth"
+              ><span class="material-symbols-outlined">shield_lock</span><span>Auth</span></a
+            >
             <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">help_outline</span><span>Help</span></a>
           </div>
         </aside>
 
         <main class="dashboard-main">
+          <button type="button" class="icon-btn" id="dashboard-nav-toggle" aria-label="Open sidebar" aria-expanded="false">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+
           <header class="status-bar compact">
             <div class="dashboard-overview">
               <div>
-                <h1 class="dashboard-title">Good afternoon</h1>
-                <p class="dashboard-subtitle">A cleaner workspace for missions, approvals, delivery, and outputs. Telegram stays connected, but it no longer dominates the screen.</p>
+                <h1 class="dashboard-title">Workspace</h1>
+                <p class="dashboard-subtitle">
+                  Missions, approvals, delivery, and outputs in one place. Telegram stays connected without crowding the canvas.
+                </p>
                 <div class="overview-pills">
                   <span class="segment-pill active">Overview</span>
                   <span class="segment-pill">Projects</span>
@@ -3777,9 +434,17 @@
                 </div>
               </div>
               <div class="overview-actions">
-                <button class="ghost-circle" type="button"><span class="material-symbols-outlined" style="font-size:18px;">search</span></button>
-                <div class="metric-box"><span class="meta">Missions</span><p id="mission-count-metric" style="font-weight: 700;">0 total</p></div>
-                <div class="metric-box"><span class="meta">Active</span><p id="active-mission-metric" style="font-weight: 700;">0 running</p></div>
+                <button class="ghost-circle" type="button" aria-label="Search">
+                  <span class="material-symbols-outlined" style="font-size: 18px">search</span>
+                </button>
+                <div class="metric-box">
+                  <span class="meta">Missions</span>
+                  <p id="mission-count-metric" style="font-weight: 700">0 total</p>
+                </div>
+                <div class="metric-box">
+                  <span class="meta">Active</span>
+                  <p id="active-mission-metric" style="font-weight: 700">0 running</p>
+                </div>
               </div>
             </div>
           </header>
@@ -3788,10 +453,10 @@
             <div class="chat-shell">
               <section class="chat-card">
                 <div class="chat-header">
-                  <div class="chat-title-wrap">
+                  <div>
                     <div class="panel-kicker">Forge Chat</div>
                     <h2 class="chat-title">Mission conversation</h2>
-                    <p class="chat-subtitle">Your web messages, Telegram-linked messages, and Forge replies should all be readable here in one proper chat canvas.</p>
+                    <p class="chat-subtitle">Web, Telegram-linked messages, and Forge replies in one thread.</p>
                   </div>
                   <div class="chat-meta-pills">
                     <span class="tiny-chip" id="mission-status-chip">Public preview mode</span>
@@ -3799,53 +464,59 @@
                     <span class="tiny-chip" id="integration-count-chip">0 integrations</span>
                   </div>
                 </div>
-                <div class="auth-zone" style="margin-bottom: 18px;">
+                <div class="chat-history-head">
+                  <span class="panel-kicker" style="margin: 0">History</span>
+                  <span id="timeline-meta"></span>
+                </div>
+                <div class="auth-zone">
                   <div class="user-row">
                     <div>
-                      <div id="workspace-user" style="font-size: 18px; font-weight: 700;">Not signed in</div>
-                      <p class="muted" id="workspace-user-meta" style="margin: 6px 0 0;">Sign in to open the protected mission console.</p>
+                      <div id="workspace-user" style="font-size: 17px; font-weight: 700">Not signed in</div>
+                      <p class="muted" id="workspace-user-meta" style="margin: 6px 0 0">Sign in to open the protected mission console.</p>
                     </div>
-                    <button class="ghost-button" id="signout-button" type="button">Sign Out</button>
+                    <button class="ghost-button hidden" id="signout-button" type="button">Sign out</button>
                   </div>
                 </div>
                 <div class="chat-history" id="timeline-list">
-                  <div class="chat-message assistant">
-                    <div class="chat-message-head">
-                      <span class="chat-role assistant">Forge reply</span>
-                      <span class="chat-time">Waiting</span>
-                    </div>
-                    <p class="chat-body">Conversation history will appear here after your first mission.</p>
-                  </div>
+                  <div class="empty">Conversation history will appear here after your first mission.</div>
                 </div>
-                <div class="response-box" style="margin-top: 18px;">
+                <div class="response-box">
                   <div class="panel-kicker" id="result-meta">Latest response</div>
-                  <p class="chat-body" id="result-response" style="margin-top: 10px;">Mission output will render here.</p>
+                  <p class="muted" id="result-response" style="margin-top: 10px">Mission output will render here.</p>
                   <div class="chat-artifact-note hidden" id="document-wrap">
                     <div class="meta">Structured document</div>
-                    <pre id="document-output" style="margin: 10px 0 0; white-space: pre-wrap;"></pre>
+                    <pre id="document-output"></pre>
                   </div>
                 </div>
               </section>
 
               <section class="chat-card composer-card">
                 <div class="composer-top">
-                  <div class="chat-title-wrap">
+                  <div>
                     <div class="panel-kicker">Composer</div>
-                    <h2 class="panel-title" style="margin:0;">Draft and run</h2>
+                    <h2 class="panel-title" style="margin: 0">Draft and run</h2>
                   </div>
-                  <p class="muted" id="workspace-feedback" style="margin:0;">Authenticated missions will appear here.</p>
+                  <p class="muted" id="workspace-feedback" style="margin: 0">Authenticated missions will appear here.</p>
                 </div>
-                <div class="workspace-input-wrap" style="margin-top:0;"><textarea id="workspace-input" placeholder="Define your next mission objective...">Design a production-ready launch page, auth flow, and deployable app structure for my AI product, then prepare the GitHub and Vercel handoff.</textarea></div>
+                <div class="workspace-input-wrap">
+                  <textarea id="workspace-input" placeholder="Define your next mission objective...">Design a production-ready launch page, auth flow, and deployable app structure for my AI product, then prepare the GitHub and Vercel handoff.</textarea>
+                </div>
                 <div class="mission-toolbar">
                   <div class="mini-icon-row">
-                    <button class="icon-button" type="button"><span class="material-symbols-outlined">attach_file</span></button>
-                    <button class="icon-button" type="button"><span class="material-symbols-outlined">mic</span></button>
-                    <button class="icon-button" type="button"><span class="material-symbols-outlined">language</span></button>
+                    <button class="icon-button" type="button" aria-label="Attach">
+                      <span class="material-symbols-outlined">attach_file</span>
+                    </button>
+                    <button class="icon-button" type="button" aria-label="Voice">
+                      <span class="material-symbols-outlined">mic</span>
+                    </button>
+                    <button class="icon-button" type="button" aria-label="Web">
+                      <span class="material-symbols-outlined">language</span>
+                    </button>
                   </div>
                   <div class="button-row">
-                    <button class="ghost-button" id="workspace-fill" type="button">Load Research Prompt</button>
-                    <button class="ghost-button" id="preview-run" type="button">Preview Pipeline</button>
-                    <button class="primary-button" id="workspace-run" type="button">Run Mission</button>
+                    <button class="ghost-button" id="workspace-fill" type="button">Load research prompt</button>
+                    <button class="ghost-button" id="preview-run" type="button">Preview pipeline</button>
+                    <button class="primary-button" id="workspace-run" type="button">Run mission</button>
                   </div>
                 </div>
               </section>
@@ -3854,53 +525,88 @@
             <div class="dashboard-sidegrid">
               <section class="side-card">
                 <div class="telegram-card-head">
-                  <div class="telegram-card-copy">
-                    <div class="panel-kicker">Telegram Link</div>
-                    <h2 class="panel-title">Delivery and sync</h2>
-                    <p class="muted" style="margin: 0;">Link Telegram here, then let the latest messages appear inside the main chat canvas instead of hiding them in a side strip.</p>
+                  <div>
+                    <div class="panel-kicker">Telegram link</div>
+                    <h2 class="panel-title" style="margin-top: 6px">Delivery and sync</h2>
+                    <p class="muted" style="margin: 8px 0 0">
+                      Link Telegram so messages show in the main thread instead of a cramped strip.
+                    </p>
                   </div>
-                  <button class="ghost-button" id="telegram-link-action" type="button">Generate Link Code</button>
+                  <button class="ghost-button" id="telegram-link-action" type="button">Generate link code</button>
                 </div>
-                <div class="telemetry-row" style="align-items:center; margin-top:18px;">
-                  <div class="status-primary" style="gap:12px;">
-                    <div class="hub-icon" style="width:44px; height:44px;"><span class="material-symbols-outlined">send</span></div>
-                    <div>
-                      <div class="status-headline" style="margin-top:0;">
-                        <strong id="telegram-link-status">Sign in to generate a Telegram link code.</strong>
-                        <span class="green-chip" id="telegram-link-code">No active code</span>
-                      </div>
+                <div class="status-primary" style="margin-top: 16px">
+                  <div class="hub-icon"><span class="material-symbols-outlined">send</span></div>
+                  <div style="min-width: 0">
+                    <div class="status-headline">
+                      <strong id="telegram-link-status">Sign in to generate a Telegram link code.</strong>
+                      <span class="green-chip" id="telegram-link-code">No active code</span>
                     </div>
+                    <p class="status-explain" id="telegram-link-expiry" style="margin-top: 8px">
+                      Generate a code, then send /link CODE to the Forge Telegram bot.
+                    </p>
                   </div>
                 </div>
-                <div class="telegram-help-row" style="margin-top:16px;">
-                  <p class="status-explain" id="telegram-link-expiry" style="margin:0;">Generate a code, then send /link CODE to the Forge Telegram bot.</p>
-                </div>
-                <p class="muted" id="telegram-link-help" style="margin: 12px 0 0;">Telegram messages will share this workspace after linking.</p>
+                <p class="muted" id="telegram-link-help" style="margin-top: 12px">Telegram messages will share this workspace after linking.</p>
               </section>
 
               <section class="side-card">
                 <h2 class="panel-title">Plan</h2>
-                <div class="memory-box" style="margin-top: 18px;"><div class="meta">Current Intent</div><p id="result-intent" class="muted" style="margin: 8px 0 0;">Preview a mission to inspect the route.</p></div>
-                <div class="memory-box" style="margin-top: 14px;"><div class="meta">Context</div><p id="result-context" class="muted" style="margin: 8px 0 0;">No route selected yet.</p></div>
-                <div class="timeline-rail" id="result-stages" style="margin-top: 18px;"></div>
+                <div class="memory-box" style="margin-top: 14px">
+                  <div class="meta">Current intent</div>
+                  <p id="result-intent" class="muted" style="margin: 8px 0 0">Preview a mission to inspect the route.</p>
+                </div>
+                <div class="memory-box" style="margin-top: 12px">
+                  <div class="meta">Context</div>
+                  <p id="result-context" class="muted" style="margin: 8px 0 0">No route selected yet.</p>
+                </div>
+                <div class="timeline-rail" id="result-stages" style="margin-top: 16px"></div>
               </section>
 
               <section class="side-card">
-                <div class="panel-head"><div><div class="panel-kicker">Artifacts</div><h2 class="panel-title">Generated output</h2></div><span class="tiny-chip" id="artifact-meta">No artifacts yet</span></div>
-                <div class="artifact-list compact" id="artifact-list" style="margin-top: 18px;"><div class="empty">Artifacts generated by Forge will appear here.</div></div>
+                <div class="panel-head" style="align-items: flex-start">
+                  <div>
+                    <div class="panel-kicker">Artifacts</div>
+                    <h2 class="panel-title">Generated output</h2>
+                  </div>
+                  <span class="tiny-chip" id="artifact-meta">No artifacts yet</span>
+                </div>
+                <div class="artifact-list compact" id="artifact-list" style="margin-top: 14px">
+                  <div class="empty">Artifacts generated by Forge will appear here.</div>
+                </div>
               </section>
 
               <section class="side-card">
-                <div class="panel-head"><div><div class="panel-kicker">Workspace Profile</div><h2 class="panel-title">Memory Snapshot</h2></div><span class="tiny-chip" id="profile-skill">Skill level: intermediate</span></div>
-                <div class="memory-box" style="margin-top: 18px;"><div class="meta">Summary</div><p class="muted" id="profile-summary" style="margin: 8px 0 0;">Sign in to load the workspace profile.</p></div>
-                <div class="memory-box" style="margin-top: 14px;"><div class="meta">Stack</div><div class="badge-row" id="profile-stack-list" style="margin-top: 12px;"></div></div>
-                <div class="memory-box" style="margin-top: 14px;"><div class="meta">Projects</div><div class="badge-row" id="profile-projects-list" style="margin-top: 12px;"></div></div>
-                <div class="memory-box" style="margin-top: 14px;"><div class="meta">Active Context</div><div class="badge-row" id="profile-context-list" style="margin-top: 12px;"></div></div>
+                <div class="panel-head" style="align-items: flex-start">
+                  <div>
+                    <div class="panel-kicker">Workspace profile</div>
+                    <h2 class="panel-title">Memory snapshot</h2>
+                  </div>
+                  <span class="tiny-chip" id="profile-skill">Skill level: intermediate</span>
+                </div>
+                <div class="memory-box" style="margin-top: 14px">
+                  <div class="meta">Summary</div>
+                  <p class="muted" id="profile-summary" style="margin: 8px 0 0">Sign in to load the workspace profile.</p>
+                </div>
+                <div class="memory-box" style="margin-top: 12px">
+                  <div class="meta">Stack</div>
+                  <div class="badge-row" id="profile-stack-list"></div>
+                </div>
+                <div class="memory-box" style="margin-top: 12px">
+                  <div class="meta">Projects</div>
+                  <div class="badge-row" id="profile-projects-list"></div>
+                </div>
+                <div class="memory-box" style="margin-top: 12px">
+                  <div class="meta">Active context</div>
+                  <div class="badge-row" id="profile-context-list"></div>
+                </div>
               </section>
 
               <section class="terminal-card">
-                <div class="split">
-                  <div class="terminal-top" style="margin-bottom: 0;"><span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span><span class="terminal-label">Forge Sys Log</span></div>
+                <div class="split" style="align-items: center">
+                  <div class="terminal-top" style="margin: 0">
+                    <span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span>
+                    <span class="terminal-label">Forge sys log</span>
+                  </div>
                   <span class="terminal-meta" id="terminal-meta">No logs yet</span>
                 </div>
                 <pre id="terminal-output">Run a mission that asks Forge to build and deploy. Command steps will appear here.</pre>
@@ -3916,7 +622,7 @@
         </main>
       </div>
 
-      <button class="system-fab" type="button" aria-label="Support agent"><span class="material-symbols-outlined">support_agent</span></button>
+      <button class="system-fab" type="button" aria-label="Support"><span class="material-symbols-outlined">support_agent</span></button>
     </section>
 
     <script src="/ui/config.js"></script>
