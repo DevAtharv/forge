@@ -1898,213 +1898,95 @@
         margin-top: 8px;
       }
 
-      .auth-mockup-stack {
-        position: relative;
-        margin-top: 34px;
-        min-height: 520px;
+      .auth-visual-card {
+        margin-top: 28px;
+        padding: 20px 20px 18px;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
       }
 
-      .auth-window-back,
-      .auth-window-back-two {
-        position: absolute;
-        inset: 26px auto auto 0;
-        width: 86%;
-        height: 360px;
-        border-radius: 28px;
-        z-index: 0;
-      }
-
-      .auth-window-back {
-        background: linear-gradient(135deg, #fb923c, #f97316);
-        transform: rotate(6deg);
-      }
-
-      .auth-window-back-two {
-        inset: 8px auto auto -14px;
-        background: linear-gradient(135deg, #a78bfa, #8b5cf6);
-        transform: rotate(12deg);
-        z-index: -1;
-      }
-
-      .auth-desktop {
-        position: relative;
-        z-index: 2;
-        width: min(100%, 620px);
-        border-radius: 28px;
-        background: rgba(255,255,255,0.96);
-        border: 1px solid rgba(15,23,42,0.07);
-        box-shadow: 0 28px 70px rgba(15, 23, 42, 0.14);
-        overflow: hidden;
-        transform: rotate(2deg);
-      }
-
-      .auth-desktop-head {
+      .auth-visual-chrome {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        padding: 18px 22px;
-        border-bottom: 1px solid rgba(15,23,42,0.06);
-        background: rgba(248,250,252,0.92);
+        gap: 10px;
+        padding-bottom: 16px;
+        margin-bottom: 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       }
 
-      .traffic-dots {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .traffic-dots span {
+      .auth-visual-chrome span:first-child,
+      .auth-visual-chrome span:nth-child(2),
+      .auth-visual-chrome span:nth-child(3) {
         width: 10px;
         height: 10px;
         border-radius: 999px;
+        flex-shrink: 0;
       }
 
-      .traffic-dots span:nth-child(1) { background: #ef4444; }
-      .traffic-dots span:nth-child(2) { background: #f59e0b; }
-      .traffic-dots span:nth-child(3) { background: #22c55e; }
+      .auth-visual-chrome span:nth-child(1) { background: #f87171; }
+      .auth-visual-chrome span:nth-child(2) { background: #fbbf24; }
+      .auth-visual-chrome span:nth-child(3) { background: #4ade80; }
 
-      .desktop-search {
-        flex: 1;
-        max-width: 250px;
-        padding: 10px 14px;
-        border-radius: 999px;
-        background: #ffffff;
-        border: 1px solid rgba(15,23,42,0.06);
-        color: var(--soft);
-        font-size: 13px;
-      }
-
-      .desktop-star {
-        width: 36px;
-        height: 36px;
-        display: grid;
-        place-items: center;
-        border-radius: 12px;
-        background: var(--surface-mid);
-        color: var(--muted);
-        font-size: 14px;
+      .auth-visual-title {
+        margin-left: auto;
+        font-size: 11px;
         font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(226, 232, 240, 0.45);
       }
 
-      .auth-desktop-body {
-        padding: 28px;
+      .auth-visual-rows {
         display: grid;
-        gap: 28px;
-      }
-
-      .auth-product-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .auth-product-logo {
-        width: 42px;
-        height: 42px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, var(--primary), #8b5cf6);
-        color: #fff;
-        display: grid;
-        place-items: center;
-        font-weight: 800;
-      }
-
-      .auth-progress {
-        display: grid;
-        gap: 10px;
-      }
-
-      .auth-progress-bar {
-        height: 10px;
-        border-radius: 999px;
-        background: var(--surface-mid);
-        overflow: hidden;
-      }
-
-      .auth-progress-bar span {
-        display: block;
-        width: 74%;
-        height: 100%;
-        background: var(--primary);
-        border-radius: inherit;
-      }
-
-      .auth-app-grid {
-        display: grid;
-        grid-template-columns: repeat(6, minmax(0, 1fr));
         gap: 14px;
       }
 
-      .auth-app-item {
-        display: grid;
-        justify-items: center;
-        gap: 8px;
-        text-align: center;
-      }
-
-      .auth-app-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 16px;
-        display: grid;
-        place-items: center;
-        color: #fff;
-        font-size: 18px;
-        font-weight: 700;
-        box-shadow: 0 10px 24px rgba(15,23,42,0.12);
-      }
-
-      .auth-app-item span:last-child {
-        font-size: 11px;
-        color: var(--muted);
-        font-weight: 600;
-      }
-
-      .auth-phone {
-        position: absolute;
-        right: -6px;
-        bottom: -18px;
-        width: 184px;
-        height: 360px;
-        border-radius: 34px;
-        background: #0f172a;
-        padding: 10px;
-        transform: rotate(-12deg);
-        box-shadow: 0 26px 60px rgba(15,23,42,0.22);
-        z-index: 3;
-      }
-
-      .auth-phone-screen {
-        width: 100%;
-        height: 100%;
-        border-radius: 26px;
-        background: #ffffff;
-        overflow: hidden;
-        border: 1px solid rgba(15,23,42,0.06);
-      }
-
-      .auth-phone-head {
+      .auth-visual-row {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 16px 18px 10px;
-        font-size: 11px;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .auth-visual-row .material-symbols-outlined {
+        font-size: 22px;
+        color: #7dd3fc;
+        margin-top: 2px;
+      }
+
+      .auth-visual-row strong {
+        display: block;
+        font-size: 14px;
         font-weight: 700;
-        color: var(--text);
+        letter-spacing: -0.02em;
+        color: #f8fafc;
       }
 
-      .auth-phone-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
-        padding: 18px;
+      .auth-visual-row p {
+        margin: 4px 0 0;
+        font-size: 13px;
+        line-height: 1.5;
+        color: rgba(226, 232, 240, 0.55);
       }
 
-      .auth-phone-grid span {
-        aspect-ratio: 1;
-        border-radius: 14px;
-        background: var(--surface-mid);
+      .auth-form-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        width: 100%;
+        min-width: 0;
+        max-width: 480px;
+        margin-inline: auto;
+      }
+
+      .auth-view .auth-stage {
+        align-items: flex-start;
+        padding: 28px 0 56px;
       }
 
       .dashboard-sidebar {
@@ -3048,11 +2930,74 @@
         color: #f8fafc;
       }
 
-      .auth-view .home-header {
+      .auth-view .home-dark-header {
         backdrop-filter: blur(10px);
       }
 
+      .auth-view .auth-glow {
+        background: rgba(59, 130, 246, 0.22);
+      }
+
+      .auth-view .auth-glow-secondary {
+        background: rgba(168, 85, 247, 0.2);
+      }
+
+      .auth-card-heading {
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: inherit;
+      }
+
+      .auth-card-sub {
+        margin-top: 4px;
+        font-size: 13px;
+      }
+
+      .auth-card-mark {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        background: rgba(125, 211, 252, 0.12);
+        color: #7dd3fc;
+        box-shadow: none;
+        border: 1px solid rgba(125, 211, 252, 0.25);
+      }
+
+      .auth-inline-link {
+        font-weight: 700;
+        color: #7dd3fc;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .auth-inline-link:hover {
+        color: #bae6fd;
+      }
+
+      .auth-view .auth-feedback {
+        display: block;
+        margin-top: 16px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(251, 191, 36, 0.1);
+        border: 1px solid rgba(251, 191, 36, 0.22);
+        color: rgba(254, 243, 199, 0.92);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .auth-view .auth-card {
+        border-radius: 24px;
+        overflow: hidden;
+        width: 100%;
+        max-width: none;
+      }
+
       .auth-view .auth-nav,
+      .auth-view .home-dark-nav,
       .dashboard-view .dashboard-sidebar,
       .dashboard-view .status-bar,
       .dashboard-view .card,
@@ -3066,12 +3011,16 @@
         color: #f8fafc;
       }
 
-      .auth-view .auth-nav {
+      .auth-view .auth-nav,
+      .auth-view .home-dark-nav {
         border-radius: 22px;
       }
 
       .auth-view .auth-nav .route-link,
       .auth-view .auth-nav .text-button,
+      .auth-view .home-dark-nav .route-link,
+      .auth-view .home-dark-nav .text-button,
+      .auth-view .home-dark-nav .tailark-mark,
       .dashboard-view .sidebar-link,
       .dashboard-view .muted,
       .dashboard-view .meta,
@@ -3084,6 +3033,7 @@
       }
 
       .auth-view .auth-nav .primary-button,
+      .auth-view .home-dark-nav .primary-button,
       .dashboard-view .primary-button,
       .dashboard-view .new-mission-button {
         background: #ffffff;
@@ -3109,6 +3059,11 @@
         border-color: rgba(255,255,255,0.06);
       }
 
+      .auth-view .input-wrap input:focus {
+        border-color: rgba(125, 211, 252, 0.55);
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+      }
+
       .auth-view .input-wrap input,
       .dashboard-view textarea,
       .dashboard-view .recent-chat-item,
@@ -3132,8 +3087,7 @@
       .dashboard-view .empty,
       .dashboard-view .status-explain,
       .dashboard-view .dashboard-subtitle,
-      .auth-view .auth-feedback,
-      .auth-view .auth-showcase p,
+      .auth-view .auth-showcase-head p,
       .auth-view .auth-note {
         color: rgba(226,232,240,0.62);
       }
@@ -3167,6 +3121,16 @@
       .dashboard-view .status-bar.compact {
         border-radius: 24px;
         border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .dashboard-view .auth-zone {
+        padding: 16px 18px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .dashboard-view .auth-zone .user-row {
+        gap: 16px;
       }
 
       .dashboard-layout {
@@ -3401,7 +3365,7 @@
           <span>Introducing Support for AI Models</span>
           <span class="arrow-pill"><span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span></span>
         </a>
-        <h1 class="dark-hero-title">Modern AI workflow for<br />product engagement</h1>
+        <h1 class="dark-hero-title">Modern AI workflow for <br />product engagement</h1>
         <p class="dark-hero-copy">
           Forge brings product setup, protected auth, AI-assisted workspace, Telegram delivery, and deployment handoff into one refined dark experience.
         </p>
@@ -3537,7 +3501,7 @@
             <div class="ai-hero-grid">
               <div class="ai-hero-copy">
                 <div class="hero-pill"><span class="pulse-dot"></span><span>AI-native workspace</span></div>
-                <h1 class="ai-hero-title">Build with a<br /><span class="accent">real AI copilot</span></h1>
+                <h1 class="ai-hero-title">Build with a <br /><span class="accent">real AI copilot</span></h1>
                 <p class="hero-copy">
                   This is the live AI section of Forge. Prompt, preview, refine, and move directly into output, memory, Telegram delivery, and deployment handoff.
                 </p>
@@ -3592,7 +3556,7 @@
         <section class="waitlist-section">
           <div class="waitlist-shell">
             <div class="hero-pill" style="margin: 0 auto;">Early access</div>
-            <h2>Join the next wave of<br />AI product builders</h2>
+            <h2>Join the next wave of <br />AI product builders</h2>
             <p>Get notified when the cleaner Forge workspace, AI chat flow, and deployment experience are fully ready. This fits right after the AI hero as the product CTA before deeper feature exploration.</p>
             <form class="waitlist-form">
               <input type="email" placeholder="Enter your email for early access" />
@@ -3673,23 +3637,21 @@
     <section class="auth-view hidden" data-view="auth">
       <div class="auth-glow"></div>
       <div class="auth-glow-secondary"></div>
-      <header class="home-header">
-        <div class="shell auth-nav row">
-          <div class="brand">
-            <div class="forge-logo compact" aria-label="Forge Bot logo">
-              <div class="forge-logo-arch"></div>
-              <div class="forge-logo-wordmark">
-                <div class="forge-logo-word">FORGE</div>
-                <div class="forge-logo-bot"><span>BOT</span><div class="forge-logo-dot"></div></div>
-              </div>
-            </div>
-          </div>
+      <header class="home-dark-header">
+        <div class="home-dark-nav">
+          <a class="tailark-mark route-link" data-route-link="home" href="#/home" aria-label="Forge home">
+            <span class="tailark-mark-grid"><span></span></span>
+            <span>forge</span>
+          </a>
           <div class="nav-cluster">
             <a class="route-link" data-route-link="home" href="#/home">Home</a>
             <a class="route-link" data-route-link="auth" href="#/auth">Auth</a>
             <a class="route-link" data-route-link="dashboard" href="#/dashboard">Dashboard</a>
           </div>
-          <div class="top-actions"><a class="text-button" href="#/home">Support</a><a class="primary-button" href="#/dashboard">Mission Control</a></div>
+          <div class="top-actions">
+            <a class="text-button" href="#/home">Support</a>
+            <a class="primary-button" href="#/dashboard">Workspace</a>
+          </div>
         </div>
       </header>
 
@@ -3697,66 +3659,51 @@
         <div class="auth-layout">
           <section class="auth-showcase">
             <div class="auth-showcase-head">
-              <div class="hero-pill" style="margin-bottom: 0;">Product access</div>
-              <h2>Transform your<br />Forge login flow</h2>
-              <p>Auth should feel like part of the product, not a disconnected form. This screen now uses a product-mockup layout so sign-in feels tied to the app people are actually entering.</p>
-              <div class="auth-showcase-cta">
-                <a class="primary-button" href="#/dashboard">Preview workspace</a>
-              </div>
+              <div class="hero-pill" style="margin-bottom: 0;">Secure access</div>
+              <h2>Sign in to your <br />Forge workspace</h2>
+              <p>Use the same account for missions, Telegram delivery, saved memory, and deployment handoff. No separate “admin” experience.</p>
             </div>
 
-            <div class="auth-mockup-stack">
-              <div class="auth-window-back-two"></div>
-              <div class="auth-window-back"></div>
-              <div class="auth-desktop">
-                <div class="auth-desktop-head">
-                  <div class="traffic-dots"><span></span><span></span><span></span></div>
-                  <div class="desktop-search"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">search</span> Search</div>
-                  <div class="desktop-star">★</div>
-                </div>
-                <div class="auth-desktop-body">
-                  <div class="auth-product-row">
-                    <div class="auth-product-logo">F</div>
-                    <span style="font-size:20px; font-weight:700;">Forge</span>
-                  </div>
-                  <div class="auth-progress">
-                    <div class="meta">Quick Access</div>
-                    <div class="auth-progress-bar"><span></span></div>
-                  </div>
-                  <div class="auth-app-grid">
-                    <div class="auth-app-item"><div class="auth-app-icon" style="background:#3b82f6;">📊</div><span>Dashboard</span></div>
-                    <div class="auth-app-item"><div class="auth-app-icon" style="background:#22c55e;">📈</div><span>Analytics</span></div>
-                    <div class="auth-app-item"><div class="auth-app-icon" style="background:#8b5cf6;">⚙️</div><span>Settings</span></div>
-                    <div class="auth-app-item"><div class="auth-app-icon" style="background:#f97316;">💬</div><span>Messages</span></div>
-                    <div class="auth-app-item"><div class="auth-app-icon" style="background:#ef4444;">📅</div><span>Calendar</span></div>
-                    <div class="auth-app-item"><div class="auth-app-icon" style="background:#94a3b8;">+</div><span>More</span></div>
-                  </div>
-                </div>
+            <div class="auth-visual-card" aria-hidden="true">
+              <div class="auth-visual-chrome">
+                <span></span><span></span><span></span>
+                <span class="auth-visual-title">Workspace preview</span>
               </div>
-              <div class="auth-phone">
-                <div class="auth-phone-screen">
-                  <div class="auth-phone-head">
-                    <span>9:41</span>
-                    <span>100%</span>
+              <div class="auth-visual-rows">
+                <div class="auth-visual-row">
+                  <span class="material-symbols-outlined">task_alt</span>
+                  <div>
+                    <strong>Mission runner</strong>
+                    <p>Plan, approve, and execute with a visible pipeline.</p>
                   </div>
-                  <div class="auth-phone-grid">
-                    <span></span><span></span><span></span><span></span>
-                    <span></span><span></span><span></span><span></span>
-                    <span></span><span></span><span></span><span></span>
-                    <span></span><span></span><span></span><span></span>
+                </div>
+                <div class="auth-visual-row">
+                  <span class="material-symbols-outlined">hub</span>
+                  <div>
+                    <strong>Delivery</strong>
+                    <p>Web and Telegram stay in sync for the same workspace.</p>
+                  </div>
+                </div>
+                <div class="auth-visual-row">
+                  <span class="material-symbols-outlined">rocket_launch</span>
+                  <div>
+                    <strong>Deploy</strong>
+                    <p>Artifacts and handoff notes ready for GitHub and Vercel.</p>
                   </div>
                 </div>
               </div>
             </div>
           </section>
-        <div>
-          <section class="auth-card">
+        <div class="auth-form-stack">
+          <section class="auth-card" id="auth-panel">
             <div class="auth-card-top split">
               <div class="row" style="gap: 14px;">
-                <div class="brand-mark" style="background: rgba(93,95,95,0.1); color: var(--primary); box-shadow: none;"><span class="material-symbols-outlined">shield</span></div>
-                <div><div style="font-size: 20px; font-weight: 700; letter-spacing: -0.03em;">Welcome Back</div><div class="muted" style="font-size: 13px;">Authenticate into your Forge workspace</div></div>
+                <div class="brand-mark auth-card-mark"><span class="material-symbols-outlined">shield</span></div>
+                <div>
+                  <div class="auth-card-heading">Welcome back</div>
+                  <div class="muted auth-card-sub">Enter your credentials to continue</div>
+                </div>
               </div>
-              <span class="material-symbols-outlined" style="color: var(--soft);">verified_user</span>
             </div>
             <div class="auth-content">
               <div class="auth-switch">
@@ -3776,7 +3723,7 @@
                 <button class="social-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 0C5.373 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.041-1.412-4.041-1.412-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22v3.293c0 .319.192.694.805.576C20.562 21.799 24 17.302 24 12c0-6.627-5.373-12-12-12z"></path></svg><span>GitHub</span></button>
               </div>
             </div>
-            <div class="auth-card-bottom"><p class="muted" style="margin: 0; text-align: center; font-size: 12px;">By continuing, you agree to our <a href="#/home" style="font-weight: 700; color: var(--primary);">Terms of Service</a> and <a href="#/home" style="font-weight: 700; color: var(--primary);">Privacy Policy</a>.</p></div>
+            <div class="auth-card-bottom"><p class="muted auth-legal" style="margin: 0; text-align: center; font-size: 12px;">By continuing, you agree to our <a class="auth-inline-link" href="#/home">Terms of Service</a> and <a class="auth-inline-link" href="#/home">Privacy Policy</a>.</p></div>
           </section>
           <div class="auth-support">
             <div class="auth-support-top"><a href="#/home">Home</a><div class="auth-support-links"><a href="#/home">Support</a><a href="#/home">Status</a><a href="#/home">API</a></div></div>

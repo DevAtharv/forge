@@ -190,6 +190,7 @@ function renderAuthState() {
   els.missionStatusChip.textContent = active ? "Protected workspace active" : "Public preview mode";
   els.workspaceRun.disabled = !active;
   els.signoutButton.disabled = !active;
+  els.signoutButton.classList.toggle("hidden", !active);
   els.telegramLinkAction.disabled = !active;
   if (homeModeCopy) {
     homeModeCopy.textContent = active ? "Authenticated workspace" : "Protected workspace";
