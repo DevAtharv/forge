@@ -1847,25 +1847,34 @@
 
       .auth-layout {
         display: grid;
-        grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr);
+        grid-template-columns: minmax(340px, 0.88fr) minmax(0, 1.12fr);
         gap: 28px;
         align-items: stretch;
       }
 
       .auth-showcase {
-        padding: 32px;
-        border-radius: 30px;
+        padding: 30px;
+        border-radius: 32px;
         background:
-          radial-gradient(circle at top right, rgba(124,58,237,0.24), transparent 34%),
-          radial-gradient(circle at bottom left, rgba(0,111,238,0.2), transparent 30%),
-          linear-gradient(180deg, #0b1220 0%, #111c31 100%);
-        color: #eef5ff;
-        box-shadow: 0 28px 70px rgba(15, 23, 42, 0.2);
+          radial-gradient(circle at top left, rgba(96, 165, 250, 0.18), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(168, 85, 247, 0.18), transparent 26%),
+          linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(248,250,252,0.96) 100%);
+        color: var(--text);
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .auth-showcase-head {
+        display: grid;
+        gap: 14px;
+        max-width: 420px;
       }
 
       .auth-showcase h2 {
-        margin: 0 0 12px;
-        font-size: 34px;
+        margin: 0;
+        font-size: 38px;
         font-weight: 800;
         letter-spacing: -0.06em;
         line-height: 1.02;
@@ -1873,37 +1882,221 @@
 
       .auth-showcase p {
         margin: 0;
-        color: rgba(226,232,240,0.82);
+        color: var(--muted);
         line-height: 1.8;
       }
 
-      .auth-showcase-list {
-        display: grid;
-        gap: 12px;
-        margin: 24px 0 0;
+      .auth-showcase-cta {
+        margin-top: 8px;
       }
 
-      .auth-showcase-item {
+      .auth-mockup-stack {
+        position: relative;
+        margin-top: 34px;
+        min-height: 520px;
+      }
+
+      .auth-window-back,
+      .auth-window-back-two {
+        position: absolute;
+        inset: 26px auto auto 0;
+        width: 86%;
+        height: 360px;
+        border-radius: 28px;
+        z-index: 0;
+      }
+
+      .auth-window-back {
+        background: linear-gradient(135deg, #fb923c, #f97316);
+        transform: rotate(6deg);
+      }
+
+      .auth-window-back-two {
+        inset: 8px auto auto -14px;
+        background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+        transform: rotate(12deg);
+        z-index: -1;
+      }
+
+      .auth-desktop {
+        position: relative;
+        z-index: 2;
+        width: min(100%, 620px);
+        border-radius: 28px;
+        background: rgba(255,255,255,0.96);
+        border: 1px solid rgba(15,23,42,0.07);
+        box-shadow: 0 28px 70px rgba(15, 23, 42, 0.14);
+        overflow: hidden;
+        transform: rotate(2deg);
+      }
+
+      .auth-desktop-head {
         display: flex;
         align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 18px 22px;
+        border-bottom: 1px solid rgba(15,23,42,0.06);
+        background: rgba(248,250,252,0.92);
+      }
+
+      .traffic-dots {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .traffic-dots span {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+      }
+
+      .traffic-dots span:nth-child(1) { background: #ef4444; }
+      .traffic-dots span:nth-child(2) { background: #f59e0b; }
+      .traffic-dots span:nth-child(3) { background: #22c55e; }
+
+      .desktop-search {
+        flex: 1;
+        max-width: 250px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: #ffffff;
+        border: 1px solid rgba(15,23,42,0.06);
+        color: var(--soft);
+        font-size: 13px;
+      }
+
+      .desktop-star {
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        background: var(--surface-mid);
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .auth-desktop-body {
+        padding: 28px;
+        display: grid;
+        gap: 28px;
+      }
+
+      .auth-product-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .auth-product-logo {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--primary), #8b5cf6);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+      }
+
+      .auth-progress {
+        display: grid;
         gap: 10px;
-        padding: 14px 16px;
-        border-radius: 18px;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.08);
       }
 
-      .auth-mini-card {
-        margin-top: 28px;
+      .auth-progress-bar {
+        height: 10px;
+        border-radius: 999px;
+        background: var(--surface-mid);
+        overflow: hidden;
+      }
+
+      .auth-progress-bar span {
+        display: block;
+        width: 74%;
+        height: 100%;
+        background: var(--primary);
+        border-radius: inherit;
+      }
+
+      .auth-app-grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .auth-app-item {
+        display: grid;
+        justify-items: center;
+        gap: 8px;
+        text-align: center;
+      }
+
+      .auth-app-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: 18px;
+        font-weight: 700;
+        box-shadow: 0 10px 24px rgba(15,23,42,0.12);
+      }
+
+      .auth-app-item span:last-child {
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      .auth-phone {
+        position: absolute;
+        right: -6px;
+        bottom: -18px;
+        width: 184px;
+        height: 360px;
+        border-radius: 34px;
+        background: #0f172a;
+        padding: 10px;
+        transform: rotate(-12deg);
+        box-shadow: 0 26px 60px rgba(15,23,42,0.22);
+        z-index: 3;
+      }
+
+      .auth-phone-screen {
+        width: 100%;
+        height: 100%;
+        border-radius: 26px;
+        background: #ffffff;
+        overflow: hidden;
+        border: 1px solid rgba(15,23,42,0.06);
+      }
+
+      .auth-phone-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 18px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .auth-phone-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
         padding: 18px;
-        border-radius: 22px;
-        background: rgba(255,255,255,0.1);
-        border: 1px solid rgba(255,255,255,0.1);
       }
 
-      .auth-mini-card .hero-chip {
-        background: rgba(255,255,255,0.14);
-        color: #d8e7ff;
+      .auth-phone-grid span {
+        aspect-ratio: 1;
+        border-radius: 14px;
+        background: var(--surface-mid);
       }
 
       .dashboard-sidebar {
@@ -2634,20 +2827,56 @@
       <main class="shell auth-stage">
         <div class="auth-layout">
           <section class="auth-showcase">
-            <div class="hero-pill" style="margin-bottom: 20px; background: rgba(255,255,255,0.12); color: #dbeafe; border-color: rgba(255,255,255,0.12);">Secure entry layer</div>
-            <h2>Sign in to the product,<br />not just a form.</h2>
-            <p>Forge authentication should feel like part of the product experience. Clean, guided, fast, and built to move users directly into the workspace.</p>
-            <div class="auth-showcase-list">
-              <div class="auth-showcase-item"><span class="material-symbols-outlined">bolt</span><span>Fast transition into dashboard state</span></div>
-              <div class="auth-showcase-item"><span class="material-symbols-outlined">shield_lock</span><span>Protected memory, missions, and integrations</span></div>
-              <div class="auth-showcase-item"><span class="material-symbols-outlined">hub</span><span>Telegram linking after sign-in, not before</span></div>
+            <div class="auth-showcase-head">
+              <div class="hero-pill" style="margin-bottom: 0;">Product access</div>
+              <h2>Transform your<br />Forge login flow</h2>
+              <p>Auth should feel like part of the product, not a disconnected form. This screen now uses a product-mockup layout so sign-in feels tied to the app people are actually entering.</p>
+              <div class="auth-showcase-cta">
+                <a class="primary-button" href="#/dashboard">Preview workspace</a>
+              </div>
             </div>
-            <div class="auth-mini-card">
-              <div class="meta" style="color: #c9daf5;">Workspace access includes</div>
-              <div class="hero-chip-row">
-                <span class="hero-chip">Mission Runs</span>
-                <span class="hero-chip">Project History</span>
-                <span class="hero-chip">Deploy State</span>
+
+            <div class="auth-mockup-stack">
+              <div class="auth-window-back-two"></div>
+              <div class="auth-window-back"></div>
+              <div class="auth-desktop">
+                <div class="auth-desktop-head">
+                  <div class="traffic-dots"><span></span><span></span><span></span></div>
+                  <div class="desktop-search"><span class="material-symbols-outlined" style="font-size:14px; vertical-align:text-bottom;">search</span> Search</div>
+                  <div class="desktop-star">★</div>
+                </div>
+                <div class="auth-desktop-body">
+                  <div class="auth-product-row">
+                    <div class="auth-product-logo">F</div>
+                    <span style="font-size:20px; font-weight:700;">Forge</span>
+                  </div>
+                  <div class="auth-progress">
+                    <div class="meta">Quick Access</div>
+                    <div class="auth-progress-bar"><span></span></div>
+                  </div>
+                  <div class="auth-app-grid">
+                    <div class="auth-app-item"><div class="auth-app-icon" style="background:#3b82f6;">📊</div><span>Dashboard</span></div>
+                    <div class="auth-app-item"><div class="auth-app-icon" style="background:#22c55e;">📈</div><span>Analytics</span></div>
+                    <div class="auth-app-item"><div class="auth-app-icon" style="background:#8b5cf6;">⚙️</div><span>Settings</span></div>
+                    <div class="auth-app-item"><div class="auth-app-icon" style="background:#f97316;">💬</div><span>Messages</span></div>
+                    <div class="auth-app-item"><div class="auth-app-icon" style="background:#ef4444;">📅</div><span>Calendar</span></div>
+                    <div class="auth-app-item"><div class="auth-app-icon" style="background:#94a3b8;">+</div><span>More</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="auth-phone">
+                <div class="auth-phone-screen">
+                  <div class="auth-phone-head">
+                    <span>9:41</span>
+                    <span>100%</span>
+                  </div>
+                  <div class="auth-phone-grid">
+                    <span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
