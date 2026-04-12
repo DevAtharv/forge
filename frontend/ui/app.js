@@ -60,7 +60,23 @@ const routeLinks = [...document.querySelectorAll("[data-route-link]")];
 const homeModeCopy = document.getElementById("home-mode-copy");
 
 function setDot(element, color) {
+  if (!element) {
+    return;
+  }
   element.style.background = color;
+}
+
+function setLocationHash(hash, replace) {
+  const u = new URL(window.location.href);
+  u.hash = hash;
+  const url = u.toString();
+  if (replace) {
+    window.history.replaceState(null, "", url);
+    return;
+  }
+  if (window.location.hash !== hash) {
+    window.location.hash = hash;
+  }
 }
 
 function isAuthenticated() {
@@ -78,16 +94,16 @@ function buildIntegrationConnectUrl(provider) {
 
 function navigate(route, replace = false) {
   const nextHash = `#/${route}`;
-  if (replace) {
-    window.history.replaceState(null, "", nextHash);
-    renderRoute();
-    return;
-  }
   if (window.location.hash === nextHash) {
     renderRoute();
     return;
   }
-  window.location.hash = nextHash;
+  if (replace) {
+    setLocationHash(nextHash, true);
+    renderRoute();
+    return;
+  }
+  setLocationHash(nextHash, false);
 }
 
 function renderRoute() {
@@ -95,15 +111,20 @@ function renderRoute() {
 
   if (route === "dashboard" && !isAuthenticated()) {
     route = state.authEnabled ? "auth" : "home";
-    window.history.replaceState(null, "", `#/${route}`);
+    const nextHash = `#/${route}`;
+    if (window.location.hash !== nextHash) {
+      setLocationHash(nextHash, true);
+    }
   }
 
   views.forEach((view) => {
-    view.classList.toggle("hidden", view.dataset.view !== route);
+    const name = view.getAttribute("data-view");
+    view.classList.toggle("hidden", name !== route);
   });
 
   routeLinks.forEach((link) => {
-    link.classList.toggle("active", link.dataset.routeLink === route);
+    const target = link.getAttribute("data-route-link");
+    link.classList.toggle("active", target === route);
   });
 
   closeMobileChrome();
@@ -259,13 +280,17 @@ function fetchAuthedJson(url, options = {}) {
 
 function setAuthMode(mode) {
   state.authMode = mode;
-  els.modeSignin.classList.toggle("active", mode === "signin");
-  els.modeSignup.classList.toggle("active", mode === "signup");
-  els.authSubmit.textContent = mode === "signin" ? "Sign In" : "Create Account";
-  els.authFeedback.textContent =
-    mode === "signin"
-      ? "Use your Supabase credentials to unlock the protected workspace."
-      : "Create a Forge account. Email confirmation depends on your Supabase settings.";
+  els.modeSignin?.classList.toggle("active", mode === "signin");
+  els.modeSignup?.classList.toggle("active", mode === "signup");
+  if (els.authSubmit) {
+    els.authSubmit.textContent = mode === "signin" ? "Sign In" : "Create Account";
+  }
+  if (els.authFeedback) {
+    els.authFeedback.textContent =
+      mode === "signin"
+        ? "Use your Supabase credentials to unlock the protected workspace."
+        : "Create a Forge account. Email confirmation depends on your Supabase settings.";
+  }
 }
 
 function saveSession(session, user) {
@@ -291,28 +316,44 @@ function loadStoredSession() {
 
 function renderAuthState() {
   const active = isAuthenticated();
-  els.missionStatusChip.textContent = active ? "Protected workspace active" : "Public preview mode";
-  els.workspaceRun.disabled = !active;
-  els.signoutButton.disabled = !active;
-  els.signoutButton.classList.toggle("hidden", !active);
-  els.telegramLinkAction.disabled = !active;
+  if (els.missionStatusChip) {
+    els.missionStatusChip.textContent = active ? "Protected workspace active" : "Public preview mode";
+  }
+  if (els.workspaceRun) {
+    els.workspaceRun.disabled = !active;
+  }
+  if (els.signoutButton) {
+    els.signoutButton.disabled = !active;
+    els.signoutButton.classList.toggle("hidden", !active);
+  }
+  if (els.telegramLinkAction) {
+    els.telegramLinkAction.disabled = !active;
+  }
   if (homeModeCopy) {
     homeModeCopy.textContent = active ? "Authenticated workspace" : "Protected workspace";
   }
 
   if (!active) {
-    els.workspaceUser.textContent = "Not signed in";
-    els.workspaceUserMeta.textContent = state.authEnabled
-      ? "Sign in to open the protected mission console."
-      : "Supabase auth is not configured yet.";
+    if (els.workspaceUser) {
+      els.workspaceUser.textContent = "Not signed in";
+    }
+    if (els.workspaceUserMeta) {
+      els.workspaceUserMeta.textContent = state.authEnabled
+        ? "Sign in to open the protected mission console."
+        : "Supabase auth is not configured yet.";
+    }
     renderTelegramLink(null);
     renderRoute();
     return;
   }
 
-  els.workspaceUser.textContent = state.user.email || "Authenticated Forge user";
-  els.workspaceUserMeta.textContent =
-    "Forge will fetch your profile and conversation memory through protected backend APIs.";
+  if (els.workspaceUser) {
+    els.workspaceUser.textContent = state.user.email || "Authenticated Forge user";
+  }
+  if (els.workspaceUserMeta) {
+    els.workspaceUserMeta.textContent =
+      "Forge will fetch your profile and conversation memory through protected backend APIs.";
+  }
   renderRoute();
 }
 
@@ -409,14 +450,21 @@ function renderProfile(profile) {
 }
 
 function renderHistory(history) {
+  if (!els.timelineList) {
+    return;
+  }
   els.timelineList.innerHTML = "";
   if (!history || !history.length) {
     els.timelineList.innerHTML = '<div class="empty">Conversation history will appear here after your first mission.</div>';
-    els.timelineMeta.textContent = "No stored conversation yet";
+    if (els.timelineMeta) {
+      els.timelineMeta.textContent = "No stored conversation yet";
+    }
     return;
   }
 
-  els.timelineMeta.textContent = `${history.length} stored message${history.length === 1 ? "" : "s"}`;
+  if (els.timelineMeta) {
+    els.timelineMeta.textContent = `${history.length} stored message${history.length === 1 ? "" : "s"}`;
+  }
   history
     .slice()
     .reverse()
@@ -751,10 +799,14 @@ function renderTerminal(stages, delivery) {
 async function checkHealth() {
   try {
     const payload = await fetchJson("/health");
-    els.healthText.textContent = payload.status === "ok" ? "Backend live" : "Backend responded";
+    if (els.healthText) {
+      els.healthText.textContent = payload.status === "ok" ? "Backend live" : "Backend responded";
+    }
     setDot(els.healthDot, "var(--teal)");
   } catch (_error) {
-    els.healthText.textContent = "Backend offline";
+    if (els.healthText) {
+      els.healthText.textContent = "Backend offline";
+    }
     setDot(els.healthDot, "var(--danger)");
   }
 }
@@ -763,16 +815,22 @@ async function checkConfig() {
   try {
     const payload = await fetchJson("/api/client-config");
     state.authEnabled = Boolean(payload.auth_enabled);
-    els.authText.textContent = state.authEnabled ? "Supabase auth ready" : "Supabase auth not configured";
+    if (els.authText) {
+      els.authText.textContent = state.authEnabled ? "Supabase auth ready" : "Supabase auth not configured";
+    }
     setDot(els.authDot, state.authEnabled ? "var(--teal)" : "var(--gold)");
-    els.authWarning.classList.toggle("hidden", state.authEnabled);
-    els.authWarning.classList.toggle("warn", !state.authEnabled);
-    els.authWarning.textContent = state.authEnabled
-      ? ""
-      : "Add SUPABASE_URL and SUPABASE_ANON_KEY to enable sign-in and the protected workspace.";
+    if (els.authWarning) {
+      els.authWarning.classList.toggle("hidden", state.authEnabled);
+      els.authWarning.classList.toggle("warn", !state.authEnabled);
+      els.authWarning.textContent = state.authEnabled
+        ? ""
+        : "Add SUPABASE_URL and SUPABASE_ANON_KEY to enable sign-in and the protected workspace.";
+    }
   } catch (_error) {
     state.authEnabled = false;
-    els.authText.textContent = "Could not load auth config";
+    if (els.authText) {
+      els.authText.textContent = "Could not load auth config";
+    }
     setDot(els.authDot, "var(--danger)");
   }
   renderAuthState();
@@ -1018,18 +1076,22 @@ async function signOut() {
   navigate("home");
 }
 
-els.modeSignin.addEventListener("click", () => setAuthMode("signin"));
-els.modeSignup.addEventListener("click", () => setAuthMode("signup"));
-els.authForm.addEventListener("submit", handleAuthSubmit);
-els.previewRun.addEventListener("click", runPreview);
-els.workspaceRun.addEventListener("click", runMission);
-els.telegramLinkAction.addEventListener("click", linkTelegram);
-els.workspaceFill.addEventListener("click", () => {
-  els.workspaceInput.value =
-    "Should I use Redis or Supabase for storing sessions in a production FastAPI app, and why?";
-  els.workspaceFeedback.textContent = "Loaded a research-style mission.";
+els.modeSignin?.addEventListener("click", () => setAuthMode("signin"));
+els.modeSignup?.addEventListener("click", () => setAuthMode("signup"));
+els.authForm?.addEventListener("submit", handleAuthSubmit);
+els.previewRun?.addEventListener("click", runPreview);
+els.workspaceRun?.addEventListener("click", runMission);
+els.telegramLinkAction?.addEventListener("click", linkTelegram);
+els.workspaceFill?.addEventListener("click", () => {
+  if (els.workspaceInput) {
+    els.workspaceInput.value =
+      "Should I use Redis or Supabase for storing sessions in a production FastAPI app, and why?";
+  }
+  if (els.workspaceFeedback) {
+    els.workspaceFeedback.textContent = "Loaded a research-style mission.";
+  }
 });
-els.signoutButton.addEventListener("click", signOut);
+els.signoutButton?.addEventListener("click", signOut);
 window.addEventListener("hashchange", renderRoute);
 
 setAuthMode("signin");
