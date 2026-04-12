@@ -335,6 +335,7 @@ async def test_worker_accepts_plain_telegram_link_code(settings, store) -> None:
         web_user_id="web-user-1",
         workspace_user_id=101,
         web_email="forge@example.com",
+        expires_in_seconds=3600,
     )
     job = await store.enqueue_message_job(
         MessageJob(

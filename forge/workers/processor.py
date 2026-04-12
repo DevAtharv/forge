@@ -32,8 +32,21 @@ def _extract_message(raw_update: dict[str, Any]) -> dict[str, Any] | None:
     return None
 
 
-def _extract_link_code(text: str) -> str | None:
+def _normalize_telegram_command_text(text: str) -> str:
+    """Strip @BotUsername from the command token (Telegram sends /cmd@BotName in many clients)."""
     stripped = text.strip()
+    if not stripped.startswith("/"):
+        return stripped
+    parts = stripped.split(maxsplit=1)
+    head = parts[0]
+    tail = parts[1] if len(parts) > 1 else ""
+    if "@" in head:
+        head = head.split("@", 1)[0]
+    return f"{head} {tail}".strip() if tail else head
+
+
+def _extract_link_code(text: str) -> str | None:
+    stripped = _normalize_telegram_command_text(text).strip()
     if re.fullmatch(r"[A-Za-z0-9]{6}", stripped):
         return stripped.upper()
     if not stripped.lower().startswith("/link"):
@@ -45,7 +58,7 @@ def _extract_link_code(text: str) -> str | None:
 
 
 def _parse_project_command(text: str) -> tuple[str, str] | None:
-    stripped = text.strip()
+    stripped = _normalize_telegram_command_text(text).strip()
     if not stripped.startswith("/"):
         return None
     parts = stripped.split(maxsplit=1)
@@ -105,7 +118,8 @@ def _looks_like_build_request(text: str) -> bool:
 
 
 def _looks_like_greeting(text: str) -> bool:
-    return text.strip().lower() in {"hi", "hello", "hey", "yo", "start", "/start"}
+    normalized = _normalize_telegram_command_text(text)
+    return normalized.strip().lower() in {"hi", "hello", "hey", "yo", "start", "/start"}
 
 
 def _project_status_line(project: Any) -> str:
@@ -252,12 +266,14 @@ class JobProcessor:
         user = message.get("from") or {}
         user_id = int(user.get("id", job.user_id))
         username = user.get("username")
-        text = (message.get("text") or message.get("caption") or "").strip()
+        raw_text = (message.get("text") or message.get("caption") or "").strip()
         photo_sizes = message.get("photo") or []
-        if not text and photo_sizes:
+        if not raw_text and photo_sizes:
             text = "Debug this issue from the attached screenshot."
-        elif not text:
+        elif not raw_text:
             text = "Help me with this request."
+        else:
+            text = _normalize_telegram_command_text(raw_text)
 
         link_code = _extract_link_code(text)
         if link_code is not None:
