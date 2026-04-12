@@ -232,13 +232,26 @@ textarea {
   background: #4ade80;
 }
 
-#home-nav-toggle {
+#home-nav-toggle,
+#auth-nav-toggle {
   margin-left: auto;
+  flex-shrink: 0;
 }
 
 @media (min-width: 900px) {
-  #home-nav-toggle {
-    display: none;
+  #home-nav-toggle,
+  #auth-nav-toggle {
+    display: none !important;
+  }
+
+  /* Never show mobile drawers on desktop (belt + suspenders after moving out of header) */
+  #home-drawer,
+  #home-drawer-overlay,
+  #auth-drawer,
+  #auth-drawer-overlay {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
   }
 }
 
@@ -290,12 +303,14 @@ textarea {
   background: rgba(0, 0, 0, 0.55);
   z-index: 60;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, visibility 0.2s;
 }
 
 .drawer-overlay.is-open {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
 }
 
@@ -304,13 +319,14 @@ textarea {
   top: 0;
   right: 0;
   width: min(300px, 88vw);
+  max-width: 100%;
   height: 100dvh;
   z-index: 70;
   background: var(--surface);
   border-left: 1px solid var(--border);
   box-shadow: var(--shadow);
   padding: calc(var(--header-h) + 12px) 20px 24px;
-  transform: translateX(100%);
+  transform: translate3d(100%, 0, 0);
   transition: transform 0.22s ease;
   display: flex;
   flex-direction: column;
@@ -318,7 +334,7 @@ textarea {
 }
 
 .drawer.is-open {
-  transform: translateX(0);
+  transform: translate3d(0, 0, 0);
 }
 
 .drawer .route-link,
@@ -353,8 +369,27 @@ textarea {
 
 /* ——— Home sections ——— */
 .hero {
-  padding: 36px 0 48px;
+  position: relative;
+  padding: clamp(40px, 8vw, 72px) 0 clamp(48px, 10vw, 88px);
   text-align: center;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  transform: translate(-50%, -50%);
+  width: min(720px, 120%);
+  height: 280px;
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.14), transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero > * {
+  position: relative;
+  z-index: 1;
 }
 
 .hero__badge {
@@ -1114,6 +1149,14 @@ textarea {
   z-index: 80;
 }
 
+@media (min-width: 1024px) {
+  #dashboard-sidebar-overlay {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
 .dashboard-shell {
   display: grid;
   min-height: 100dvh;
@@ -1148,9 +1191,13 @@ textarea {
   .dashboard-sidebar {
     position: sticky;
     top: 0;
-    transform: none;
+    transform: none !important;
     width: auto;
     height: 100dvh;
+  }
+
+  .dashboard-sidebar.mobile-open {
+    transform: none !important;
   }
 }
 

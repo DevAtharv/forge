@@ -6,6 +6,8 @@ const state = {
   authEnabled: false,
   session: null,
   user: null,
+  dashboardRefreshTimer: null,
+  dashboardRefreshInFlight: false,
 };
 
 const els = {
@@ -53,7 +55,14 @@ const els = {
   telegramLinkExpiry: document.getElementById("telegram-link-expiry"),
   telegramLinkAction: document.getElementById("telegram-link-action"),
   telegramLinkHelp: document.getElementById("telegram-link-help"),
+  missionCountMetric: document.getElementById("mission-count-metric"),
+  activeMissionMetric: document.getElementById("active-mission-metric"),
+  projectCountChip: document.getElementById("project-count-chip"),
+  integrationCountChip: document.getElementById("integration-count-chip"),
 };
+
+const ACTIVE_MISSION_STATUSES = new Set(["queued", "planning", "building", "reviewing", "previewing", "deploying"]);
+const DASHBOARD_REFRESH_MS = 5000;
 
 const views = [...document.querySelectorAll("[data-view]")];
 const routeLinks = [...document.querySelectorAll("[data-route-link]")];
@@ -130,6 +139,14 @@ function renderRoute() {
   closeMobileChrome();
 }
 
+function setDrawerA11y(drawerId, overlayId, open) {
+  const drawer = document.getElementById(drawerId);
+  const overlay = document.getElementById(overlayId);
+  const hidden = open ? "false" : "true";
+  drawer?.setAttribute("aria-hidden", hidden);
+  overlay?.setAttribute("aria-hidden", hidden);
+}
+
 function closeMobileChrome() {
   document.getElementById("home-drawer")?.classList.remove("is-open");
   document.getElementById("home-drawer-overlay")?.classList.remove("is-open");
@@ -141,6 +158,9 @@ function closeMobileChrome() {
   document.getElementById("home-nav-toggle")?.setAttribute("aria-expanded", "false");
   document.getElementById("auth-nav-toggle")?.setAttribute("aria-expanded", "false");
   document.getElementById("dashboard-nav-toggle")?.setAttribute("aria-expanded", "false");
+  setDrawerA11y("home-drawer", "home-drawer-overlay", false);
+  setDrawerA11y("auth-drawer", "auth-drawer-overlay", false);
+  document.getElementById("dashboard-sidebar-overlay")?.setAttribute("aria-hidden", "true");
 }
 
 function setupMobileChrome() {
@@ -159,12 +179,14 @@ function setupMobileChrome() {
     homeOverlay?.classList.remove("is-open");
     document.body.classList.remove("nav-open");
     homeToggle?.setAttribute("aria-expanded", "false");
+    setDrawerA11y("home-drawer", "home-drawer-overlay", false);
   }
   function openHome() {
     homeDrawer?.classList.add("is-open");
     homeOverlay?.classList.add("is-open");
     document.body.classList.add("nav-open");
     homeToggle?.setAttribute("aria-expanded", "true");
+    setDrawerA11y("home-drawer", "home-drawer-overlay", true);
   }
   homeToggle?.addEventListener("click", () => {
     if (homeDrawer?.classList.contains("is-open")) {
@@ -181,12 +203,14 @@ function setupMobileChrome() {
     authOverlay?.classList.remove("is-open");
     document.body.classList.remove("nav-open");
     authToggle?.setAttribute("aria-expanded", "false");
+    setDrawerA11y("auth-drawer", "auth-drawer-overlay", false);
   }
   function openAuthDraw() {
     authDrawer?.classList.add("is-open");
     authOverlay?.classList.add("is-open");
     document.body.classList.add("nav-open");
     authToggle?.setAttribute("aria-expanded", "true");
+    setDrawerA11y("auth-drawer", "auth-drawer-overlay", true);
   }
   authToggle?.addEventListener("click", () => {
     if (authDrawer?.classList.contains("is-open")) {
@@ -202,11 +226,13 @@ function setupMobileChrome() {
     dashAside?.classList.remove("mobile-open");
     dashOverlay?.classList.remove("is-open");
     dashToggle?.setAttribute("aria-expanded", "false");
+    dashOverlay?.setAttribute("aria-hidden", "true");
   }
   function openDash() {
     dashAside?.classList.add("mobile-open");
     dashOverlay?.classList.add("is-open");
     dashToggle?.setAttribute("aria-expanded", "true");
+    dashOverlay?.setAttribute("aria-hidden", "false");
   }
   dashToggle?.addEventListener("click", () => {
     if (dashAside?.classList.contains("mobile-open")) {
@@ -230,6 +256,22 @@ function setupMobileChrome() {
       closeMobileChrome();
     }
   });
+
+  let lastWide = window.matchMedia("(min-width: 900px)").matches;
+  let lastDashWide = window.matchMedia("(min-width: 1024px)").matches;
+  window.addEventListener(
+    "resize",
+    () => {
+      const wide = window.matchMedia("(min-width: 900px)").matches;
+      const dashWide = window.matchMedia("(min-width: 1024px)").matches;
+      if (wide !== lastWide || dashWide !== lastDashWide) {
+        lastWide = wide;
+        lastDashWide = dashWide;
+        closeMobileChrome();
+      }
+    },
+    { passive: true },
+  );
 }
 
 function consumeIntegrationStatus() {
@@ -410,6 +452,18 @@ function formatDate(value) {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+function updateDashboardMetrics({ projects = [], missions = [], integrations = [] }) {
+  const activeMissions = missions.filter((mission) => ACTIVE_MISSION_STATUSES.has(mission.status));
+  els.missionCountMetric?.textContent = `${missions.length} total`;
+  els.activeMissionMetric?.textContent = `${activeMissions.length} running`;
+  els.projectCountChip?.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"}`;
+  els.integrationCountChip?.textContent = `${integrations.length} integration${integrations.length === 1 ? "" : "s"}`;
+}
+
+function resetDashboardMetrics() {
+  updateDashboardMetrics({ projects: [], missions: [], integrations: [] });
 }
 
 function renderTags(container, values, emptyText, neutral = false) {
@@ -840,13 +894,15 @@ async function loadDashboard() {
   if (!(state.session && state.session.access_token)) {
     renderProfile(null);
     renderHistory([]);
-    document.getElementById("project-count-chip")?.textContent = "0 projects";
-    document.getElementById("integration-count-chip")?.textContent = "0 integrations";
-    document.getElementById("mission-count-metric")?.textContent = "0 total";
-    document.getElementById("active-mission-metric")?.textContent = "0 running";
+    resetDashboardMetrics();
     return;
   }
 
+  if (state.dashboardRefreshInFlight) {
+    return;
+  }
+
+  state.dashboardRefreshInFlight = true;
   try {
     const payload = await fetchAuthedJson("/api/app/dashboard");
     state.user = payload.user;
@@ -857,14 +913,10 @@ async function loadDashboard() {
     const projects = payload.projects || [];
     const missions = payload.missions || [];
     const integrations = payload.integrations || [];
-    const activeMissions = missions.filter(
-      (m) => m.status && !["completed", "failed"].includes(String(m.status)),
-    ).length;
-    document.getElementById("project-count-chip")?.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"}`;
-    document.getElementById("integration-count-chip")?.textContent = `${integrations.length} integration${integrations.length === 1 ? "" : "s"}`;
-    document.getElementById("mission-count-metric")?.textContent = `${missions.length} total`;
-    document.getElementById("active-mission-metric")?.textContent = `${activeMissions} running`;
-    els.resultMeta.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"} • ${integrations.length} integration${integrations.length === 1 ? "" : "s"}`;
+    updateDashboardMetrics({ projects, missions, integrations });
+    if (els.resultMeta) {
+      els.resultMeta.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"} • ${integrations.length} integration${integrations.length === 1 ? "" : "s"}`;
+    }
 
     const latestMission = missions
       .slice()
@@ -874,8 +926,32 @@ async function loadDashboard() {
       renderMissionResult(latestMission);
     }
   } catch (error) {
-    els.workspaceFeedback.textContent = error.message;
+    if (els.workspaceFeedback) {
+      els.workspaceFeedback.textContent = error.message;
+    }
+  } finally {
+    state.dashboardRefreshInFlight = false;
   }
+}
+
+function stopDashboardRefresh() {
+  if (state.dashboardRefreshTimer) {
+    window.clearInterval(state.dashboardRefreshTimer);
+    state.dashboardRefreshTimer = null;
+  }
+}
+
+function startDashboardRefresh() {
+  stopDashboardRefresh();
+  if (!(state.session && state.session.access_token)) {
+    return;
+  }
+  state.dashboardRefreshTimer = window.setInterval(() => {
+    if (document.hidden || normalizeRoute() !== "dashboard") {
+      return;
+    }
+    loadDashboard();
+  }, DASHBOARD_REFRESH_MS);
 }
 
 async function pollMission(missionId) {
@@ -893,6 +969,8 @@ async function pollMission(missionId) {
 async function restoreSession() {
   const stored = loadStoredSession();
   if (!stored || !stored.session || !stored.session.access_token) {
+    stopDashboardRefresh();
+    resetDashboardMetrics();
     renderAuthState();
     renderProfile(null);
     renderHistory([]);
@@ -907,10 +985,13 @@ async function restoreSession() {
     saveSession(stored.session, payload.user);
   } catch (_error) {
     clearSession();
+    stopDashboardRefresh();
+    resetDashboardMetrics();
   }
 
   renderAuthState();
   await loadDashboard();
+  startDashboardRefresh();
   if (normalizeRoute() === "auth") {
     navigate("dashboard", true);
   } else {
@@ -947,6 +1028,7 @@ async function handleAuthSubmit(event) {
       els.authFeedback.textContent = payload.message || "Authenticated successfully.";
       renderAuthState();
       await loadDashboard();
+      startDashboardRefresh();
       navigate("dashboard");
     } else {
       els.authFeedback.textContent =
@@ -1065,14 +1147,18 @@ async function signOut() {
   }
 
   clearSession();
+  stopDashboardRefresh();
   renderAuthState();
   renderProfile(null);
   renderHistory([]);
+  resetDashboardMetrics();
   renderDelivery(null);
   renderArtifacts([], null);
   renderTerminal([], null);
   renderTelegramLink(null);
-  els.workspaceFeedback.textContent = "Signed out.";
+  if (els.workspaceFeedback) {
+    els.workspaceFeedback.textContent = "Signed out.";
+  }
   navigate("home");
 }
 
@@ -1092,7 +1178,17 @@ els.workspaceFill?.addEventListener("click", () => {
   }
 });
 els.signoutButton?.addEventListener("click", signOut);
-window.addEventListener("hashchange", renderRoute);
+window.addEventListener("hashchange", () => {
+  renderRoute();
+  if (normalizeRoute() === "dashboard") {
+    loadDashboard();
+  }
+});
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && normalizeRoute() === "dashboard") {
+    loadDashboard();
+  }
+});
 
 setAuthMode("signin");
 setupMobileChrome();
