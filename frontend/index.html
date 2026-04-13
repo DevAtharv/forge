@@ -385,36 +385,46 @@
       <div id="dashboard-sidebar-overlay" class="drawer-overlay" aria-hidden="true"></div>
       <div class="dashboard-shell">
         <aside class="dashboard-sidebar" id="dashboard-sidebar" aria-label="Workspace navigation">
-          <div class="sidebar-profile">
-            <div class="sidebar-avatar" aria-hidden="true"></div>
-            <div>
-              <strong style="font-size: 14px; letter-spacing: -0.02em">Forge Workspace</strong>
-              <div class="muted" style="font-size: 12px">AI product console</div>
-            </div>
+          <!-- Logo -->
+          <div class="mf-sidebar-logo">
+            <a class="site-logo route-link" data-route-link="home" href="#/home" aria-label="Forge home">
+              <span class="site-logo__grid"><span></span></span>
+              <span>ForgeWorkspace</span>
+            </a>
           </div>
-          <div class="sidebar-search">
-            <span class="material-symbols-outlined" style="font-size: 18px">search</span>
-            <span>Search workspace</span>
-          </div>
-          <button class="new-mission-button" type="button">
-            <span class="material-symbols-outlined" style="font-size: 18px">add</span>
-            <span>New mission</span>
-          </button>
-          <nav class="sidebar-links">
-            <a class="sidebar-link route-link" data-route-link="dashboard" href="#/dashboard">
+
+          <nav class="sidebar-links mf-sidebar-nav">
+            <a class="sidebar-link mf-sidebar-link--active" href="#/dashboard">
               <span class="material-symbols-outlined">dashboard</span><span>Overview</span>
             </a>
-            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">terminal</span><span>Missions</span></a>
-            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">folder</span><span>Artifacts</span></a>
-            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">hub</span><span>Delivery</span></a>
-            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">settings</span><span>Settings</span></a>
-          </nav>
-          <div class="sidebar-bottom sidebar-links">
-            <a class="sidebar-link route-link" data-route-link="home" href="#/home"><span class="material-symbols-outlined">home</span><span>Home</span></a>
-            <a class="sidebar-link route-link" data-route-link="auth" href="#/auth">
-              <span class="material-symbols-outlined">shield_lock</span><span>Auth</span>
+            <a class="sidebar-link" href="#/dashboard">
+              <span class="material-symbols-outlined">rocket_launch</span><span>Missions</span>
             </a>
-            <a class="sidebar-link" href="#/dashboard"><span class="material-symbols-outlined">help_outline</span><span>Help</span></a>
+            <a class="sidebar-link" href="#/dashboard">
+              <span class="material-symbols-outlined">folder</span><span>Artifacts</span>
+            </a>
+            <a class="sidebar-link" href="#/dashboard">
+              <span class="material-symbols-outlined">local_shipping</span><span>Delivery</span>
+            </a>
+            <a class="sidebar-link" href="#/dashboard">
+              <span class="material-symbols-outlined">settings</span><span>Settings</span>
+            </a>
+          </nav>
+
+          <div class="mf-sidebar-spacer"></div>
+
+          <div class="sidebar-links mf-sidebar-bottom-nav">
+            <a class="sidebar-link" href="#/dashboard">
+              <span class="material-symbols-outlined">monitor_heart</span><span>System Status</span>
+            </a>
+            <a class="sidebar-link" href="#/dashboard">
+              <span class="material-symbols-outlined">help_outline</span><span>Help</span>
+            </a>
+          </div>
+
+          <div class="mf-sidebar-init">
+            <div class="mf-sidebar-init-label">INITIALIZE MISSION</div>
+            <button class="mf-new-thread-btn" type="button">New Thread</button>
           </div>
         </aside>
 
@@ -423,199 +433,195 @@
             <span class="material-symbols-outlined">menu</span>
           </button>
 
-          <header class="status-bar compact">
-            <div class="dashboard-overview">
-              <div>
-                <h1 class="dashboard-title">Workspace</h1>
-                <p class="dashboard-subtitle">
-                  Missions, approvals, delivery, and outputs in one place. Telegram stays connected without crowding the canvas.
-                </p>
-                <div class="overview-pills">
-                  <span class="segment-pill active">Overview</span>
-                  <span class="segment-pill">Projects</span>
-                  <span class="segment-pill">Deployments</span>
+          <!-- Top header bar -->
+          <header class="mf-header">
+            <div class="mf-header__title-block">
+              <h1 class="mf-header__title">Mainframe <span class="mf-accent">Dashboard</span></h1>
+              <p class="mf-header__sub">Operational overview for forge instance 0x7E3</p>
+            </div>
+            <div class="mf-header__stats">
+              <div class="mf-stat-chip">
+                <span class="mf-stat-num" id="mission-count-metric">12</span>
+                <div>
+                  <div class="mf-stat-label">TOTAL MISSIONS</div>
+                  <div class="mf-stat-status"><span class="mf-dot mf-dot--blue"></span> SYSTEM NOMINAL</div>
                 </div>
               </div>
-              <div class="overview-actions">
-                <button class="ghost-circle" type="button" aria-label="Search">
-                  <span class="material-symbols-outlined" style="font-size: 18px">search</span>
-                </button>
-                <div class="metric-box">
-                  <span class="meta">Missions</span>
-                  <p id="mission-count-metric" style="font-weight: 700">0 total</p>
-                </div>
-                <div class="metric-box">
-                  <span class="meta">Active</span>
-                  <p id="active-mission-metric" style="font-weight: 700">0 running</p>
+              <div class="mf-stat-chip mf-stat-chip--pink">
+                <span class="mf-stat-num mf-stat-num--pink" id="active-mission-metric">03</span>
+                <div>
+                  <div class="mf-stat-label">ACTIVE RUNNING</div>
+                  <div class="mf-stat-status"><span class="mf-dot mf-dot--pink"></span> EN QUEUE</div>
                 </div>
               </div>
             </div>
           </header>
 
-          <div class="dashboard-layout">
-            <div class="chat-shell">
-              <section class="chat-card">
-                <div class="chat-header">
-                  <div>
-                    <div class="panel-kicker">Forge Chat</div>
-                    <h2 class="chat-title">Mission conversation</h2>
-                    <p class="chat-subtitle">Web, Telegram-linked messages, and Forge replies in one thread.</p>
-                  </div>
-                  <div class="chat-meta-pills">
-                    <span class="tiny-chip" id="mission-status-chip">Public preview mode</span>
-                    <span class="tiny-chip" id="project-count-chip">0 projects</span>
-                    <span class="tiny-chip" id="integration-count-chip">0 integrations</span>
-                  </div>
-                </div>
-                <div class="chat-history-head">
-                  <span class="panel-kicker" style="margin: 0">History</span>
-                  <span id="timeline-meta"></span>
-                </div>
-                <div class="auth-zone">
-                  <div class="user-row">
-                    <div>
-                      <div id="workspace-user" style="font-size: 17px; font-weight: 700">Not signed in</div>
-                      <p class="muted" id="workspace-user-meta" style="margin: 6px 0 0">Sign in to open the protected mission console.</p>
-                    </div>
-                    <button class="ghost-button hidden" id="signout-button" type="button">Sign out</button>
-                  </div>
-                </div>
-                <div class="chat-history" id="timeline-list">
-                  <div class="empty">Conversation history will appear here after your first mission.</div>
-                </div>
-                <div class="response-box">
-                  <div class="panel-kicker" id="result-meta">Latest response</div>
-                  <p class="muted" id="result-response" style="margin-top: 10px">Mission output will render here.</p>
-                  <div class="chat-artifact-note hidden" id="document-wrap">
-                    <div class="meta">Structured document</div>
-                    <pre id="document-output"></pre>
-                  </div>
-                </div>
-              </section>
-
-              <section class="chat-card composer-card">
-                <div class="composer-top">
-                  <div>
-                    <div class="panel-kicker">Composer</div>
-                    <h2 class="panel-title" style="margin: 0">Draft and run</h2>
-                  </div>
-                  <p class="muted" id="workspace-feedback" style="margin: 0">Authenticated missions will appear here.</p>
-                </div>
-                <div class="workspace-input-wrap">
-                  <textarea id="workspace-input" placeholder="Define your next mission objective...">Design a production-ready launch page, auth flow, and deployable app structure for my AI product, then prepare the GitHub and Vercel handoff.</textarea>
-                </div>
-                <div class="mission-toolbar">
-                  <div class="mini-icon-row">
-                    <button class="icon-button" type="button" aria-label="Attach">
-                      <span class="material-symbols-outlined">attach_file</span>
-                    </button>
-                    <button class="icon-button" type="button" aria-label="Voice">
-                      <span class="material-symbols-outlined">mic</span>
-                    </button>
-                    <button class="icon-button" type="button" aria-label="Web">
-                      <span class="material-symbols-outlined">language</span>
-                    </button>
-                  </div>
-                  <div class="button-row">
-                    <button class="ghost-button" id="workspace-fill" type="button">Load research prompt</button>
-                    <button class="ghost-button" id="preview-run" type="button">Preview pipeline</button>
-                    <button class="primary-button" id="workspace-run" type="button">Run mission</button>
-                  </div>
-                </div>
-              </section>
-            </div>
-
-            <div class="dashboard-sidegrid">
-              <section class="side-card">
-                <div class="telegram-card-head">
-                  <div>
-                    <div class="panel-kicker">Telegram link</div>
-                    <h2 class="panel-title" style="margin-top: 6px">Delivery and sync</h2>
-                    <p class="muted" style="margin: 8px 0 0">
-                      Link Telegram so messages show in the main thread instead of a cramped strip.
-                    </p>
-                  </div>
-                  <button class="ghost-button" id="telegram-link-action" type="button">Generate link code</button>
-                </div>
-                <div class="status-primary" style="margin-top: 16px">
-                  <div class="hub-icon"><span class="material-symbols-outlined">send</span></div>
-                  <div style="min-width: 0">
-                    <div class="status-headline">
-                      <strong id="telegram-link-status">Sign in to generate a Telegram link code.</strong>
-                      <span class="green-chip" id="telegram-link-code">No active code</span>
-                    </div>
-                    <p class="status-explain" id="telegram-link-expiry" style="margin-top: 8px">
-                      Generate a code, then send /link CODE to the Forge Telegram bot.
-                    </p>
-                  </div>
-                </div>
-                <p class="muted" id="telegram-link-help" style="margin-top: 12px">Telegram messages will share this workspace after linking.</p>
-              </section>
-
-              <section class="side-card">
-                <h2 class="panel-title">Plan</h2>
-                <div class="memory-box" style="margin-top: 14px">
-                  <div class="meta">Current intent</div>
-                  <p id="result-intent" class="muted" style="margin: 8px 0 0">Preview a mission to inspect the route.</p>
-                </div>
-                <div class="memory-box" style="margin-top: 12px">
-                  <div class="meta">Context</div>
-                  <p id="result-context" class="muted" style="margin: 8px 0 0">No route selected yet.</p>
-                </div>
-                <div class="timeline-rail" id="result-stages" style="margin-top: 16px"></div>
-              </section>
-
-              <section class="side-card">
-                <div class="panel-head" style="align-items: flex-start">
-                  <div>
-                    <div class="panel-kicker">Artifacts</div>
-                    <h2 class="panel-title">Generated output</h2>
-                  </div>
-                  <span class="tiny-chip" id="artifact-meta">No artifacts yet</span>
-                </div>
-                <div class="artifact-list compact" id="artifact-list" style="margin-top: 14px">
-                  <div class="empty">Artifacts generated by Forge will appear here.</div>
-                </div>
-              </section>
-
-              <section class="side-card">
-                <div class="panel-head" style="align-items: flex-start">
-                  <div>
-                    <div class="panel-kicker">Workspace profile</div>
-                    <h2 class="panel-title">Memory snapshot</h2>
-                  </div>
-                  <span class="tiny-chip" id="profile-skill">Skill level: intermediate</span>
-                </div>
-                <div class="memory-box" style="margin-top: 14px">
-                  <div class="meta">Summary</div>
-                  <p class="muted" id="profile-summary" style="margin: 8px 0 0">Sign in to load the workspace profile.</p>
-                </div>
-                <div class="memory-box" style="margin-top: 12px">
-                  <div class="meta">Stack</div>
-                  <div class="badge-row" id="profile-stack-list"></div>
-                </div>
-                <div class="memory-box" style="margin-top: 12px">
-                  <div class="meta">Projects</div>
-                  <div class="badge-row" id="profile-projects-list"></div>
-                </div>
-                <div class="memory-box" style="margin-top: 12px">
-                  <div class="meta">Active context</div>
-                  <div class="badge-row" id="profile-context-list"></div>
-                </div>
-              </section>
-
-              <section class="terminal-card">
-                <div class="split" style="align-items: center">
-                  <div class="terminal-top" style="margin: 0">
-                    <span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span>
-                    <span class="terminal-label">Forge sys log</span>
-                  </div>
-                  <span class="terminal-meta" id="terminal-meta">No logs yet</span>
-                </div>
-                <pre id="terminal-output">Run a mission that asks Forge to build and deploy. Command steps will appear here.</pre>
-              </section>
-            </div>
+          <!-- Tabs -->
+          <div class="mf-tabs">
+            <button class="mf-tab mf-tab--active" type="button">Overview</button>
+            <button class="mf-tab" type="button">Projects</button>
+            <button class="mf-tab" type="button">Deployments</button>
           </div>
+
+          <div class="mf-layout">
+            <!-- Centre content column -->
+            <div class="mf-content-col">
+
+              <!-- Mission Control Panel -->
+              <section class="mf-card mf-control-panel">
+                <div class="mf-card__header">
+                  <div class="mf-card__title-row">
+                    <span class="material-symbols-outlined mf-sparkle">auto_awesome</span>
+                    <span class="mf-card__title">MISSION CONTROL PANEL</span>
+                  </div>
+                  <div class="mf-engine-status">
+                    <span class="mf-dot mf-dot--blue"></span> AI ENGINE ONLINE
+                  </div>
+                </div>
+                <div class="mf-control-body">
+                  <div class="mf-deploy-icon">
+                    <span class="material-symbols-outlined">rocket_launch</span>
+                  </div>
+                  <h2 class="mf-deploy-title">Ready for Deployment</h2>
+                  <p class="mf-deploy-sub">
+                    Initialize your mission parameters in the console below.<br>
+                    Our AI mainframe will orchestrate the artifacts and pipeline.
+                  </p>
+                  <div class="mf-tag-row">
+                    <span class="mf-tag">BUILD UI FRAMEWORK</span>
+                    <span class="mf-tag">DATA ANALYSIS V2</span>
+                    <span class="mf-tag">CLOUD DEPLOY</span>
+                    <button class="mf-run-btn" type="button" id="workspace-run">
+                      <span class="material-symbols-outlined">play_arrow</span> Run Mission
+                    </button>
+                  </div>
+                </div>
+                <div class="mf-console-input">
+                  <textarea id="workspace-input" placeholder="Define your next mission..."></textarea>
+                </div>
+              </section>
+
+              <!-- Output & Artifacts -->
+              <section class="mf-card mf-artifacts-panel">
+                <div class="mf-card__header">
+                  <div class="mf-card__title-row">
+                    <span class="material-symbols-outlined mf-artifacts-icon">grid_view</span>
+                    <span class="mf-card__title">Output &amp; Artifacts</span>
+                  </div>
+                  <button class="mf-view-archives" type="button">VIEW ARCHIVES</button>
+                </div>
+                <div class="mf-artifacts-body">
+                  <div class="mf-artifact-thumb" id="artifact-list">
+                    <div class="mf-artifact-thumb-inner">
+                      <span class="mf-artifact-thumb-label">EMPTY PAYLOAD</span>
+                    </div>
+                  </div>
+                  <div class="mf-artifacts-empty-text">
+                    <p>No artifacts generated yet.</p>
+                    <p class="muted">Submit a mission request to see results here.</p>
+                  </div>
+                </div>
+              </section>
+
+            </div><!-- /mf-content-col -->
+
+            <!-- Right panel -->
+            <aside class="mf-right-panel">
+
+              <!-- Active Pipeline -->
+              <section class="mf-card mf-pipeline-card">
+                <div class="mf-panel-head-row">
+                  <div class="mf-panel-kicker">ACTIVE PIPELINE</div>
+                  <div class="mf-pipeline-progress">
+                    <span class="mf-progress-text">0/4</span>
+                    <span class="mf-progress-badge">COMPLETED</span>
+                  </div>
+                </div>
+                <div class="mf-pipeline-stages" id="result-stages">
+                  <div class="mf-stage">
+                    <span class="mf-stage-icon mf-stage-icon--blue">
+                      <span class="material-symbols-outlined">storage</span>
+                    </span>
+                    <div class="mf-stage-body">
+                      <div class="mf-stage-title">Data Ingestion <span class="mf-stage-badge mf-badge--running">RUNNING</span></div>
+                      <div class="mf-stage-desc">Parsing raw intelligence streams for mission context.</div>
+                    </div>
+                  </div>
+                  <div class="mf-stage">
+                    <span class="mf-stage-icon mf-stage-icon--dim">
+                      <span class="material-symbols-outlined">account_tree</span>
+                    </span>
+                    <div class="mf-stage-body">
+                      <div class="mf-stage-title">Context Mapping <span class="mf-stage-badge mf-badge--queued">QUEUED</span></div>
+                      <div class="mf-stage-desc">Building semantic relationships across datasets.</div>
+                    </div>
+                  </div>
+                  <div class="mf-stage">
+                    <span class="mf-stage-icon mf-stage-icon--dim">
+                      <span class="material-symbols-outlined">precision_manufacturing</span>
+                    </span>
+                    <div class="mf-stage-body">
+                      <div class="mf-stage-title">Synthesis Engine <span class="mf-stage-badge mf-badge--queued">QUEUED</span></div>
+                      <div class="mf-stage-desc">AI processing and artifact generation phase.</div>
+                    </div>
+                  </div>
+                  <div class="mf-stage">
+                    <span class="mf-stage-icon mf-stage-icon--dim">
+                      <span class="material-symbols-outlined">verified</span>
+                    </span>
+                    <div class="mf-stage-body">
+                      <div class="mf-stage-title">Validation &amp; Output <span class="mf-stage-badge mf-badge--queued">QUEUED</span></div>
+                      <div class="mf-stage-desc">Final integrity check before delivery.</div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Compute Resources -->
+              <section class="mf-card mf-compute-card">
+                <div class="mf-compute-title">COMPUTE RESOURCES</div>
+                <div class="mf-resource">
+                  <div class="mf-resource-row">
+                    <span class="mf-resource-label">GPU VRAM Usage</span>
+                    <span class="mf-resource-value">64%</span>
+                  </div>
+                  <div class="mf-progress-bar">
+                    <div class="mf-progress-fill mf-fill--blue" style="width:64%"></div>
+                  </div>
+                </div>
+                <div class="mf-resource">
+                  <div class="mf-resource-row">
+                    <span class="mf-resource-label">Neural Credits</span>
+                    <span class="mf-resource-value">1,240 / 5k</span>
+                  </div>
+                  <div class="mf-progress-bar">
+                    <div class="mf-progress-fill mf-fill--pink" style="width:24.8%"></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Recent Nodes -->
+              <section class="mf-card mf-nodes-card">
+                <div class="mf-compute-title">RECENT NODES</div>
+                <div class="mf-node">
+                  <span class="mf-node-dot mf-node-dot--blue"></span>
+                  <div>
+                    <div class="mf-node-name">Artifact-291-v2.json</div>
+                    <div class="mf-node-meta">2 mins ago • Deployment</div>
+                  </div>
+                </div>
+                <div class="mf-node">
+                  <span class="mf-node-dot mf-node-dot--dim"></span>
+                  <div>
+                    <div class="mf-node-name">System-Handshake-OK</div>
+                    <div class="mf-node-meta">14 mins ago • Connection</div>
+                  </div>
+                </div>
+              </section>
+
+            </aside>
+          </div><!-- /mf-layout -->
 
           <div class="dashboard-footer-links">
             <a class="route-link" data-route-link="home" href="#/home">Home</a>
@@ -625,7 +631,9 @@
         </main>
       </div>
 
-      <button class="system-fab" type="button" aria-label="Support"><span class="material-symbols-outlined">support_agent</span></button>
+      <button class="system-fab" type="button" aria-label="Support">
+        <span class="material-symbols-outlined">support_agent</span>
+      </button>
     </section>
 
     <script src="/ui/config.js"></script>
