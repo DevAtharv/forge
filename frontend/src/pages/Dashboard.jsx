@@ -69,7 +69,9 @@ export default function Dashboard() {
             setFeedback(`Mission ${currentStatus}.`);
             setTerminalOutput(prev => [
               ...prev, 
-              `[SUCCESS] Mission executed gracefully.`,
+              currentStatus === "failed" 
+                ? `[FAILED] ${pollRes.mission.error || "Unknown error."}`
+                : `[SUCCESS] Mission executed gracefully.`,
               `[SUMMARY] ${pollRes.mission.result_summary || "Done."}`
             ]);
             missionCompleted = true;
