@@ -49,16 +49,38 @@ export default function Dashboard() {
       setFeedback(payload.message || "Mission queued.");
       setTerminalOutput(prev => [...prev, `[API] Mission ID received: ${payload.mission.id}`]);
       
-      // Simulate polling for demo purposes since actual polling might take long
-      setTimeout(() => {
-        setFeedback(`Mission completed: Evaluated intent for ${prompt}`);
-        setTerminalOutput(prev => [
-          ...prev, 
-          `[EVAL] Intent recognized and evaluated.`,
-          `[SUCCESS] Mission executed gracefully.`
-        ]);
-        setIsRunning(false);
-      }, 3000);
+      let missionId = payload.mission.id;
+      let missionCompleted = false;
+      let lastStatus = payload.mission.status;
+
+      // Real-time API Polling
+      while (!missionCompleted) {
+        await new Promise(r => setTimeout(r, 1500));
+        try {
+          const pollRes = await fetchAuthedJson(`/api/app/missions/${missionId}`, session);
+          const currentStatus = pollRes.mission.status;
+          
+          if (currentStatus !== lastStatus) {
+            setTerminalOutput(prev => [...prev, `[UPDATE] Status transitioned to: ${currentStatus}`]);
+            lastStatus = currentStatus;
+          }
+
+          if (currentStatus === "completed" || currentStatus === "failed") {
+            setFeedback(`Mission ${currentStatus}.`);
+            setTerminalOutput(prev => [
+              ...prev, 
+              `[SUCCESS] Mission executed gracefully.`,
+              `[SUMMARY] ${pollRes.mission.result_summary || "Done."}`
+            ]);
+            missionCompleted = true;
+          } else {
+             setFeedback(`Mission status: ${currentStatus}...`);
+          }
+        } catch (e) {
+          console.error("Polling error:", e);
+        }
+      }
+      setIsRunning(false);
       
     } catch (error) {
       setFeedback(error.message);

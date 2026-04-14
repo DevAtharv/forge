@@ -175,7 +175,7 @@ class Settings:
             supabase_anon_key=_env("SUPABASE_ANON_KEY", _env("SUPABASE_KEY", "") or "") or "",
             telegram_bot_username=_env("TELEGRAM_BOT_USERNAME", "ForggeBot") or "ForggeBot",
             worker_id=_env("FORGE_WORKER_ID", f"{hostname}-{os.getpid()}") or f"{hostname}-{os.getpid()}",
-            worker_poll_interval_seconds=_env_float("FORGE_WORKER_POLL_INTERVAL_SECONDS", 2.0),
+            worker_poll_interval_seconds=_env_float("FORGE_WORKER_POLL_INTERVAL_SECONDS", 0.5),
             worker_batch_size=_env_int("FORGE_WORKER_BATCH_SIZE", 1),
             worker_lock_timeout_seconds=_env_int("FORGE_WORKER_LOCK_TIMEOUT_SECONDS", 300),
             worker_retry_backoff_seconds=_env_int("FORGE_WORKER_RETRY_BACKOFF_SECONDS", 30),
