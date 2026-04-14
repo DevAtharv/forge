@@ -69,7 +69,23 @@ const routeLinks = [...document.querySelectorAll("[data-route-link]")];
 const homeModeCopy = document.getElementById("home-mode-copy");
 
 function setDot(element, color) {
+  if (!element) {
+    return;
+  }
   element.style.background = color;
+}
+
+function setLocationHash(hash, replace) {
+  const u = new URL(window.location.href);
+  u.hash = hash;
+  const url = u.toString();
+  if (replace) {
+    window.history.replaceState(null, "", url);
+    return;
+  }
+  if (window.location.hash !== hash) {
+    window.location.hash = hash;
+  }
 }
 
 function isAuthenticated() {
@@ -87,33 +103,179 @@ function buildIntegrationConnectUrl(provider) {
 
 function navigate(route, replace = false) {
   const nextHash = `#/${route}`;
-  if (replace) {
-    window.history.replaceState(null, "", nextHash);
-    renderRoute();
-    return;
-  }
   if (window.location.hash === nextHash) {
     renderRoute();
     return;
   }
-  window.location.hash = nextHash;
+  if (replace) {
+    setLocationHash(nextHash, true);
+    renderRoute();
+    return;
+  }
+  setLocationHash(nextHash, false);
 }
 
 function renderRoute() {
   let route = normalizeRoute();
+  console.log("[renderRoute] hash=" + window.location.hash + " route=" + route + " authEnabled=" + state.authEnabled + " authed=" + isAuthenticated());
 
   if (route === "dashboard" && !isAuthenticated()) {
     route = state.authEnabled ? "auth" : "home";
-    window.history.replaceState(null, "", `#/${route}`);
+    const nextHash = `#/${route}`;
+    console.log("[renderRoute] dashboard redirect → " + route + " nextHash=" + nextHash);
+    if (window.location.hash !== nextHash) {
+      setLocationHash(nextHash, true);
+    }
   }
 
   views.forEach((view) => {
-    view.classList.toggle("hidden", view.dataset.view !== route);
+    const name = view.getAttribute("data-view");
+    const shouldHide = name !== route;
+    view.classList.toggle("hidden", shouldHide);
+    console.log("[renderRoute] view=" + name + " shouldHide=" + shouldHide + " classList=" + view.className);
   });
 
   routeLinks.forEach((link) => {
-    link.classList.toggle("active", link.dataset.routeLink === route);
+    const target = link.getAttribute("data-route-link");
+    link.classList.toggle("active", target === route);
   });
+
+  closeMobileChrome();
+}
+
+function setDrawerA11y(drawerId, overlayId, open) {
+  const drawer = document.getElementById(drawerId);
+  const overlay = document.getElementById(overlayId);
+  const hidden = open ? "false" : "true";
+  drawer?.setAttribute("aria-hidden", hidden);
+  overlay?.setAttribute("aria-hidden", hidden);
+}
+
+function closeMobileChrome() {
+  document.getElementById("home-drawer")?.classList.remove("is-open");
+  document.getElementById("home-drawer-overlay")?.classList.remove("is-open");
+  document.getElementById("auth-drawer")?.classList.remove("is-open");
+  document.getElementById("auth-drawer-overlay")?.classList.remove("is-open");
+  document.getElementById("dashboard-sidebar")?.classList.remove("mobile-open");
+  document.getElementById("dashboard-sidebar-overlay")?.classList.remove("is-open");
+  document.body.classList.remove("nav-open");
+  document.getElementById("home-nav-toggle")?.setAttribute("aria-expanded", "false");
+  document.getElementById("auth-nav-toggle")?.setAttribute("aria-expanded", "false");
+  document.getElementById("dashboard-nav-toggle")?.setAttribute("aria-expanded", "false");
+  setDrawerA11y("home-drawer", "home-drawer-overlay", false);
+  setDrawerA11y("auth-drawer", "auth-drawer-overlay", false);
+  document.getElementById("dashboard-sidebar-overlay")?.setAttribute("aria-hidden", "true");
+}
+
+function setupMobileChrome() {
+  const homeToggle = document.getElementById("home-nav-toggle");
+  const homeDrawer = document.getElementById("home-drawer");
+  const homeOverlay = document.getElementById("home-drawer-overlay");
+  const authToggle = document.getElementById("auth-nav-toggle");
+  const authDrawer = document.getElementById("auth-drawer");
+  const authOverlay = document.getElementById("auth-drawer-overlay");
+  const dashToggle = document.getElementById("dashboard-nav-toggle");
+  const dashAside = document.getElementById("dashboard-sidebar");
+  const dashOverlay = document.getElementById("dashboard-sidebar-overlay");
+
+  function closeHome() {
+    homeDrawer?.classList.remove("is-open");
+    homeOverlay?.classList.remove("is-open");
+    document.body.classList.remove("nav-open");
+    homeToggle?.setAttribute("aria-expanded", "false");
+    setDrawerA11y("home-drawer", "home-drawer-overlay", false);
+  }
+  function openHome() {
+    homeDrawer?.classList.add("is-open");
+    homeOverlay?.classList.add("is-open");
+    document.body.classList.add("nav-open");
+    homeToggle?.setAttribute("aria-expanded", "true");
+    setDrawerA11y("home-drawer", "home-drawer-overlay", true);
+  }
+  homeToggle?.addEventListener("click", () => {
+    if (homeDrawer?.classList.contains("is-open")) {
+      closeHome();
+    } else {
+      openHome();
+    }
+  });
+  homeOverlay?.addEventListener("click", closeHome);
+  homeDrawer?.querySelectorAll("a").forEach((a) => a.addEventListener("click", closeHome));
+
+  function closeAuthDraw() {
+    authDrawer?.classList.remove("is-open");
+    authOverlay?.classList.remove("is-open");
+    document.body.classList.remove("nav-open");
+    authToggle?.setAttribute("aria-expanded", "false");
+    setDrawerA11y("auth-drawer", "auth-drawer-overlay", false);
+  }
+  function openAuthDraw() {
+    authDrawer?.classList.add("is-open");
+    authOverlay?.classList.add("is-open");
+    document.body.classList.add("nav-open");
+    authToggle?.setAttribute("aria-expanded", "true");
+    setDrawerA11y("auth-drawer", "auth-drawer-overlay", true);
+  }
+  authToggle?.addEventListener("click", () => {
+    if (authDrawer?.classList.contains("is-open")) {
+      closeAuthDraw();
+    } else {
+      openAuthDraw();
+    }
+  });
+  authOverlay?.addEventListener("click", closeAuthDraw);
+  authDrawer?.querySelectorAll("a").forEach((a) => a.addEventListener("click", closeAuthDraw));
+
+  function closeDash() {
+    dashAside?.classList.remove("mobile-open");
+    dashOverlay?.classList.remove("is-open");
+    dashToggle?.setAttribute("aria-expanded", "false");
+    dashOverlay?.setAttribute("aria-hidden", "true");
+  }
+  function openDash() {
+    dashAside?.classList.add("mobile-open");
+    dashOverlay?.classList.add("is-open");
+    dashToggle?.setAttribute("aria-expanded", "true");
+    dashOverlay?.setAttribute("aria-hidden", "false");
+  }
+  dashToggle?.addEventListener("click", () => {
+    if (dashAside?.classList.contains("mobile-open")) {
+      closeDash();
+    } else {
+      openDash();
+    }
+  });
+  dashOverlay?.addEventListener("click", closeDash);
+
+  document.querySelectorAll(".dashboard-sidebar .sidebar-link").forEach((link) => {
+    link.addEventListener("click", () => {
+      if (window.matchMedia("(max-width: 1023px)").matches) {
+        closeDash();
+      }
+    });
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeMobileChrome();
+    }
+  });
+
+  let lastWide = window.matchMedia("(min-width: 900px)").matches;
+  let lastDashWide = window.matchMedia("(min-width: 1024px)").matches;
+  window.addEventListener(
+    "resize",
+    () => {
+      const wide = window.matchMedia("(min-width: 900px)").matches;
+      const dashWide = window.matchMedia("(min-width: 1024px)").matches;
+      if (wide !== lastWide || dashWide !== lastDashWide) {
+        lastWide = wide;
+        lastDashWide = dashWide;
+        closeMobileChrome();
+      }
+    },
+    { passive: true },
+  );
 }
 
 function consumeIntegrationStatus() {
@@ -127,10 +289,12 @@ function consumeIntegrationStatus() {
     return;
   }
 
-  if (status === "connected") {
-    els.workspaceFeedback.textContent = message || `${provider} connected${account ? ` as ${account}` : ""}.`;
-  } else {
-    els.workspaceFeedback.textContent = message || `${provider} connection failed.`;
+  if (els.workspaceFeedback) {
+    if (status === "connected") {
+      els.workspaceFeedback.textContent = message || `${provider} connected${account ? ` as ${account}` : ""}.`;
+    } else {
+      els.workspaceFeedback.textContent = message || `${provider} connection failed.`;
+    }
   }
 
   current.search = "";
@@ -164,13 +328,17 @@ function fetchAuthedJson(url, options = {}) {
 
 function setAuthMode(mode) {
   state.authMode = mode;
-  els.modeSignin.classList.toggle("active", mode === "signin");
-  els.modeSignup.classList.toggle("active", mode === "signup");
-  els.authSubmit.textContent = mode === "signin" ? "Sign In" : "Create Account";
-  els.authFeedback.textContent =
-    mode === "signin"
-      ? "Use your Supabase credentials to unlock the protected workspace."
-      : "Create a Forge account. Email confirmation depends on your Supabase settings.";
+  els.modeSignin?.classList.toggle("active", mode === "signin");
+  els.modeSignup?.classList.toggle("active", mode === "signup");
+  if (els.authSubmit) {
+    els.authSubmit.textContent = mode === "signin" ? "Sign In" : "Create Account";
+  }
+  if (els.authFeedback) {
+    els.authFeedback.textContent =
+      mode === "signin"
+        ? "Use your Supabase credentials to unlock the protected workspace."
+        : "Create a Forge account. Email confirmation depends on your Supabase settings.";
+  }
 }
 
 function saveSession(session, user) {
@@ -196,37 +364,44 @@ function loadStoredSession() {
 
 function renderAuthState() {
   const active = isAuthenticated();
-  if (els.missionStatusChip) els.missionStatusChip.textContent = active ? "Protected workspace active" : "Public preview mode";
-  if (els.workspaceRun) els.workspaceRun.disabled = !active;
+  if (els.missionStatusChip) {
+    els.missionStatusChip.textContent = active ? "Protected workspace active" : "Public preview mode";
+  }
+  if (els.workspaceRun) {
+    els.workspaceRun.disabled = !active;
+  }
   if (els.signoutButton) {
     els.signoutButton.disabled = !active;
     els.signoutButton.classList.toggle("hidden", !active);
   }
-  if (els.telegramLinkAction) els.telegramLinkAction.disabled = !active;
+  if (els.telegramLinkAction) {
+    els.telegramLinkAction.disabled = !active;
+  }
   if (homeModeCopy) {
     homeModeCopy.textContent = active ? "Authenticated workspace" : "Protected workspace";
   }
 
   if (!active) {
-    if (els.workspaceUser) els.workspaceUser.textContent = "Not signed in";
-    if (els.workspaceUserMeta) els.workspaceUserMeta.textContent = state.authEnabled
-      ? "Sign in to open the protected mission console."
-      : "Supabase auth is not configured yet.";
-    if (els.telegramLinkAction) renderTelegramLink(null);
+    if (els.workspaceUser) {
+      els.workspaceUser.textContent = "Not signed in";
+    }
+    if (els.workspaceUserMeta) {
+      els.workspaceUserMeta.textContent = state.authEnabled
+        ? "Sign in to open the protected mission console."
+        : "Supabase auth is not configured yet.";
+    }
+    renderTelegramLink(null);
     renderRoute();
     return;
   }
 
-  if (els.workspaceUser) els.workspaceUser.textContent = state.user.email || "Authenticated Forge user";
-  if (els.workspaceUserMeta) els.workspaceUserMeta.textContent =
-    "Forge will fetch your profile and conversation memory through protected backend APIs.";
-
-  // Update avatar with user initial if present
-  const avatar = document.getElementById("mf-user-avatar");
-  if (avatar && state.user && state.user.email) {
-    avatar.title = state.user.email;
+  if (els.workspaceUser) {
+    els.workspaceUser.textContent = state.user.email || "Authenticated Forge user";
   }
-
+  if (els.workspaceUserMeta) {
+    els.workspaceUserMeta.textContent =
+      "Forge will fetch your profile and conversation memory through protected backend APIs.";
+  }
   renderRoute();
 }
 
@@ -286,6 +461,18 @@ function formatDate(value) {
   });
 }
 
+function updateDashboardMetrics({ projects = [], missions = [], integrations = [] }) {
+  const activeMissions = missions.filter((mission) => ACTIVE_MISSION_STATUSES.has(mission.status));
+  els.missionCountMetric?.textContent = `${missions.length} total`;
+  els.activeMissionMetric?.textContent = `${activeMissions.length} running`;
+  els.projectCountChip?.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"}`;
+  els.integrationCountChip?.textContent = `${integrations.length} integration${integrations.length === 1 ? "" : "s"}`;
+}
+
+function resetDashboardMetrics() {
+  updateDashboardMetrics({ projects: [], missions: [], integrations: [] });
+}
+
 function renderTags(container, values, emptyText, neutral = false) {
   container.innerHTML = "";
   if (!values || !values.length) {
@@ -304,12 +491,13 @@ function renderTags(container, values, emptyText, neutral = false) {
 }
 
 function renderProfile(profile) {
+  if (!els.profileSummary) return;
   if (!profile) {
     els.profileSummary.textContent = "Sign in to load the workspace profile.";
-    renderTags(els.profileStackList, [], "No stack captured yet");
-    renderTags(els.profileProjectsList, [], "No active projects captured yet");
-    renderTags(els.profileContextList, [], "No active context captured yet");
-    els.profileSkill.textContent = "Skill level: intermediate";
+    if (els.profileStackList) renderTags(els.profileStackList, [], "No stack captured yet");
+    if (els.profileProjectsList) renderTags(els.profileProjectsList, [], "No active projects captured yet");
+    if (els.profileContextList) renderTags(els.profileContextList, [], "No active context captured yet");
+    if (els.profileSkill) els.profileSkill.textContent = "Skill level: intermediate";
     return;
   }
 
@@ -317,78 +505,69 @@ function renderProfile(profile) {
   els.profileSummary.textContent =
     profile.summary ||
     "Forge will grow this summary over time as more authenticated missions are completed.";
-  renderTags(els.profileStackList, profile.stack || [], "No stack captured yet");
-  renderTags(els.profileProjectsList, profile.current_projects || [], "No active projects captured yet");
-  renderTags(els.profileContextList, contextEntries, "No active context captured yet");
-  els.profileSkill.textContent = `Skill level: ${profile.skill_level || "intermediate"} • Messages: ${profile.message_count || 0}`;
+  if (els.profileStackList) renderTags(els.profileStackList, profile.stack || [], "No stack captured yet");
+  if (els.profileProjectsList) renderTags(els.profileProjectsList, profile.current_projects || [], "No active projects captured yet");
+  if (els.profileContextList) renderTags(els.profileContextList, contextEntries, "No active context captured yet");
+  if (els.profileSkill) els.profileSkill.textContent = `Skill level: ${profile.skill_level || "intermediate"} • Messages: ${profile.message_count || 0}`;
 }
 
 function renderHistory(history) {
+  if (!els.timelineList) {
+    return;
+  }
   els.timelineList.innerHTML = "";
   if (!history || !history.length) {
-    els.timelineList.innerHTML = '<div class="recent-chat-item"><div class="recent-chat-head"><span class="recent-chat-role">Telegram</span><span class="meta">Waiting</span></div><p class="recent-chat-body">Conversation history will appear here after your first mission.</p></div>';
-    els.timelineMeta.textContent = "No stored conversation yet";
+    els.timelineList.innerHTML = '<div class="empty">Conversation history will appear here after your first mission.</div>';
+    if (els.timelineMeta) {
+      els.timelineMeta.textContent = "No stored conversation yet";
+    }
     return;
   }
 
-  const recentHistory = history.slice().reverse().slice(0, 6);
-  els.timelineMeta.textContent = `${recentHistory.length} recent message${recentHistory.length === 1 ? "" : "s"}`;
-  recentHistory.forEach((item) => {
-    const card = document.createElement("div");
-    card.className = "recent-chat-item";
+  if (els.timelineMeta) {
+    els.timelineMeta.textContent = `${history.length} stored message${history.length === 1 ? "" : "s"}`;
+  }
+  history
+    .slice()
+    .reverse()
+    .forEach((item) => {
+      const card = document.createElement("div");
+      card.className = "timeline-item";
 
-    const head = document.createElement("div");
-    head.className = "recent-chat-head";
+      const head = document.createElement("div");
+      head.className = "split";
 
-    const role = document.createElement("span");
-    role.className = `recent-chat-role ${item.role || "user"}`;
-    role.textContent =
-      item.role === "assistant"
-        ? "Forge reply"
-        : item.role === "system"
-          ? "System update"
-          : "User message";
+      const role = document.createElement("span");
+      role.className = `timeline-role ${item.role}`;
+      role.textContent = item.role;
 
-    const meta = document.createElement("span");
-    meta.className = "meta";
-    meta.textContent = formatDate(item.created_at);
+      const meta = document.createElement("span");
+      meta.className = "meta";
+      meta.textContent = formatDate(item.created_at);
 
-    const body = document.createElement("p");
-    body.className = "recent-chat-body";
-    body.textContent = item.content;
+      const body = document.createElement("p");
+      body.className = "timeline-body";
+      body.textContent = item.content;
 
-    head.appendChild(role);
-    head.appendChild(meta);
-    card.appendChild(head);
-    card.appendChild(body);
+      head.appendChild(role);
+      head.appendChild(meta);
+      card.appendChild(head);
+      card.appendChild(body);
 
-    if (item.agents_used && item.agents_used.length) {
-      const badges = document.createElement("div");
-      badges.className = "badges";
-      badges.style.marginTop = "10px";
-      item.agents_used.slice(0, 3).forEach((agent) => {
-        const chip = document.createElement("span");
-        chip.className = "chip neutral";
-        chip.textContent = agent;
-        badges.appendChild(chip);
-      });
-      card.appendChild(badges);
-    }
+      if (item.agents_used && item.agents_used.length) {
+        const badges = document.createElement("div");
+        badges.className = "badges";
+        item.agents_used.forEach((agent) => {
+          const chip = document.createElement("span");
+          chip.className = "chip neutral";
+          chip.textContent = agent;
+          badges.appendChild(chip);
+        });
+        card.appendChild(badges);
+      }
 
-    els.timelineList.appendChild(card);
-  });
-}
-
-function updateDashboardMetrics({ projects = [], missions = [], integrations = [] }) {
-  const activeMissions = missions.filter((mission) => ACTIVE_MISSION_STATUSES.has(mission.status));
-  if (els.missionCountMetric) els.missionCountMetric.textContent = `${missions.length}`;
-  if (els.activeMissionMetric) els.activeMissionMetric.textContent = String(activeMissions.length).padStart(2, "0");
-  if (els.projectCountChip) els.projectCountChip.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"}`;
-  if (els.integrationCountChip) els.integrationCountChip.textContent = `${integrations.length} integration${integrations.length === 1 ? "" : "s"}`;
-}
-
-function resetDashboardMetrics() {
-  updateDashboardMetrics({ projects: [], missions: [], integrations: [] });
+      els.timelineList.appendChild(card);
+    });
 }
 
 function renderPlan(plan, sourceLabel) {
@@ -454,6 +633,7 @@ function renderDelivery(delivery) {
 }
 
 function renderApprovalPrompt(mission) {
+  if (!els.resultResponse) return;
   const approval = mission.approval_request || {};
   const provider =
     approval.action === "connect_vercel"
@@ -496,6 +676,7 @@ function renderApprovalPrompt(mission) {
 }
 
 function renderArtifacts(stages, delivery) {
+  if (!els.artifactList) return;
   els.artifactList.innerHTML = "";
   const artifacts = [];
 
@@ -509,11 +690,11 @@ function renderArtifacts(stages, delivery) {
 
   if (!artifacts.length && !(delivery && delivery.document_text)) {
     els.artifactList.innerHTML = '<div class="empty">Artifacts from planner, code, or reviewer outputs will appear here.</div>';
-    els.artifactMeta.textContent = "No artifacts yet";
+    if (els.artifactMeta) els.artifactMeta.textContent = "No artifacts yet";
     return;
   }
 
-  els.artifactMeta.textContent = artifacts.length
+  if (els.artifactMeta) els.artifactMeta.textContent = artifacts.length
     ? `${artifacts.length} artifact${artifacts.length === 1 ? "" : "s"}`
     : "Document attached";
 
@@ -543,33 +724,16 @@ function renderArtifacts(stages, delivery) {
 }
 
 function renderMissionArtifacts(mission) {
+  if (!els.artifactList) return;
   els.artifactList.innerHTML = "";
   const changedFiles = mission.changed_files || [];
 
-  if (!changedFiles.length && !mission.bundle_name) {
+  if (!changedFiles.length) {
     renderArtifacts([], null);
     return;
   }
 
-  els.artifactMeta.textContent = mission.bundle_name
-    ? `${changedFiles.length} file${changedFiles.length === 1 ? "" : "s"} • bundle ready`
-    : `${changedFiles.length} file${changedFiles.length === 1 ? "" : "s"}`;
-
-  if (mission.bundle_name) {
-    const bundleCard = document.createElement("div");
-    bundleCard.className = "artifact";
-    const head = document.createElement("div");
-    head.className = "artifact-head";
-    const title = document.createElement("strong");
-    title.textContent = mission.bundle_name;
-    const meta = document.createElement("span");
-    meta.className = "meta";
-    meta.textContent = "Downloadable project bundle";
-    head.appendChild(title);
-    head.appendChild(meta);
-    bundleCard.appendChild(head);
-    els.artifactList.appendChild(bundleCard);
-  }
+  if (els.artifactMeta) els.artifactMeta.textContent = `${changedFiles.length} file${changedFiles.length === 1 ? "" : "s"}`;
 
   changedFiles.forEach((fileName) => {
     const card = document.createElement("div");
@@ -583,11 +747,7 @@ function renderMissionArtifacts(mission) {
 
     const meta = document.createElement("span");
     meta.className = "meta";
-    meta.textContent = mission.preview_url
-      ? "Included in managed preview"
-      : mission.repo_url
-        ? "Published to GitHub"
-        : "Generated by Forge";
+    meta.textContent = mission.repo_url ? "Synced to GitHub" : "Generated by Forge";
 
     head.appendChild(title);
     head.appendChild(meta);
@@ -609,17 +769,11 @@ function renderMissionArtifacts(mission) {
 function renderMissionTerminal(mission) {
   const lines = [];
 
-  if (mission.preview_url) {
-    lines.push(`Preview URL: ${mission.preview_url}`);
-  }
   if (mission.repo_url) {
     lines.push(`GitHub repo: ${mission.repo_url}`);
   }
   if (mission.deployment_url) {
     lines.push(`Deployment URL: ${mission.deployment_url}`);
-  }
-  if (mission.bundle_name) {
-    lines.push(`Bundle: ${mission.bundle_name}`);
   }
   if (mission.changed_files && mission.changed_files.length) {
     lines.push("Changed files:");
@@ -631,19 +785,15 @@ function renderMissionTerminal(mission) {
     return;
   }
 
-  els.terminalMeta.textContent = `${lines.length} line${lines.length === 1 ? "" : "s"}`;
-  els.terminalOutput.textContent = lines.join("\n");
+  if (els.terminalMeta) els.terminalMeta.textContent = `${lines.length} line${lines.length === 1 ? "" : "s"}`;
+  if (els.terminalOutput) els.terminalOutput.textContent = lines.join("\n");
 }
 
 function renderMissionResult(mission) {
   if (mission.status === "awaiting_approval") {
     renderApprovalPrompt(mission);
-    els.documentWrap.classList.add("hidden");
-    els.documentOutput.textContent = "";
-  } else if (ACTIVE_MISSION_STATUSES.has(mission.status)) {
-    renderDelivery({
-      text: mission.response_text || `Mission is ${mission.status.replaceAll("_", " ")}.`,
-    });
+    if (els.documentWrap) els.documentWrap.classList.add("hidden");
+    if (els.documentOutput) els.documentOutput.textContent = "";
   } else {
     renderDelivery({
       text: mission.response_text || mission.result_summary || "Mission completed.",
@@ -651,13 +801,11 @@ function renderMissionResult(mission) {
   }
   renderMissionArtifacts(mission);
   renderMissionTerminal(mission);
-  els.resultMeta.textContent = mission.changed_files && mission.changed_files.length
+  if (els.resultMeta) els.resultMeta.textContent = mission.changed_files && mission.changed_files.length
     ? `${mission.changed_files.length} file${mission.changed_files.length === 1 ? "" : "s"} generated`
     : mission.status;
-  els.resultIntent.textContent = mission.result_summary || mission.kind;
-  els.resultContext.textContent = mission.preview_url
-    ? `${mission.kind} • ${mission.status} • preview ready`
-    : mission.deployment_url
+  if (els.resultIntent) els.resultIntent.textContent = mission.result_summary || mission.kind;
+  if (els.resultContext) els.resultContext.textContent = mission.deployment_url
     ? `${mission.kind} • ${mission.status} • deployed`
     : mission.repo_url
       ? `${mission.kind} • ${mission.status} • synced to GitHub`
@@ -705,23 +853,28 @@ function extractTerminalCommands(stages, delivery) {
 }
 
 function renderTerminal(stages, delivery) {
+  if (!els.terminalMeta && !els.terminalOutput) return;
   const commands = extractTerminalCommands(stages, delivery);
   if (!commands.length) {
-    els.terminalMeta.textContent = "No commands yet";
-    els.terminalOutput.textContent = "Run a mission that asks Forge to build and deploy. Command steps will appear here.";
+    if (els.terminalMeta) els.terminalMeta.textContent = "No commands yet";
+    if (els.terminalOutput) els.terminalOutput.textContent = "Run a mission that asks Forge to build and deploy. Command steps will appear here.";
     return;
   }
-  els.terminalMeta.textContent = `${commands.length} command${commands.length === 1 ? "" : "s"}`;
-  els.terminalOutput.textContent = commands.join("\n");
+  if (els.terminalMeta) els.terminalMeta.textContent = `${commands.length} command${commands.length === 1 ? "" : "s"}`;
+  if (els.terminalOutput) els.terminalOutput.textContent = commands.join("\n");
 }
 
 async function checkHealth() {
   try {
     const payload = await fetchJson("/health");
-    els.healthText.textContent = payload.status === "ok" ? "Backend live" : "Backend responded";
+    if (els.healthText) {
+      els.healthText.textContent = payload.status === "ok" ? "Backend live" : "Backend responded";
+    }
     setDot(els.healthDot, "var(--teal)");
   } catch (_error) {
-    els.healthText.textContent = "Backend offline";
+    if (els.healthText) {
+      els.healthText.textContent = "Backend offline";
+    }
     setDot(els.healthDot, "var(--danger)");
   }
 }
@@ -730,16 +883,22 @@ async function checkConfig() {
   try {
     const payload = await fetchJson("/api/client-config");
     state.authEnabled = Boolean(payload.auth_enabled);
-    els.authText.textContent = state.authEnabled ? "Supabase auth ready" : "Supabase auth not configured";
+    if (els.authText) {
+      els.authText.textContent = state.authEnabled ? "Supabase auth ready" : "Supabase auth not configured";
+    }
     setDot(els.authDot, state.authEnabled ? "var(--teal)" : "var(--gold)");
-    els.authWarning.classList.toggle("hidden", state.authEnabled);
-    els.authWarning.classList.toggle("warn", !state.authEnabled);
-    els.authWarning.textContent = state.authEnabled
-      ? ""
-      : "Add SUPABASE_URL and SUPABASE_ANON_KEY to enable sign-in and the protected workspace.";
+    if (els.authWarning) {
+      els.authWarning.classList.toggle("hidden", state.authEnabled);
+      els.authWarning.classList.toggle("warn", !state.authEnabled);
+      els.authWarning.textContent = state.authEnabled
+        ? ""
+        : "Add SUPABASE_URL and SUPABASE_ANON_KEY to enable sign-in and the protected workspace.";
+    }
   } catch (_error) {
     state.authEnabled = false;
-    els.authText.textContent = "Could not load auth config";
+    if (els.authText) {
+      els.authText.textContent = "Could not load auth config";
+    }
     setDot(els.authDot, "var(--danger)");
   }
   renderAuthState();
@@ -752,6 +911,7 @@ async function loadDashboard() {
     resetDashboardMetrics();
     return;
   }
+
   if (state.dashboardRefreshInFlight) {
     return;
   }
@@ -768,17 +928,21 @@ async function loadDashboard() {
     const missions = payload.missions || [];
     const integrations = payload.integrations || [];
     updateDashboardMetrics({ projects, missions, integrations });
-    els.resultMeta.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"} • ${integrations.length} integration${integrations.length === 1 ? "" : "s"}`;
+    if (els.resultMeta) {
+      els.resultMeta.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"} • ${integrations.length} integration${integrations.length === 1 ? "" : "s"}`;
+    }
 
     const latestMission = missions
       .slice()
       .sort((a, b) => new Date(b.updated_at || b.created_at || 0) - new Date(a.updated_at || a.created_at || 0))[0];
 
-    if (latestMission) {
+    if (latestMission && (latestMission.response_text || latestMission.result_summary)) {
       renderMissionResult(latestMission);
     }
   } catch (error) {
-    els.workspaceFeedback.textContent = error.message;
+    if (els.workspaceFeedback) {
+      els.workspaceFeedback.textContent = error.message;
+    }
   } finally {
     state.dashboardRefreshInFlight = false;
   }
@@ -819,6 +983,8 @@ async function pollMission(missionId) {
 async function restoreSession() {
   const stored = loadStoredSession();
   if (!stored || !stored.session || !stored.session.access_token) {
+    stopDashboardRefresh();
+    resetDashboardMetrics();
     renderAuthState();
     renderProfile(null);
     renderHistory([]);
@@ -835,8 +1001,14 @@ async function restoreSession() {
     clearSession();
     stopDashboardRefresh();
     resetDashboardMetrics();
+    renderAuthState();
+    renderProfile(null);
+    renderHistory([]);
+    renderRoute();
+    return;
   }
 
+  // Only redirect to dashboard if we successfully restored a valid session
   renderAuthState();
   await loadDashboard();
   startDashboardRefresh();
@@ -1004,26 +1176,28 @@ async function signOut() {
   renderArtifacts([], null);
   renderTerminal([], null);
   renderTelegramLink(null);
-  els.workspaceFeedback.textContent = "Signed out.";
+  if (els.workspaceFeedback) {
+    els.workspaceFeedback.textContent = "Signed out.";
+  }
   navigate("home");
 }
 
-
-els.modeSignin.addEventListener("click", () => setAuthMode("signin"));
-els.modeSignup.addEventListener("click", () => setAuthMode("signup"));
-els.authForm.addEventListener("submit", handleAuthSubmit);
-if (els.previewRun) els.previewRun.addEventListener("click", runPreview);
-els.workspaceRun.addEventListener("click", runMission);
-if (els.telegramLinkAction) els.telegramLinkAction.addEventListener("click", linkTelegram);
-if (els.workspaceFill) {
-  els.workspaceFill.addEventListener("click", () => {
+els.modeSignin?.addEventListener("click", () => setAuthMode("signin"));
+els.modeSignup?.addEventListener("click", () => setAuthMode("signup"));
+els.authForm?.addEventListener("submit", handleAuthSubmit);
+els.previewRun?.addEventListener("click", runPreview);
+els.workspaceRun?.addEventListener("click", runMission);
+els.telegramLinkAction?.addEventListener("click", linkTelegram);
+els.workspaceFill?.addEventListener("click", () => {
+  if (els.workspaceInput) {
     els.workspaceInput.value =
       "Should I use Redis or Supabase for storing sessions in a production FastAPI app, and why?";
-    if (els.workspaceFeedback) els.workspaceFeedback.textContent = "Loaded a research-style mission.";
-  });
-}
-if (els.signoutButton) els.signoutButton.addEventListener("click", signOut);
-
+  }
+  if (els.workspaceFeedback) {
+    els.workspaceFeedback.textContent = "Loaded a research-style mission.";
+  }
+});
+els.signoutButton?.addEventListener("click", signOut);
 window.addEventListener("hashchange", () => {
   renderRoute();
   if (normalizeRoute() === "dashboard") {
@@ -1036,69 +1210,17 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-// ─── Dashboard mobile sidebar toggle ───
-(function setupDashboardSidebar() {
-  const toggle = document.getElementById("dashboard-nav-toggle");
-  const sidebar = document.getElementById("dashboard-sidebar");
-  const overlay = document.getElementById("dashboard-sidebar-overlay");
+setAuthMode("signin");
+setupMobileChrome();
+renderAuthState();
+renderTelegramLink(null);
+renderTerminal([], null);
+renderRoute();
+consumeIntegrationStatus();
+checkHealth();
+checkConfig().then(restoreSession);
 
-  if (!toggle || !sidebar) return;
-
-  function openSidebar() {
-    sidebar.classList.add("mobile-open");
-    if (overlay) { overlay.classList.add("is-open"); }
-    toggle.setAttribute("aria-expanded", "true");
-    document.body.classList.add("nav-open");
-  }
-
-  function closeSidebar() {
-    sidebar.classList.remove("mobile-open");
-    if (overlay) { overlay.classList.remove("is-open"); }
-    toggle.setAttribute("aria-expanded", "false");
-    document.body.classList.remove("nav-open");
-  }
-
-  toggle.addEventListener("click", () => {
-    const isOpen = sidebar.classList.contains("mobile-open");
-    if (isOpen) closeSidebar(); else openSidebar();
-  });
-
-  if (overlay) overlay.addEventListener("click", closeSidebar);
-})();
-
-// ─── Home + Auth mobile drawer toggles ───
-(function setupMobileDrawers() {
-  function setupDrawer(toggleId, drawerId, overlayId) {
-    const toggle = document.getElementById(toggleId);
-    const drawer = document.getElementById(drawerId);
-    const overlay = document.getElementById(overlayId);
-    if (!toggle || !drawer) return;
-
-    function open() {
-      drawer.classList.add("is-open");
-      toggle.setAttribute("aria-expanded", "true");
-      if (overlay) overlay.classList.add("is-open");
-      document.body.classList.add("nav-open");
-    }
-    function close() {
-      drawer.classList.remove("is-open");
-      toggle.setAttribute("aria-expanded", "false");
-      if (overlay) overlay.classList.remove("is-open");
-      document.body.classList.remove("nav-open");
-    }
-
-    toggle.addEventListener("click", () => {
-      drawer.classList.contains("is-open") ? close() : open();
-    });
-    if (overlay) overlay.addEventListener("click", close);
-    drawer.querySelectorAll("a").forEach((a) => a.addEventListener("click", close));
-  }
-
-  setupDrawer("home-nav-toggle", "home-drawer", "home-drawer-overlay");
-  setupDrawer("auth-nav-toggle", "auth-drawer", "auth-drawer-overlay");
-})();
-
-// ─── Dashboard tab switching ───
+// Dashboard tab switching
 (function setupDashboardTabs() {
   const tabs = document.querySelectorAll(".mf-tab");
   tabs.forEach((tab) => {
@@ -1108,13 +1230,3 @@ document.addEventListener("visibilitychange", () => {
     });
   });
 })();
-
-setAuthMode("signin");
-renderAuthState();
-if (els.telegramLinkAction) renderTelegramLink(null);
-renderTerminal([], null);
-renderRoute();
-consumeIntegrationStatus();
-checkHealth();
-checkConfig().then(restoreSession);
-if (els.previewRun) runPreview();
