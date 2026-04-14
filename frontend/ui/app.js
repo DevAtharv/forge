@@ -117,10 +117,12 @@ function navigate(route, replace = false) {
 
 function renderRoute() {
   let route = normalizeRoute();
+  console.log("[renderRoute] hash=" + window.location.hash + " route=" + route + " authEnabled=" + state.authEnabled + " authed=" + isAuthenticated());
 
   if (route === "dashboard" && !isAuthenticated()) {
     route = state.authEnabled ? "auth" : "home";
     const nextHash = `#/${route}`;
+    console.log("[renderRoute] dashboard redirect → " + route + " nextHash=" + nextHash);
     if (window.location.hash !== nextHash) {
       setLocationHash(nextHash, true);
     }
@@ -128,7 +130,9 @@ function renderRoute() {
 
   views.forEach((view) => {
     const name = view.getAttribute("data-view");
-    view.classList.toggle("hidden", name !== route);
+    const shouldHide = name !== route;
+    view.classList.toggle("hidden", shouldHide);
+    console.log("[renderRoute] view=" + name + " shouldHide=" + shouldHide + " classList=" + view.className);
   });
 
   routeLinks.forEach((link) => {
@@ -285,10 +289,12 @@ function consumeIntegrationStatus() {
     return;
   }
 
-  if (status === "connected") {
-    els.workspaceFeedback.textContent = message || `${provider} connected${account ? ` as ${account}` : ""}.`;
-  } else {
-    els.workspaceFeedback.textContent = message || `${provider} connection failed.`;
+  if (els.workspaceFeedback) {
+    if (status === "connected") {
+      els.workspaceFeedback.textContent = message || `${provider} connected${account ? ` as ${account}` : ""}.`;
+    } else {
+      els.workspaceFeedback.textContent = message || `${provider} connection failed.`;
+    }
   }
 
   current.search = "";
@@ -400,12 +406,13 @@ function renderAuthState() {
 }
 
 function renderTelegramLink(link) {
+  if (!els.telegramLinkStatus) return;
   if (!link) {
     els.telegramLinkStatus.textContent = "Sign in to generate a Telegram link code.";
-    els.telegramLinkCode.textContent = "No active code";
-    els.telegramLinkExpiry.textContent = "Generate a code, then send /link CODE to the Forge Telegram bot.";
-    els.telegramLinkHelp.textContent = "Telegram messages will share this workspace after linking.";
-    els.telegramLinkAction.textContent = "Generate Link Code";
+    if (els.telegramLinkCode) els.telegramLinkCode.textContent = "No active code";
+    if (els.telegramLinkExpiry) els.telegramLinkExpiry.textContent = "Generate a code, then send /link CODE to the Forge Telegram bot.";
+    if (els.telegramLinkHelp) els.telegramLinkHelp.textContent = "Telegram messages will share this workspace after linking.";
+    if (els.telegramLinkAction) els.telegramLinkAction.textContent = "Generate Link Code";
     return;
   }
 
@@ -413,29 +420,29 @@ function renderTelegramLink(link) {
   if (link.linked) {
     const username = link.telegram_username ? `@${link.telegram_username}` : `Telegram user ${link.telegram_user_id}`;
     els.telegramLinkStatus.textContent = `Connected to ${username}. Telegram and website now share this Forge workspace.`;
-    els.telegramLinkCode.textContent = "Connected";
-    els.telegramLinkExpiry.textContent = `Future Telegram messages to ${botHandle} will use this website memory.`;
-    els.telegramLinkHelp.textContent = "Generate a fresh code only if you want to relink a different Telegram account.";
-    els.telegramLinkAction.textContent = "Refresh Link Code";
+    if (els.telegramLinkCode) els.telegramLinkCode.textContent = "Connected";
+    if (els.telegramLinkExpiry) els.telegramLinkExpiry.textContent = `Future Telegram messages to ${botHandle} will use this website memory.`;
+    if (els.telegramLinkHelp) els.telegramLinkHelp.textContent = "Generate a fresh code only if you want to relink a different Telegram account.";
+    if (els.telegramLinkAction) els.telegramLinkAction.textContent = "Refresh Link Code";
     return;
   }
 
   if (link.pending_code) {
     els.telegramLinkStatus.textContent = `Pending link. Send /link ${link.pending_code} to ${botHandle}.`;
-    els.telegramLinkCode.textContent = link.pending_code;
-    els.telegramLinkExpiry.textContent = link.pending_expires_at
+    if (els.telegramLinkCode) els.telegramLinkCode.textContent = link.pending_code;
+    if (els.telegramLinkExpiry) els.telegramLinkExpiry.textContent = link.pending_expires_at
       ? `Expires ${formatDate(link.pending_expires_at)}`
       : `Send /link ${link.pending_code} to ${botHandle}.`;
-    els.telegramLinkHelp.textContent = `Open Telegram and send /link ${link.pending_code} to ${botHandle}.`;
-    els.telegramLinkAction.textContent = "Refresh Link Code";
+    if (els.telegramLinkHelp) els.telegramLinkHelp.textContent = `Open Telegram and send /link ${link.pending_code} to ${botHandle}.`;
+    if (els.telegramLinkAction) els.telegramLinkAction.textContent = "Refresh Link Code";
     return;
   }
 
   els.telegramLinkStatus.textContent = `No Telegram account linked yet. Generate a code, then send /link CODE to ${botHandle}.`;
-  els.telegramLinkCode.textContent = "No active code";
-  els.telegramLinkExpiry.textContent = `After linking, Telegram messages to ${botHandle} will share this workspace.`;
-  els.telegramLinkHelp.textContent = "Telegram messages will share this workspace after linking.";
-  els.telegramLinkAction.textContent = "Generate Link Code";
+  if (els.telegramLinkCode) els.telegramLinkCode.textContent = "No active code";
+  if (els.telegramLinkExpiry) els.telegramLinkExpiry.textContent = `After linking, Telegram messages to ${botHandle} will share this workspace.`;
+  if (els.telegramLinkHelp) els.telegramLinkHelp.textContent = "Telegram messages will share this workspace after linking.";
+  if (els.telegramLinkAction) els.telegramLinkAction.textContent = "Generate Link Code";
 }
 
 function formatDate(value) {
@@ -484,12 +491,13 @@ function renderTags(container, values, emptyText, neutral = false) {
 }
 
 function renderProfile(profile) {
+  if (!els.profileSummary) return;
   if (!profile) {
     els.profileSummary.textContent = "Sign in to load the workspace profile.";
-    renderTags(els.profileStackList, [], "No stack captured yet");
-    renderTags(els.profileProjectsList, [], "No active projects captured yet");
-    renderTags(els.profileContextList, [], "No active context captured yet");
-    els.profileSkill.textContent = "Skill level: intermediate";
+    if (els.profileStackList) renderTags(els.profileStackList, [], "No stack captured yet");
+    if (els.profileProjectsList) renderTags(els.profileProjectsList, [], "No active projects captured yet");
+    if (els.profileContextList) renderTags(els.profileContextList, [], "No active context captured yet");
+    if (els.profileSkill) els.profileSkill.textContent = "Skill level: intermediate";
     return;
   }
 
@@ -497,10 +505,10 @@ function renderProfile(profile) {
   els.profileSummary.textContent =
     profile.summary ||
     "Forge will grow this summary over time as more authenticated missions are completed.";
-  renderTags(els.profileStackList, profile.stack || [], "No stack captured yet");
-  renderTags(els.profileProjectsList, profile.current_projects || [], "No active projects captured yet");
-  renderTags(els.profileContextList, contextEntries, "No active context captured yet");
-  els.profileSkill.textContent = `Skill level: ${profile.skill_level || "intermediate"} • Messages: ${profile.message_count || 0}`;
+  if (els.profileStackList) renderTags(els.profileStackList, profile.stack || [], "No stack captured yet");
+  if (els.profileProjectsList) renderTags(els.profileProjectsList, profile.current_projects || [], "No active projects captured yet");
+  if (els.profileContextList) renderTags(els.profileContextList, contextEntries, "No active context captured yet");
+  if (els.profileSkill) els.profileSkill.textContent = `Skill level: ${profile.skill_level || "intermediate"} • Messages: ${profile.message_count || 0}`;
 }
 
 function renderHistory(history) {
@@ -563,10 +571,11 @@ function renderHistory(history) {
 }
 
 function renderPlan(plan, sourceLabel) {
+  if (!els.resultStages) return;
   els.resultStages.innerHTML = "";
-  els.resultIntent.textContent = plan.intent;
-  els.resultContext.textContent = `${plan.response_format} • ${plan.context_policy.replaceAll("_", " ")}`;
-  els.resultMeta.textContent = sourceLabel;
+  if (els.resultIntent) els.resultIntent.textContent = plan.intent;
+  if (els.resultContext) els.resultContext.textContent = `${plan.response_format} • ${plan.context_policy.replaceAll("_", " ")}`;
+  if (els.resultMeta) els.resultMeta.textContent = sourceLabel;
 
   if (!plan.stages || !plan.stages.length) {
     els.resultStages.innerHTML = '<div class="empty">Forge did not return any stages for this request.</div>';
@@ -605,24 +614,26 @@ function renderPlan(plan, sourceLabel) {
 }
 
 function renderDelivery(delivery) {
+  if (!els.resultResponse) return;
   if (!delivery) {
     els.resultResponse.textContent = "Sign in and run a mission to see the aggregated Forge answer here.";
-    els.documentWrap.classList.add("hidden");
-    els.documentOutput.textContent = "";
+    if (els.documentWrap) els.documentWrap.classList.add("hidden");
+    if (els.documentOutput) els.documentOutput.textContent = "";
     return;
   }
 
   els.resultResponse.textContent = delivery.text || "Forge completed the mission without a visible response.";
   if (delivery.document_text) {
-    els.documentWrap.classList.remove("hidden");
-    els.documentOutput.textContent = delivery.document_text;
+    if (els.documentWrap) els.documentWrap.classList.remove("hidden");
+    if (els.documentOutput) els.documentOutput.textContent = delivery.document_text;
   } else {
-    els.documentWrap.classList.add("hidden");
-    els.documentOutput.textContent = "";
+    if (els.documentWrap) els.documentWrap.classList.add("hidden");
+    if (els.documentOutput) els.documentOutput.textContent = "";
   }
 }
 
 function renderApprovalPrompt(mission) {
+  if (!els.resultResponse) return;
   const approval = mission.approval_request || {};
   const provider =
     approval.action === "connect_vercel"
@@ -665,6 +676,7 @@ function renderApprovalPrompt(mission) {
 }
 
 function renderArtifacts(stages, delivery) {
+  if (!els.artifactList) return;
   els.artifactList.innerHTML = "";
   const artifacts = [];
 
@@ -678,11 +690,11 @@ function renderArtifacts(stages, delivery) {
 
   if (!artifacts.length && !(delivery && delivery.document_text)) {
     els.artifactList.innerHTML = '<div class="empty">Artifacts from planner, code, or reviewer outputs will appear here.</div>';
-    els.artifactMeta.textContent = "No artifacts yet";
+    if (els.artifactMeta) els.artifactMeta.textContent = "No artifacts yet";
     return;
   }
 
-  els.artifactMeta.textContent = artifacts.length
+  if (els.artifactMeta) els.artifactMeta.textContent = artifacts.length
     ? `${artifacts.length} artifact${artifacts.length === 1 ? "" : "s"}`
     : "Document attached";
 
@@ -712,6 +724,7 @@ function renderArtifacts(stages, delivery) {
 }
 
 function renderMissionArtifacts(mission) {
+  if (!els.artifactList) return;
   els.artifactList.innerHTML = "";
   const changedFiles = mission.changed_files || [];
 
@@ -720,7 +733,7 @@ function renderMissionArtifacts(mission) {
     return;
   }
 
-  els.artifactMeta.textContent = `${changedFiles.length} file${changedFiles.length === 1 ? "" : "s"}`;
+  if (els.artifactMeta) els.artifactMeta.textContent = `${changedFiles.length} file${changedFiles.length === 1 ? "" : "s"}`;
 
   changedFiles.forEach((fileName) => {
     const card = document.createElement("div");
@@ -772,15 +785,15 @@ function renderMissionTerminal(mission) {
     return;
   }
 
-  els.terminalMeta.textContent = `${lines.length} line${lines.length === 1 ? "" : "s"}`;
-  els.terminalOutput.textContent = lines.join("\n");
+  if (els.terminalMeta) els.terminalMeta.textContent = `${lines.length} line${lines.length === 1 ? "" : "s"}`;
+  if (els.terminalOutput) els.terminalOutput.textContent = lines.join("\n");
 }
 
 function renderMissionResult(mission) {
   if (mission.status === "awaiting_approval") {
     renderApprovalPrompt(mission);
-    els.documentWrap.classList.add("hidden");
-    els.documentOutput.textContent = "";
+    if (els.documentWrap) els.documentWrap.classList.add("hidden");
+    if (els.documentOutput) els.documentOutput.textContent = "";
   } else {
     renderDelivery({
       text: mission.response_text || mission.result_summary || "Mission completed.",
@@ -788,11 +801,11 @@ function renderMissionResult(mission) {
   }
   renderMissionArtifacts(mission);
   renderMissionTerminal(mission);
-  els.resultMeta.textContent = mission.changed_files && mission.changed_files.length
+  if (els.resultMeta) els.resultMeta.textContent = mission.changed_files && mission.changed_files.length
     ? `${mission.changed_files.length} file${mission.changed_files.length === 1 ? "" : "s"} generated`
     : mission.status;
-  els.resultIntent.textContent = mission.result_summary || mission.kind;
-  els.resultContext.textContent = mission.deployment_url
+  if (els.resultIntent) els.resultIntent.textContent = mission.result_summary || mission.kind;
+  if (els.resultContext) els.resultContext.textContent = mission.deployment_url
     ? `${mission.kind} • ${mission.status} • deployed`
     : mission.repo_url
       ? `${mission.kind} • ${mission.status} • synced to GitHub`
@@ -840,14 +853,15 @@ function extractTerminalCommands(stages, delivery) {
 }
 
 function renderTerminal(stages, delivery) {
+  if (!els.terminalMeta && !els.terminalOutput) return;
   const commands = extractTerminalCommands(stages, delivery);
   if (!commands.length) {
-    els.terminalMeta.textContent = "No commands yet";
-    els.terminalOutput.textContent = "Run a mission that asks Forge to build and deploy. Command steps will appear here.";
+    if (els.terminalMeta) els.terminalMeta.textContent = "No commands yet";
+    if (els.terminalOutput) els.terminalOutput.textContent = "Run a mission that asks Forge to build and deploy. Command steps will appear here.";
     return;
   }
-  els.terminalMeta.textContent = `${commands.length} command${commands.length === 1 ? "" : "s"}`;
-  els.terminalOutput.textContent = commands.join("\n");
+  if (els.terminalMeta) els.terminalMeta.textContent = `${commands.length} command${commands.length === 1 ? "" : "s"}`;
+  if (els.terminalOutput) els.terminalOutput.textContent = commands.join("\n");
 }
 
 async function checkHealth() {
@@ -987,8 +1001,14 @@ async function restoreSession() {
     clearSession();
     stopDashboardRefresh();
     resetDashboardMetrics();
+    renderAuthState();
+    renderProfile(null);
+    renderHistory([]);
+    renderRoute();
+    return;
   }
 
+  // Only redirect to dashboard if we successfully restored a valid session
   renderAuthState();
   await loadDashboard();
   startDashboardRefresh();
@@ -1199,4 +1219,14 @@ renderRoute();
 consumeIntegrationStatus();
 checkHealth();
 checkConfig().then(restoreSession);
-runPreview();
+
+// Dashboard tab switching
+(function setupDashboardTabs() {
+  const tabs = document.querySelectorAll(".mf-tab");
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((t) => t.classList.remove("mf-tab--active"));
+      tab.classList.add("mf-tab--active");
+    });
+  });
+})();

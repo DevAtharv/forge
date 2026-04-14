@@ -196,38 +196,48 @@ function loadStoredSession() {
 
 function renderAuthState() {
   const active = isAuthenticated();
-  els.missionStatusChip.textContent = active ? "Protected workspace active" : "Public preview mode";
-  els.workspaceRun.disabled = !active;
-  els.signoutButton.disabled = !active;
-  els.signoutButton.classList.toggle("hidden", !active);
-  els.telegramLinkAction.disabled = !active;
+  if (els.missionStatusChip) els.missionStatusChip.textContent = active ? "Protected workspace active" : "Public preview mode";
+  if (els.workspaceRun) els.workspaceRun.disabled = !active;
+  if (els.signoutButton) {
+    els.signoutButton.disabled = !active;
+    els.signoutButton.classList.toggle("hidden", !active);
+  }
+  if (els.telegramLinkAction) els.telegramLinkAction.disabled = !active;
   if (homeModeCopy) {
     homeModeCopy.textContent = active ? "Authenticated workspace" : "Protected workspace";
   }
 
   if (!active) {
-    els.workspaceUser.textContent = "Not signed in";
-    els.workspaceUserMeta.textContent = state.authEnabled
+    if (els.workspaceUser) els.workspaceUser.textContent = "Not signed in";
+    if (els.workspaceUserMeta) els.workspaceUserMeta.textContent = state.authEnabled
       ? "Sign in to open the protected mission console."
       : "Supabase auth is not configured yet.";
-    renderTelegramLink(null);
+    if (els.telegramLinkAction) renderTelegramLink(null);
     renderRoute();
     return;
   }
 
-  els.workspaceUser.textContent = state.user.email || "Authenticated Forge user";
-  els.workspaceUserMeta.textContent =
+  if (els.workspaceUser) els.workspaceUser.textContent = state.user.email || "Authenticated Forge user";
+  if (els.workspaceUserMeta) els.workspaceUserMeta.textContent =
     "Forge will fetch your profile and conversation memory through protected backend APIs.";
+
+  // Update avatar with user initial if present
+  const avatar = document.getElementById("mf-user-avatar");
+  if (avatar && state.user && state.user.email) {
+    avatar.title = state.user.email;
+  }
+
   renderRoute();
 }
 
 function renderTelegramLink(link) {
+  if (!els.telegramLinkStatus) return;
   if (!link) {
     els.telegramLinkStatus.textContent = "Sign in to generate a Telegram link code.";
-    els.telegramLinkCode.textContent = "No active code";
-    els.telegramLinkExpiry.textContent = "Generate a code, then send /link CODE to the Forge Telegram bot.";
-    els.telegramLinkHelp.textContent = "Telegram messages will share this workspace after linking.";
-    els.telegramLinkAction.textContent = "Generate Link Code";
+    if (els.telegramLinkCode) els.telegramLinkCode.textContent = "No active code";
+    if (els.telegramLinkExpiry) els.telegramLinkExpiry.textContent = "Generate a code, then send /link CODE to the Forge Telegram bot.";
+    if (els.telegramLinkHelp) els.telegramLinkHelp.textContent = "Telegram messages will share this workspace after linking.";
+    if (els.telegramLinkAction) els.telegramLinkAction.textContent = "Generate Link Code";
     return;
   }
 
@@ -235,29 +245,29 @@ function renderTelegramLink(link) {
   if (link.linked) {
     const username = link.telegram_username ? `@${link.telegram_username}` : `Telegram user ${link.telegram_user_id}`;
     els.telegramLinkStatus.textContent = `Connected to ${username}. Telegram and website now share this Forge workspace.`;
-    els.telegramLinkCode.textContent = "Connected";
-    els.telegramLinkExpiry.textContent = `Future Telegram messages to ${botHandle} will use this website memory.`;
-    els.telegramLinkHelp.textContent = "Generate a fresh code only if you want to relink a different Telegram account.";
-    els.telegramLinkAction.textContent = "Refresh Link Code";
+    if (els.telegramLinkCode) els.telegramLinkCode.textContent = "Connected";
+    if (els.telegramLinkExpiry) els.telegramLinkExpiry.textContent = `Future Telegram messages to ${botHandle} will use this website memory.`;
+    if (els.telegramLinkHelp) els.telegramLinkHelp.textContent = "Generate a fresh code only if you want to relink a different Telegram account.";
+    if (els.telegramLinkAction) els.telegramLinkAction.textContent = "Refresh Link Code";
     return;
   }
 
   if (link.pending_code) {
     els.telegramLinkStatus.textContent = `Pending link. Send /link ${link.pending_code} to ${botHandle}.`;
-    els.telegramLinkCode.textContent = link.pending_code;
-    els.telegramLinkExpiry.textContent = link.pending_expires_at
+    if (els.telegramLinkCode) els.telegramLinkCode.textContent = link.pending_code;
+    if (els.telegramLinkExpiry) els.telegramLinkExpiry.textContent = link.pending_expires_at
       ? `Expires ${formatDate(link.pending_expires_at)}`
       : `Send /link ${link.pending_code} to ${botHandle}.`;
-    els.telegramLinkHelp.textContent = `Open Telegram and send /link ${link.pending_code} to ${botHandle}.`;
-    els.telegramLinkAction.textContent = "Refresh Link Code";
+    if (els.telegramLinkHelp) els.telegramLinkHelp.textContent = `Open Telegram and send /link ${link.pending_code} to ${botHandle}.`;
+    if (els.telegramLinkAction) els.telegramLinkAction.textContent = "Refresh Link Code";
     return;
   }
 
   els.telegramLinkStatus.textContent = `No Telegram account linked yet. Generate a code, then send /link CODE to ${botHandle}.`;
-  els.telegramLinkCode.textContent = "No active code";
-  els.telegramLinkExpiry.textContent = `After linking, Telegram messages to ${botHandle} will share this workspace.`;
-  els.telegramLinkHelp.textContent = "Telegram messages will share this workspace after linking.";
-  els.telegramLinkAction.textContent = "Generate Link Code";
+  if (els.telegramLinkCode) els.telegramLinkCode.textContent = "No active code";
+  if (els.telegramLinkExpiry) els.telegramLinkExpiry.textContent = `After linking, Telegram messages to ${botHandle} will share this workspace.`;
+  if (els.telegramLinkHelp) els.telegramLinkHelp.textContent = "Telegram messages will share this workspace after linking.";
+  if (els.telegramLinkAction) els.telegramLinkAction.textContent = "Generate Link Code";
 }
 
 function formatDate(value) {
@@ -371,10 +381,10 @@ function renderHistory(history) {
 
 function updateDashboardMetrics({ projects = [], missions = [], integrations = [] }) {
   const activeMissions = missions.filter((mission) => ACTIVE_MISSION_STATUSES.has(mission.status));
-  els.missionCountMetric.textContent = `${missions.length} total`;
-  els.activeMissionMetric.textContent = `${activeMissions.length} running`;
-  els.projectCountChip.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"}`;
-  els.integrationCountChip.textContent = `${integrations.length} integration${integrations.length === 1 ? "" : "s"}`;
+  if (els.missionCountMetric) els.missionCountMetric.textContent = `${missions.length}`;
+  if (els.activeMissionMetric) els.activeMissionMetric.textContent = String(activeMissions.length).padStart(2, "0");
+  if (els.projectCountChip) els.projectCountChip.textContent = `${projects.length} project${projects.length === 1 ? "" : "s"}`;
+  if (els.integrationCountChip) els.integrationCountChip.textContent = `${integrations.length} integration${integrations.length === 1 ? "" : "s"}`;
 }
 
 function resetDashboardMetrics() {
@@ -382,10 +392,11 @@ function resetDashboardMetrics() {
 }
 
 function renderPlan(plan, sourceLabel) {
+  if (!els.resultStages) return;
   els.resultStages.innerHTML = "";
-  els.resultIntent.textContent = plan.intent;
-  els.resultContext.textContent = `${plan.response_format} • ${plan.context_policy.replaceAll("_", " ")}`;
-  els.resultMeta.textContent = sourceLabel;
+  if (els.resultIntent) els.resultIntent.textContent = plan.intent;
+  if (els.resultContext) els.resultContext.textContent = `${plan.response_format} • ${plan.context_policy.replaceAll("_", " ")}`;
+  if (els.resultMeta) els.resultMeta.textContent = sourceLabel;
 
   if (!plan.stages || !plan.stages.length) {
     els.resultStages.innerHTML = '<div class="empty">Forge did not return any stages for this request.</div>';
@@ -424,20 +435,21 @@ function renderPlan(plan, sourceLabel) {
 }
 
 function renderDelivery(delivery) {
+  if (!els.resultResponse) return;
   if (!delivery) {
     els.resultResponse.textContent = "Sign in and run a mission to see the aggregated Forge answer here.";
-    els.documentWrap.classList.add("hidden");
-    els.documentOutput.textContent = "";
+    if (els.documentWrap) els.documentWrap.classList.add("hidden");
+    if (els.documentOutput) els.documentOutput.textContent = "";
     return;
   }
 
   els.resultResponse.textContent = delivery.text || "Forge completed the mission without a visible response.";
   if (delivery.document_text) {
-    els.documentWrap.classList.remove("hidden");
-    els.documentOutput.textContent = delivery.document_text;
+    if (els.documentWrap) els.documentWrap.classList.remove("hidden");
+    if (els.documentOutput) els.documentOutput.textContent = delivery.document_text;
   } else {
-    els.documentWrap.classList.add("hidden");
-    els.documentOutput.textContent = "";
+    if (els.documentWrap) els.documentWrap.classList.add("hidden");
+    if (els.documentOutput) els.documentOutput.textContent = "";
   }
 }
 
@@ -996,18 +1008,22 @@ async function signOut() {
   navigate("home");
 }
 
+
 els.modeSignin.addEventListener("click", () => setAuthMode("signin"));
 els.modeSignup.addEventListener("click", () => setAuthMode("signup"));
 els.authForm.addEventListener("submit", handleAuthSubmit);
-els.previewRun.addEventListener("click", runPreview);
+if (els.previewRun) els.previewRun.addEventListener("click", runPreview);
 els.workspaceRun.addEventListener("click", runMission);
-els.telegramLinkAction.addEventListener("click", linkTelegram);
-els.workspaceFill.addEventListener("click", () => {
-  els.workspaceInput.value =
-    "Should I use Redis or Supabase for storing sessions in a production FastAPI app, and why?";
-  els.workspaceFeedback.textContent = "Loaded a research-style mission.";
-});
-els.signoutButton.addEventListener("click", signOut);
+if (els.telegramLinkAction) els.telegramLinkAction.addEventListener("click", linkTelegram);
+if (els.workspaceFill) {
+  els.workspaceFill.addEventListener("click", () => {
+    els.workspaceInput.value =
+      "Should I use Redis or Supabase for storing sessions in a production FastAPI app, and why?";
+    if (els.workspaceFeedback) els.workspaceFeedback.textContent = "Loaded a research-style mission.";
+  });
+}
+if (els.signoutButton) els.signoutButton.addEventListener("click", signOut);
+
 window.addEventListener("hashchange", () => {
   renderRoute();
   if (normalizeRoute() === "dashboard") {
@@ -1020,12 +1036,85 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
+// ─── Dashboard mobile sidebar toggle ───
+(function setupDashboardSidebar() {
+  const toggle = document.getElementById("dashboard-nav-toggle");
+  const sidebar = document.getElementById("dashboard-sidebar");
+  const overlay = document.getElementById("dashboard-sidebar-overlay");
+
+  if (!toggle || !sidebar) return;
+
+  function openSidebar() {
+    sidebar.classList.add("mobile-open");
+    if (overlay) { overlay.classList.add("is-open"); }
+    toggle.setAttribute("aria-expanded", "true");
+    document.body.classList.add("nav-open");
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove("mobile-open");
+    if (overlay) { overlay.classList.remove("is-open"); }
+    toggle.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("nav-open");
+  }
+
+  toggle.addEventListener("click", () => {
+    const isOpen = sidebar.classList.contains("mobile-open");
+    if (isOpen) closeSidebar(); else openSidebar();
+  });
+
+  if (overlay) overlay.addEventListener("click", closeSidebar);
+})();
+
+// ─── Home + Auth mobile drawer toggles ───
+(function setupMobileDrawers() {
+  function setupDrawer(toggleId, drawerId, overlayId) {
+    const toggle = document.getElementById(toggleId);
+    const drawer = document.getElementById(drawerId);
+    const overlay = document.getElementById(overlayId);
+    if (!toggle || !drawer) return;
+
+    function open() {
+      drawer.classList.add("is-open");
+      toggle.setAttribute("aria-expanded", "true");
+      if (overlay) overlay.classList.add("is-open");
+      document.body.classList.add("nav-open");
+    }
+    function close() {
+      drawer.classList.remove("is-open");
+      toggle.setAttribute("aria-expanded", "false");
+      if (overlay) overlay.classList.remove("is-open");
+      document.body.classList.remove("nav-open");
+    }
+
+    toggle.addEventListener("click", () => {
+      drawer.classList.contains("is-open") ? close() : open();
+    });
+    if (overlay) overlay.addEventListener("click", close);
+    drawer.querySelectorAll("a").forEach((a) => a.addEventListener("click", close));
+  }
+
+  setupDrawer("home-nav-toggle", "home-drawer", "home-drawer-overlay");
+  setupDrawer("auth-nav-toggle", "auth-drawer", "auth-drawer-overlay");
+})();
+
+// ─── Dashboard tab switching ───
+(function setupDashboardTabs() {
+  const tabs = document.querySelectorAll(".mf-tab");
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((t) => t.classList.remove("mf-tab--active"));
+      tab.classList.add("mf-tab--active");
+    });
+  });
+})();
+
 setAuthMode("signin");
 renderAuthState();
-renderTelegramLink(null);
+if (els.telegramLinkAction) renderTelegramLink(null);
 renderTerminal([], null);
 renderRoute();
 consumeIntegrationStatus();
 checkHealth();
 checkConfig().then(restoreSession);
-runPreview();
+if (els.previewRun) runPreview();

@@ -429,9 +429,22 @@
         </aside>
 
         <main class="dashboard-main">
-          <button type="button" class="icon-btn" id="dashboard-nav-toggle" aria-label="Open sidebar" aria-expanded="false">
-            <span class="material-symbols-outlined">menu</span>
-          </button>
+          <!-- Top nav bar (search + icons) -->
+          <div class="mf-topnav">
+            <button type="button" class="icon-btn mf-mobile-menu" id="dashboard-nav-toggle" aria-label="Open sidebar" aria-expanded="false">
+              <span class="material-symbols-outlined">menu</span>
+            </button>
+            <div class="mf-search">
+              <span class="material-symbols-outlined mf-search-icon">search</span>
+              <input type="text" placeholder="Search mission control..." class="mf-search-input" />
+            </div>
+            <div class="mf-topnav-actions">
+              <button class="mf-icon-btn" type="button" aria-label="Notifications"><span class="material-symbols-outlined">notifications</span></button>
+              <button class="mf-icon-btn" type="button" aria-label="Gallery"><span class="material-symbols-outlined">photo_library</span></button>
+              <button class="mf-icon-btn" type="button" aria-label="Analytics"><span class="material-symbols-outlined">bar_chart</span></button>
+              <div class="mf-avatar" id="mf-user-avatar" title="User profile"></div>
+            </div>
+          </div>
 
           <!-- Top header bar -->
           <header class="mf-header">
@@ -627,6 +640,40 @@
             <a class="route-link" data-route-link="home" href="#/home">Home</a>
             <a class="route-link" data-route-link="auth" href="#/auth">Auth</a>
             <a class="route-link" data-route-link="dashboard" href="#/dashboard">Dashboard</a>
+          </div>
+
+          <!-- Hidden skeleton elements that app.js needs (avoids null-ref crashes) -->
+          <div style="display:none" aria-hidden="true">
+            <span id="mission-status-chip"></span>
+            <span id="workspace-user"></span>
+            <span id="workspace-user-meta"></span>
+            <span id="workspace-feedback"></span>
+            <button id="signout-button" disabled></button>
+            <button id="workspace-fill"></button>
+            <button id="preview-run"></button>
+            <span id="result-meta"></span>
+            <span id="result-response"></span>
+            <div id="document-wrap"></div>
+            <span id="document-output"></span>
+            <span id="result-intent"></span>
+            <span id="result-context"></span>
+            <span id="profile-summary"></span>
+            <span id="profile-stack-list"></span>
+            <span id="profile-projects-list"></span>
+            <span id="profile-context-list"></span>
+            <span id="profile-skill"></span>
+            <div id="timeline-list"></div>
+            <span id="timeline-meta"></span>
+            <span id="artifact-meta"></span>
+            <span id="terminal-meta"></span>
+            <pre id="terminal-output"></pre>
+            <span id="telegram-link-status"></span>
+            <span id="telegram-link-code"></span>
+            <span id="telegram-link-expiry"></span>
+            <button id="telegram-link-action" disabled></button>
+            <span id="telegram-link-help"></span>
+            <span id="project-count-chip"></span>
+            <span id="integration-count-chip"></span>
           </div>
         </main>
       </div>
