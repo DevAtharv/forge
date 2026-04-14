@@ -384,18 +384,23 @@ class MissionRunner:
             "preview_updated_at": datetime.now(tz=UTC),
         }
         if project is None:
-            project = await self.store.create_project(
-                ProjectRecord(
-                    workspace_user_id=mission.workspace_user_id,
-                    name=blueprint.project_name,
-                    slug=blueprint.slug,
-                    prompt=mission.prompt,
-                    archetype=blueprint.archetype,
-                    latest_manifest=manifest,
-                    latest_preview=self._manifest_preview(manifest),
-                    preview_status="pending",
+            projects = await self.store.list_projects(mission.workspace_user_id)
+            existing = next((p for p in projects if p.slug == blueprint.slug), None)
+            if existing is not None:
+                project = await self.store.update_project(existing.id or "", updates)
+            else:
+                project = await self.store.create_project(
+                    ProjectRecord(
+                        workspace_user_id=mission.workspace_user_id,
+                        name=blueprint.project_name,
+                        slug=blueprint.slug,
+                        prompt=mission.prompt,
+                        archetype=blueprint.archetype,
+                        latest_manifest=manifest,
+                        latest_preview=self._manifest_preview(manifest),
+                        preview_status="pending",
+                    )
                 )
-            )
             await self.store.update_mission(mission.id or "", {"project_id": project.id})
             return project
         return await self.store.update_project(project.id or "", updates)
