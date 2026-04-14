@@ -241,6 +241,39 @@ export default function Dashboard() {
 
               {/* Right Sidebar Elements */}
               <div className="space-y-6">
+
+                {/* Telegram Link Widget */}
+                <div className="rounded-2xl border border-zinc-800/50 bg-zinc-900/20 p-5 relative overflow-hidden group">
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#0088cc]/50 to-transparent"></div>
+                  <h3 className="font-semibold text-white mb-2 text-sm flex items-center justify-between">
+                    Telegram Integration
+                    <svg className="w-4 h-4 text-[#0088cc]" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.14-.26.26-.532.26l.215-3.05 5.56-5.023c.242-.215-.054-.334-.373-.122l-6.87 4.326-2.96-.924c-.64-.202-.656-.64.136-.95l11.58-4.46c.535-.196 1.002.128.832.941z"/>
+                    </svg>
+                  </h3>
+                  <p className="text-xs text-zinc-400 mb-4 leading-relaxed">
+                    Link your Telegram to get real-time mission execution logs and approval requests globally.
+                  </p>
+                  
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const payload = await fetchAuthedJson("/api/app/link/telegram", session, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ refresh: true }),
+                        });
+                        alert(`Message @${payload.bot_username} on Telegram with code:\n/link ${payload.code}`);
+                      } catch (err) {
+                        alert(`Failed to link: ${err.message}`);
+                      }
+                    }}
+                    className="w-full px-4 py-2 bg-[#0088cc]/10 hover:bg-[#0088cc]/20 text-[#0088cc] border border-[#0088cc]/20 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-2"
+                  >
+                    Generate Link Code
+                  </button>
+                </div>
+
                 <div className="rounded-2xl border border-zinc-800/50 bg-zinc-900/20 p-5">
                   <h3 className="font-semibold text-white mb-4 text-sm flex items-center justify-between">
                     Active Pipeline <Activity className="w-4 h-4 text-teal-500" />
