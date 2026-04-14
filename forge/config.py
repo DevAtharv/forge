@@ -102,6 +102,7 @@ class Settings:
     nvidia_api_key: str
     openrouter_api_key: str
     tavily_api_key: str
+    gemini_api_keys: tuple[str, ...]
     search_provider: str
     managed_preview_vercel_token: str
     managed_preview_vercel_team_id: str
@@ -149,6 +150,7 @@ class Settings:
             nvidia_api_key=_env("NVIDIA_API_KEY", "") or "",
             openrouter_api_key=_env("OPENROUTER_API_KEY", "") or "",
             tavily_api_key=_env("TAVILY_API_KEY", "") or "",
+            gemini_api_keys=_env_list("GEMINI_API_KEYS"),
             search_provider=_env("FORGE_SEARCH_PROVIDER", "auto") or "auto",
             managed_preview_vercel_token=_env("FORGE_MANAGED_PREVIEW_VERCEL_TOKEN", "") or "",
             managed_preview_vercel_team_id=_env("FORGE_MANAGED_PREVIEW_VERCEL_TEAM_ID", "") or "",

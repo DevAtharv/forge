@@ -23,6 +23,7 @@ from forge.providers import (
     HttpPageFetcher,
     OpenAICompatibleProvider,
     ProviderRegistry,
+    RotatingOpenAIProvider,
     TavilySearchProvider,
 )
 from forge.supabase_auth import SupabaseAuthClient
@@ -103,6 +104,11 @@ def build_container(settings: Settings | None = None) -> ForgeContainer:
         store = InMemoryStore()
     providers = ProviderRegistry(
         llm_providers={
+            "gemini": RotatingOpenAIProvider(
+                base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+                api_keys=settings.gemini_api_keys,
+                default_headers={"HTTP-Referer": "https://forge.local", "X-Title": "Forge"},
+            ),
             "groq": GroqProvider(settings.groq_api_key),
             "nvidia": OpenAICompatibleProvider(
                 base_url="https://integrate.api.nvidia.com/v1",
