@@ -207,7 +207,7 @@ class MissionRunner:
             preview_url = project.preview_url
         except Exception as exc:
             preview_error = str(exc)
-            now = datetime.now(tz=UTC)
+            now = datetime.now(tz=UTC).isoformat().replace("+00:00", "Z")
             project = await self.store.update_project(
                 project.id or "",
                 {
@@ -381,7 +381,7 @@ class MissionRunner:
             "preview_url": None,
             "preview_deployment_id": None,
             "preview_metadata": {},
-            "preview_updated_at": datetime.now(tz=UTC),
+            "preview_updated_at": datetime.now(tz=UTC).isoformat().replace("+00:00", "Z"),
         }
         if project is None:
             projects = await self.store.list_projects(mission.workspace_user_id)
@@ -477,7 +477,7 @@ class MissionRunner:
                 "preview_url": preview_url,
                 "preview_status": "ready",
                 "preview_deployment_id": str(result.get("id") or ""),
-                "preview_updated_at": datetime.now(tz=UTC),
+                "preview_updated_at": datetime.now(tz=UTC).isoformat().replace("+00:00", "Z"),
                 "preview_metadata": result,
             },
         )
