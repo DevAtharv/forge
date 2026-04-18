@@ -3,20 +3,84 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
   Terminal, Search, Bell, Settings, Layers, Zap, FolderOpen, 
-  Send, Activity, Database, CheckCircle2, CircleDashed, User
+  Send, Activity, Database, CheckCircle2, CircleDashed, User, ExternalLink
 } from "lucide-react";
 import { useAuth } from "../AuthContext";
 import { fetchAuthedJson, fetchJson } from "../api";
+
+const PROMPT_PRESETS = [
+  {
+    label: "SaaS Landing",
+    value: "Build a conversion-focused SaaS landing page with hero, value props, pricing cards, FAQ, and CTA.",
+  },
+  {
+    label: "Creator Portfolio",
+    value: "Create a bold portfolio for a creator with case studies, testimonials, and contact section.",
+  },
+  {
+    label: "Simple Tool",
+    value: "Build a simple single-page tool UI with clear input, output card, and friendly onboarding copy.",
+  },
+];
+
+const THEME_PRESETS = [
+  {
+    label: "Cyber Mint",
+    value:
+      "Use Space Grotesk + Manrope, mint and steel accents, frosted panels, and subtle staggered reveal animations.",
+  },
+  {
+    label: "Editorial Sand",
+    value:
+      "Use instrument-serif inspired feel with warm sand palette, bold headings, generous whitespace, and card reveal motion.",
+  },
+  {
+    label: "Studio Neon",
+    value:
+      "Use high-contrast neon highlights, layered gradients, dynamic section transitions, and a modern product feel.",
+  },
+];
+
+const MISSION_STEPS = [
+  { key: "planning", label: "Researching & planning" },
+  { key: "building", label: "Building project" },
+  { key: "previewing", label: "Preparing sandbox link" },
+  { key: "deploying", label: "Finalizing deployment" },
+  { key: "completed", label: "Done" },
+];
+
+function getStageState(status, stepKey) {
+  const order = ["queued", "planning", "building", "previewing", "deploying", "completed"];
+  const stepOrder = {
+    planning: 1,
+    building: 2,
+    previewing: 3,
+    deploying: 4,
+    completed: 5,
+  };
+  const missionIndex = Math.max(order.indexOf(status), 0);
+  const stepIndex = stepOrder[stepKey];
+  if (missionIndex > stepIndex) return "done";
+  if (missionIndex === stepIndex) return "active";
+  if (status === "failed" && stepKey === "completed") return "failed";
+  return "pending";
+}
 
 export default function Dashboard() {
   const { session, user, signOut } = useAuth();
   const navigate = useNavigate();
 
   const [prompt, setPrompt] = useState("");
+  const [selectedPreset, setSelectedPreset] = useState(PROMPT_PRESETS[0].label);
+  const [selectedTheme, setSelectedTheme] = useState(THEME_PRESETS[0].label);
   const [feedback, setFeedback] = useState("Ready for input.");
   const [isRunning, setIsRunning] = useState(false);
   const [terminalOutput, setTerminalOutput] = useState([]);
   const [activeTab, setActiveTab] = useState("overview");
+  const [missionStatus, setMissionStatus] = useState("queued");
+  const [livePreviewUrl, setLivePreviewUrl] = useState("");
+  const [currentMissionId, setCurrentMissionId] = useState("");
+  const [currentProjectId, setCurrentProjectId] = useState("");
 
   useEffect(() => {
     if (!session) {
@@ -35,38 +99,81 @@ export default function Dashboard() {
       return;
     }
     
+    const selectedThemePrompt = THEME_PRESETS.find((item) => item.label === selectedTheme)?.value || "";
+    const composedPrompt = `${prompt.trim()}\n\nVisual direction:\n${selectedThemePrompt}\n\nOutput format: keep scaffold-first Next.js + Tailwind and provide preview-ready build.`;
+
     setIsRunning(true);
-    setFeedback("Running the protected Forge mission...");
-    setTerminalOutput(prev => [...prev, `[MISSION] Initiating: ${prompt}`]);
+    setLivePreviewUrl("");
+    setMissionStatus("planning");
+    setCurrentMissionId("");
+    setCurrentProjectId("");
+    setFeedback("Running protected mission and tracking live status...");
+    setTerminalOutput(prev => [...prev, `[MISSION] Initiating: ${prompt}`, `[THEME] ${selectedTheme}`]);
 
     try {
       const payload = await fetchAuthedJson("/api/app/run", session, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt: composedPrompt }),
       });
       
       setFeedback(payload.message || "Mission queued.");
       setTerminalOutput(prev => [...prev, `[API] Mission ID received: ${payload.mission.id}`]);
       
       let missionId = payload.mission.id;
+      setCurrentMissionId(missionId);
       let missionCompleted = false;
       let lastStatus = payload.mission.status;
+      let lastProjectId = payload.mission.project_id || "";
+      let lastPreviewUrl = payload.mission.preview_url || "";
+      setMissionStatus(lastStatus || "queued");
 
       // Real-time API Polling
       while (!missionCompleted) {
-        await new Promise(r => setTimeout(r, 1500));
+        await new Promise(r => setTimeout(r, 700));
         try {
           const pollRes = await fetchAuthedJson(`/api/app/missions/${missionId}`, session);
           const currentStatus = pollRes.mission.status;
+          const polledProjectId = pollRes.mission.project_id || "";
+          const missionPreview = pollRes.mission.preview_url || "";
           
           if (currentStatus !== lastStatus) {
-            setTerminalOutput(prev => [...prev, `[UPDATE] Status transitioned to: ${currentStatus}`]);
+            setTerminalOutput(prev => [...prev, `[UPDATE] Status transitioned to: ${currentStatus.toUpperCase()} (done)`]);
             lastStatus = currentStatus;
+            setMissionStatus(currentStatus);
+          }
+
+          if (polledProjectId && polledProjectId !== lastProjectId) {
+            lastProjectId = polledProjectId;
+            setCurrentProjectId(polledProjectId);
+            setTerminalOutput(prev => [...prev, `[PROJECT] Attached project: ${polledProjectId}`]);
+          }
+
+          if (missionPreview && missionPreview !== lastPreviewUrl) {
+            lastPreviewUrl = missionPreview;
+            setLivePreviewUrl(missionPreview);
+            setTerminalOutput(prev => [...prev, `[SANDBOX] Live preview ready: ${missionPreview}`]);
+          }
+
+          if (currentStatus === "previewing" && polledProjectId) {
+            try {
+              const previewRes = await fetchAuthedJson(`/api/app/projects/${polledProjectId}/preview`, session, {
+                method: "POST",
+              });
+              const previewUrl = previewRes?.project?.preview_url || "";
+              if (previewUrl && previewUrl !== lastPreviewUrl) {
+                lastPreviewUrl = previewUrl;
+                setLivePreviewUrl(previewUrl);
+                setTerminalOutput(prev => [...prev, `[SANDBOX] Instant preview link issued: ${previewUrl}`]);
+              }
+            } catch (_err) {
+              // Keep polling even if preview refresh endpoint is not ready yet.
+            }
           }
 
           if (currentStatus === "completed" || currentStatus === "failed") {
             setFeedback(`Mission ${currentStatus}.`);
+            setMissionStatus(currentStatus);
             setTerminalOutput(prev => [
               ...prev, 
               currentStatus === "failed" 
@@ -214,6 +321,42 @@ export default function Dashboard() {
                       className="w-full h-32 bg-zinc-950/50 border border-zinc-800/80 rounded-xl p-4 text-sm text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 resize-none transition-all"
                     />
                     
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <label className="text-xs text-zinc-500 flex flex-col gap-1">
+                        Prompt template
+                        <select
+                          value={selectedPreset}
+                          onChange={(event) => {
+                            const next = event.target.value;
+                            setSelectedPreset(next);
+                            const preset = PROMPT_PRESETS.find((item) => item.label === next);
+                            if (preset) setPrompt(preset.value);
+                          }}
+                          className="bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-zinc-300"
+                        >
+                          {PROMPT_PRESETS.map((item) => (
+                            <option key={item.label} value={item.label}>
+                              {item.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="text-xs text-zinc-500 flex flex-col gap-1">
+                        Theme style
+                        <select
+                          value={selectedTheme}
+                          onChange={(event) => setSelectedTheme(event.target.value)}
+                          className="bg-zinc-950/60 border border-zinc-800 rounded-lg px-3 py-2 text-zinc-300"
+                        >
+                          {THEME_PRESETS.map((item) => (
+                            <option key={item.label} value={item.label}>
+                              {item.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+
                     <div className="flex items-center justify-between">
                       <div className="text-xs text-zinc-500 font-mono flex items-center gap-2">
                         {isRunning ? <CircleDashed className="w-3.5 h-3.5 animate-spin text-teal-500" /> : <div className="w-2 h-2 rounded-full bg-zinc-700"></div>}
@@ -236,6 +379,42 @@ export default function Dashboard() {
                         </button>
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Mission Stage Tracker */}
+                <div className="rounded-2xl border border-zinc-800/50 bg-zinc-900/30 p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-white text-sm">Build Status</h3>
+                    <span className="text-xs text-zinc-400 uppercase tracking-wider">{missionStatus}</span>
+                  </div>
+                  <div className="space-y-3">
+                    {MISSION_STEPS.map((step) => {
+                      const stageState = getStageState(missionStatus, step.key);
+                      const icon =
+                        stageState === "done" ? (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        ) : stageState === "active" ? (
+                          <CircleDashed className="w-4 h-4 text-teal-400 animate-spin" />
+                        ) : stageState === "failed" ? (
+                          <span className="w-4 h-4 rounded-full bg-rose-500/70" />
+                        ) : (
+                          <span className="w-4 h-4 rounded-full bg-zinc-700" />
+                        );
+
+                      const suffix =
+                        stageState === "done" ? "done" : stageState === "active" ? "in progress" : "pending";
+
+                      return (
+                        <div key={step.key} className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2 text-zinc-300">
+                            {icon}
+                            <span>{step.label}</span>
+                          </div>
+                          <span className="text-zinc-500">{suffix}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -296,6 +475,29 @@ export default function Dashboard() {
                   >
                     Generate Link Code
                   </button>
+                </div>
+
+                {/* Sandbox Link */}
+                <div className="rounded-2xl border border-zinc-800/50 bg-zinc-900/20 p-5">
+                  <h3 className="font-semibold text-white mb-2 text-sm">Sandbox Preview</h3>
+                  {livePreviewUrl ? (
+                    <>
+                      <p className="text-xs text-zinc-400 mb-4">Live link is ready while the build finalizes.</p>
+                      <a
+                        href={livePreviewUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-full px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 rounded-lg text-xs font-semibold transition-colors inline-flex items-center justify-center gap-2"
+                      >
+                        Open Live Sandbox <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </>
+                  ) : (
+                    <p className="text-xs text-zinc-500">
+                      Preview link will appear here instantly when the mission reaches sandbox stage.
+                    </p>
+                  )}
+                  {currentMissionId && <p className="text-[10px] text-zinc-600 mt-3">Mission: {currentMissionId}</p>}
                 </div>
 
                 <div className="rounded-2xl border border-zinc-800/50 bg-zinc-900/20 p-5">
