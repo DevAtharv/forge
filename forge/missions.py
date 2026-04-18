@@ -380,6 +380,7 @@ class MissionRunner:
             "preview_status": "pending",
             "preview_url": None,
             "preview_deployment_id": None,
+
             "preview_metadata": {},
             "preview_updated_at": datetime.now(tz=UTC).isoformat().replace("+00:00", "Z"),
         }
@@ -441,10 +442,9 @@ class MissionRunner:
                 project_name=self._managed_preview_project_name(project),
                 files=files,
                 project_settings={
-                    "framework": "vite",
+                    "framework": "nextjs",
                     "installCommand": "npm install",
                     "buildCommand": "npm run build",
-                    "outputDirectory": "dist",
                 },
                 meta={
                     "forgeManagedPreview": "true",
@@ -516,10 +516,9 @@ class MissionRunner:
                 project_name=project.slug,
                 files={name: str(data.get("content") or "") for name, data in manifest.items()},
                 project_settings={
-                    "framework": "vite",
+                    "framework": "nextjs",
                     "installCommand": "npm install",
                     "buildCommand": "npm run build",
-                    "outputDirectory": "dist",
                 },
                 meta={"forgePublish": "true", "forgeProjectId": project.id or ""},
             )
@@ -639,7 +638,11 @@ class MissionRunner:
     ) -> str:
         top_files = sorted((revision.file_manifest or {}).keys())[:8]
         file_lines = "\n".join(f"- {name}" for name in top_files) or "- none"
-        summary_intro = "Updated the latest revision." if mission.kind == "edit" else "Generated a complete React + Vite website."
+        summary_intro = (
+            "Updated the latest revision."
+            if mission.kind == "edit"
+            else "Generated a complete scaffold-first Next.js and Tailwind website."
+        )
         preview_line = (
             f"Preview: {project.preview_url}\nWorking preview: temporary Forge-managed URL"
             if project.preview_url
