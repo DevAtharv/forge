@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from pathlib import Path
 from urllib.parse import quote_plus
 
@@ -92,6 +93,31 @@ def _serialize_auth_session(result: dict[str, object]) -> dict[str, object] | No
         "expires_in": result.get("expires_in"),
         "token_type": result.get("token_type"),
     }
+
+
+def _looks_like_build_request(text: str) -> bool:
+    lower = text.lower()
+    keyword_hits = (
+        "create a website",
+        "make a website",
+        "build a website",
+        "build an app",
+        "build a web app",
+        "web app",
+        "landing page",
+        "portfolio",
+        "dashboard",
+        "ecommerce",
+        "storefront",
+        "deploy it",
+        "production ready",
+        "weather app",
+        "weather website",
+        "build the website",
+    )
+    if any(token in lower for token in keyword_hits):
+        return True
+    return bool(re.search(r"\b(build|create|make|design)\b.+\b(app|website|site|dashboard|landing page)\b", lower))
 
 
 async def _project_detail_payload(store: MemoryStore, project_id: str) -> dict[str, object] | None:
@@ -594,19 +620,68 @@ def build_router(*, settings: Settings, store: MemoryStore) -> APIRouter:
         await request.app.state.store.append_conversation(
             ConversationRecord(user_id=workspace_user_id, role="user", content=payload.prompt)
         )
-        mission = await request.app.state.mission_runner.enqueue_web_mission(
-            workspace_user_id=workspace_user_id,
-            prompt=payload.prompt,
-            kind="build",
-        )
+        mission = None
+        direct_response = None
+        if _looks_like_build_request(payload.prompt):
+            mission = await request.app.state.mission_runner.enqueue_web_mission(
+                workspace_user_id=workspace_user_id,
+                prompt=payload.prompt,
+                kind="build",
+            )
+        else:
+            history = await request.app.state.store.get_recent_conversations(workspace_user_id, limit=12)
+            plan = await request.app.state.orchestrator.plan(
+                payload.prompt,
+                history=history,
+                profile=UserProfile(
+                    user_id=workspace_user_id,
+                    username=username,
+                    summary=profile.summary,
+                    stack=profile.stack,
+                    skill_level=profile.skill_level,
+                    current_projects=profile.current_projects,
+                    preferences=profile.preferences,
+                    active_context=profile.active_context,
+                ),
+                has_image=False,
+            )
+            executor = request.app.state.executor
+            if executor is None:
+                raise HTTPException(status_code=503, detail="Executor unavailable.")
+            user_context = build_user_context(profile, history, plan.context_policy)
+            delivery, _executions = await executor.execute(
+                plan=plan,
+                original_task=payload.prompt,
+                history=history,
+                user_context=user_context,
+                profile=profile,
+                image_bytes=None,
+            )
+            direct_response = delivery.text
+            await request.app.state.store.append_conversation(
+                ConversationRecord(
+                    user_id=workspace_user_id,
+                    role="assistant",
+                    content=delivery.text,
+                    agents_used=[name for stage in plan.stages for name in stage.agents],
+                )
+            )
+            refresher = request.app.state.profile_refresher
+            if callable(refresher):
+                await refresher(workspace_user_id, username)
         refreshed_profile = await request.app.state.store.get_user_profile(workspace_user_id)
         refreshed_history = await request.app.state.store.get_recent_conversations(workspace_user_id, limit=12)
         return {
             "user": user,
             "profile": refreshed_profile.model_dump(mode="json"),
             "history": [item.model_dump(mode="json") for item in refreshed_history],
-            "mission": mission.model_dump(mode="json"),
-            "message": "Mission queued. Forge will keep running it in the background.",
+            "mission": mission.model_dump(mode="json") if mission else None,
+            "direct_response": direct_response,
+            "message": (
+                "Build mission queued. Forge will keep running it in the background."
+                if mission
+                else "Answered using the orchestrator without triggering a website build."
+            ),
         }
 
     @router.post("/webhook")

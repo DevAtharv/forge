@@ -118,8 +118,17 @@ export default function Dashboard() {
       });
       
       setFeedback(payload.message || "Mission queued.");
+      if (!payload.mission || !payload.mission.id) {
+        const text = payload.direct_response || "Completed without background build mission.";
+        setTerminalOutput(prev => [...prev, `[DIRECT] ${text}`]);
+        setFeedback(payload.message || "Answered directly.");
+        setMissionStatus("completed");
+        setIsRunning(false);
+        return;
+      }
+
       setTerminalOutput(prev => [...prev, `[API] Mission ID received: ${payload.mission.id}`]);
-      
+
       let missionId = payload.mission.id;
       setCurrentMissionId(missionId);
       let missionCompleted = false;

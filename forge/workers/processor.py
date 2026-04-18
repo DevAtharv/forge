@@ -79,6 +79,7 @@ def _parse_project_command(text: str) -> tuple[str, str] | None:
         "/projects",
         "/status",
         "/new",
+        "/code",
         "/build",
         "/edit",
         "/preview",
@@ -131,8 +132,8 @@ def _help_text(*, linked: bool) -> str:
     lines = [
         "Forge Telegram Commands",
         "",
-        "Build and edit:",
-        "/build Build a modern cafe website",
+        "Code and edit:",
+        "/code Build a modern cafe website",
         "/new My Portfolio",
         "/edit Add a testimonials section",
         "/preview",
@@ -323,7 +324,7 @@ class JobProcessor:
             reply = (
                 "Forge is online.\n\n"
                 "Send /help to see commands, or send a request like:\n"
-                "/build Build a weather app"
+                "/code Build a weather app"
             )
             if link is None:
                 reply += "\n\nTo connect your website workspace, send the 6-digit link code from Forge here."
@@ -443,7 +444,7 @@ class JobProcessor:
         if command == "/projects":
             projects = await self.store.list_projects(workspace_user_id)
             if not projects:
-                text = "No projects yet.\n\nTry:\n/new Bright Studio\n/build Build a modern cafe website"
+                text = "No projects yet.\n\nTry:\n/new Bright Studio\n/code Build a modern cafe website"
             else:
                 text = "\n".join(
                     f"- {item.slug}: {_project_status_line(item)}"
@@ -524,7 +525,7 @@ class JobProcessor:
                     chat_id=chat_id,
                     source="telegram",
                     kind="build",
-                    prompt=f"Build a polished React + Vite website called {name}",
+                    prompt=f"Build a polished Next.js + Tailwind website called {name}",
                 )
             )
             mission = await self.mission_runner.run_mission(mission.id or "")
@@ -533,8 +534,11 @@ class JobProcessor:
             return mission.result_summary or "Project created."
 
         if command == "/build":
+            command = "/code"
+
+        if command == "/code":
             await self.store.append_conversation(
-                ConversationRecord(user_id=workspace_user_id, role="user", content=f"/build {value}")
+                ConversationRecord(user_id=workspace_user_id, role="user", content=f"/code {value}")
             )
             mission = await self.store.create_mission(
                 MissionRecord(
@@ -542,13 +546,13 @@ class JobProcessor:
                     chat_id=chat_id,
                     source="telegram",
                     kind="build",
-                    prompt=value or "Build a polished React + Vite website",
+                    prompt=value or "Build a polished Next.js + Tailwind website",
                 )
             )
             mission = await self.mission_runner.run_mission(mission.id or "")
             payload = await self.mission_runner.delivery_from_mission(mission)
             await self.transport.deliver(chat_id, payload)
-            return mission.result_summary or "Build completed."
+            return mission.result_summary or "Code build completed."
 
         if command == "/edit":
             project, instruction = await self._resolve_project_with_instruction(workspace_user_id, value)

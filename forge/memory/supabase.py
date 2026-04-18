@@ -86,6 +86,27 @@ class SupabaseMemoryStore(MemoryStore):
                     raise
                 payload.pop(missing_column, None)
 
+    async def _post_with_schema_fallback(
+        self,
+        path: str,
+        *,
+        payload: dict[str, Any],
+        max_attempts: int = 4,
+    ) -> list[dict[str, Any]]:
+        body = dict(payload)
+        attempts = 0
+        while True:
+            response = await self._client.post(path, json=body)
+            try:
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPStatusError as exc:
+                attempts += 1
+                missing_column = self._missing_column_from_error(exc)
+                if not missing_column or missing_column not in body or attempts >= max_attempts:
+                    raise
+                body.pop(missing_column, None)
+
     async def _get_message_job(self, job_id: str) -> MessageJob:
         response = await self._client.get(
             "/message_jobs",
@@ -378,9 +399,11 @@ class SupabaseMemoryStore(MemoryStore):
         return [OAuthConnection.model_validate(item) for item in response.json()]
 
     async def create_project(self, project: ProjectRecord) -> ProjectRecord:
-        response = await self._client.post("/projects", json=self._insert_payload(project))
-        response.raise_for_status()
-        return ProjectRecord.model_validate(response.json()[0])
+        rows = await self._post_with_schema_fallback(
+            "/projects",
+            payload=self._insert_payload(project),
+        )
+        return ProjectRecord.model_validate(rows[0])
 
     async def update_project(self, project_id: str, updates: dict[str, Any]) -> ProjectRecord:
         rows = await self._patch_with_schema_fallback(
@@ -420,9 +443,11 @@ class SupabaseMemoryStore(MemoryStore):
         return [ProjectRecord.model_validate(item) for item in response.json()]
 
     async def create_project_revision(self, revision: ProjectRevision) -> ProjectRevision:
-        response = await self._client.post("/project_revisions", json=self._insert_payload(revision))
-        response.raise_for_status()
-        return ProjectRevision.model_validate(response.json()[0])
+        rows = await self._post_with_schema_fallback(
+            "/project_revisions",
+            payload=self._insert_payload(revision),
+        )
+        return ProjectRevision.model_validate(rows[0])
 
     async def update_project_revision(self, revision_id: str, updates: dict[str, Any]) -> ProjectRevision:
         rows = await self._patch_with_schema_fallback(
@@ -463,9 +488,11 @@ class SupabaseMemoryStore(MemoryStore):
         return [DeploymentRecord.model_validate(item) for item in response.json()]
 
     async def create_mission(self, mission: MissionRecord) -> MissionRecord:
-        response = await self._client.post("/missions", json=self._insert_payload(mission))
-        response.raise_for_status()
-        return MissionRecord.model_validate(response.json()[0])
+        rows = await self._post_with_schema_fallback(
+            "/missions",
+            payload=self._insert_payload(mission),
+        )
+        return MissionRecord.model_validate(rows[0])
 
     async def get_mission(self, mission_id: str) -> MissionRecord | None:
         response = await self._client.get(
@@ -501,10 +528,9 @@ class SupabaseMemoryStore(MemoryStore):
         return [MissionRecord.model_validate(item) for item in data]
 
     async def update_mission(self, mission_id: str, updates: dict[str, Any]) -> MissionRecord:
-        response = await self._client.patch(
+        rows = await self._patch_with_schema_fallback(
             "/missions",
             params={"id": f"eq.{mission_id}", "select": "*"},
-            json=updates,
+            updates=updates,
         )
-        response.raise_for_status()
-        return MissionRecord.model_validate(response.json()[0])
+        return MissionRecord.model_validate(rows[0])
